@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel - La Esquina</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0c0c0c; color: white; padding: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .btn-reporte { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-logout { background: #333; color: #aaa; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .card { background: #181818; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid #333; position: relative; }
+        
+        .LIBRE { border-color: #2ecc71; box-shadow: 0 0 5px rgba(46, 204, 113, 0.1); }
+        .OCUPADA { border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.2); }
+
+        .badge { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; background: #333; padding: 4px 8px; border-radius: 4px; color: #aaa; }
+        .tiempo { font-size: 2rem; color: #f1c40f; font-family: monospace; margin: 15px 0; }
+        
+        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; padding: 12px; margin-top: 10px; color: white; }
+        .btn-iniciar { background: #2ecc71; } .btn-cobrar { background: #e74c3c; }
+        .btn-add { width: 40px; background: #f1c40f; color: black; padding: 8px; margin-left: 5px; }
+
+        .pedido-controls { display: flex; justify-content: center; align-items: center; gap: 5px; }
+        select { background: #222; color: white; border: 1px solid #555; padding: 8px; flex-grow: 1; border-radius: 5px; }
+        input[type="number"] { background: #222; color: white; border: 1px solid #555; padding: 8px; width: 50px; border-radius: 5px; text-align: center; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; }
+        .modal-content { background: #222; margin: 10% auto; padding: 30px; border-radius: 15px; width: 350px; text-align: center; border: 1px solid #444; }
+        .reporte-row { display: flex; justify-content: space-between; margin: 10px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
+
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #1a1a1a; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem; border: 2px solid #2ecc71; box-shadow: 0px 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.5s, bottom 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎱 La Esquina - Control</h1>
+        <div>
+            <button class="btn-reporte" onclick="verCaja()">💰 VER CAJA</button>
+            <button class="btn-logout" onclick="window.location.href='index.html'">SALIR</button>
+        </div>
+    </div>
+
+    <div class="grid" id="contenedor"></div>
+
+    <div id="modalCobro" class="modal">
+        <div class="modal-content">
+            <h2 id="mTitulo" style="color:#f1c40f">CUENTA</h2>
+            <div id="detalle" style="text-align:left; margin:20px 0; line-height:1.6"></div>
+            <h1 id="totalF" style="color:#2ecc71; font-size:3rem; margin:20px 0"></h1>
+            <button class="btn-iniciar" onclick="location.reload()">ACEPTAR Y GUARDAR</button>
+        </div>
+    </div>
+
+    <div id="modalReporte" class="modal">
+        <div class="modal-content" style="border: 2px solid #3498db;">
+            <h2 style="color:#3498db">💵 CAJA DEL DÍA</h2>
+            <div id="detalleReporte" style="text-align:left; margin:20px 0; font-size: 1.1rem;"></div>
+            <h1 id="totalDia" style="color:white; font-size:3rem; margin:20px 0"></h1>
+            <button class="btn-reporte" onclick="document.getElementById('modalReporte').style.display='none'">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="toast">✅ Producto Agregado</div>
+
+    <script>
+        function mostrarNotificacion(mensaje) {
+            var x = document.getElementById("toast");
+            x.innerText = "✅ " + mensaje;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        async function cargar() {
+            try {
+                const [rM, rP] = await Promise.all([fetch('/api/mesas'), fetch('/api/productos')]);
+                const mesas = await rM.json(); const prods = await rP.json();
+                const cont = document.getElementById('contenedor');
+                cont.innerHTML = '';
+
+                mesas.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `card ${m.estado}`;
+                    const esB = m.tipo === 'BILLAR';
+                    if(m.estado === 'OCUPADA') {
+                        div.innerHTML = `
+                            <span class="badge">${m.tipo}</span>
+                            <h3>Mesa ${m.numero_mesa}</h3>
+                            <div class="tiempo" data-inicio="${m.hora_inicio}">${esB ? '00:00:00' : 'OCUPADA'}</div>
+                            <div class="pedido-controls">
+                                <select id="s-${m.id}">${prods.map(p => `<option value="${p.id}">${p.nombre} - S/${p.precio_venta}</option>`).join('')}</select>
+                                <input type="number" id="c-${m.id}" value="1" min="1">
+                                <button class="btn-add" onclick="addP(${m.id})">+</button>
+                            </div>
+                            <button class="btn-cobrar" onclick="cobrar(${m.id})">FINALIZAR Y COBRAR</button>`;
+                    } else {
+                        div.innerHTML = `
+                            <span class="badge">${m.tipo}</span>
+                            <h3>Mesa ${m.numero_mesa}</h3>
+                            <p style="color:#888; margin: 30px 0;">${esB ? 'Tarifa: S/ 10.00/hr' : 'Libre'}</p>
+                            <button class="btn-iniciar" onclick="abrir(${m.id})">INICIAR</button>`;
+                    }
+                    cont.appendChild(div);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        setInterval(() => {
+            document.querySelectorAll('.tiempo').forEach(r => {
+                if(r.innerText.includes(':')) {
+                    const diff = Math.floor((new Date() - new Date(r.dataset.inicio)) / 1000);
+                    const h = Math.floor(diff/3600).toString().padStart(2,'0');
+                    const m = Math.floor((diff%3600)/60).toString().padStart(2,'0');
+                    const s = (diff%60).toString().padStart(2,'0');
+                    r.innerText = `${h}:${m}:${s}`;
+                }
+            });
+        }, 1000);
+
+        async function abrir(id) { await fetch('/api/mesas/abrir/'+id, {method:'POST'}); cargar(); }
+        
+        async function addP(id) {
+            const pId = document.getElementById('s-'+id).value;
+            const cant = document.getElementById('c-'+id).value;
+            
+            await fetch('/api/pedidos/agregar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ mesa_id: id, producto_id: pId, cantidad: cant })
+            });
+            mostrarNotificacion(cant + " Productos Agregados");
+        }
+
+        async function cobrar(id) {
+            const res = await fetch('/api/mesas/cerrar/'+id, {method:'POST'});
+            const d = await res.json();
+            document.getElementById('mTitulo').innerText = d.tipo;
+            document.getElementById('detalle').innerHTML = `
+                ${d.tipo==='BILLAR' ? `Tiempo: ${d.minReal} min<br>Importe Tiempo: S/ ${d.totalT}<br>` : ''}
+                Consumo: <b>S/ ${d.totalC}</b>
+            `;
+            document.getElementById('totalF').innerText = `S/ ${d.totalF}`;
+            document.getElementById('modalCobro').style.display = 'block';
+        }
+
+        async function verCaja() {
+            const res = await fetch('/api/reporte/hoy');
+            const d = await res.json();
+            document.getElementById('detalleReporte').innerHTML = `
+                <div class="reporte-row"><span>Mesas Cobradas:</span> <b>${d.cantidad_mesas}</b></div>
+                <div class="reporte-row"><span>Ingreso por Billar:</span> <b>S/ ${d.total_tiempo}</b></div>
+                <div class="reporte-row"><span>Ingreso por Bebidas:</span> <b>S/ ${d.total_productos}</b></div>
+            `;
+            document.getElementById('totalDia').innerText = `S/ ${d.total_dia}`;
+            document.getElementById('modalReporte').style.display = 'block';
+        }
+        cargar();
+    </script>
+</body>
+</html>

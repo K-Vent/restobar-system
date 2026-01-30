@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - La Esquina del Billar</title>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: #1e1e1e; padding: 40px; border-radius: 15px; border: 1px solid #f44336; text-align: center; box-shadow: 0 0 20px rgba(244,67,54,0.2); }
+        input { display: block; width: 250px; margin: 15px 0; padding: 12px; border-radius: 5px; border: none; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #f44336; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 16px; }
+        button:hover { background: #d32f2f; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>🎱 Acceso Personal</h2>
+        <input type="text" id="user" placeholder="Usuario">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button id="btnEntrar">ENTRAR</button>
+    </div>
+
+    <script>
+        // Usamos una forma más segura de detectar el clic
+        document.getElementById('btnEntrar').onclick = async function() {
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+
+            if (!user || !pass) {
+                alert("Por favor, completa ambos campos");
+                return;
+            }
+
+            console.log("Intentando conectar con el servidor...");
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                if (res.status === 401) {
+                    alert("❌ Usuario o contraseña incorrectos");
+                } else if (res.ok) {
+                    const data = await res.json();
+                    alert("✅ ¡Acceso concedido! Bienvenido " + data.user);
+                    sessionStorage.setItem('sesion_activa', 'true');
+                    window.location.href = '/index.html';
+                } else {
+                    alert("⚠️ Error en el servidor: " + res.status);
+                }
+
+            } catch (error) {
+                console.error("Error completo:", error);
+                alert("🚫 No se pudo conectar con el servidor. ¿Iniciaste el servidor en VS Code?");
+            }
+        };
+    </script>
+</body>
+</html>
