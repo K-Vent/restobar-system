@@ -6,7 +6,7 @@ const app = express();
 
 // CONFIGURACIÓN DE BASE DE DATOS
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:Shadow2022@localhost:5432/la_esquina_db',
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:Laesquinadelbillar@db.iqrhtvwddlqlrenfsaxa.supabase.co:5432/postgres',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
