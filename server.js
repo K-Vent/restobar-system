@@ -7,7 +7,7 @@ const app = express();
 // CONFIGURACIÓN DE BASE DE DATOS
 const pool = new Pool({
     connectionString: 'postgresql://postgres:Laesquinadelbillar@db.iqrhtvwddlqlrenfsaxa.supabase.co:5432/postgres',
-    ssl: { rejectUnauthorized: false } : false
+    ssl: { rejectUnauthorized: false }
 });
 
 app.use(cors());
