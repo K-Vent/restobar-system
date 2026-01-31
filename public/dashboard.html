@@ -2,169 +2,281 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel - La Esquina</title>
+    <title>Panel Principal - La Esquina</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0c0c0c; color: white; padding: 20px; }
+        body { background: #0c0c0c; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .btn-reporte { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .btn-logout { background: #333; color: #aaa; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-        .card { background: #181818; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid #333; position: relative; }
+        /* HEADER Y BOTONES SUPERIORES */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        h1 { margin: 0; color: #f1c40f; }
         
-        .LIBRE { border-color: #2ecc71; box-shadow: 0 0 5px rgba(46, 204, 113, 0.1); }
-        .OCUPADA { border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.2); }
+        .stats-box { background: #181818; padding: 15px 30px; border-radius: 8px; border: 1px solid #333; text-align: center; }
+        .stats-title { font-size: 14px; color: #888; text-transform: uppercase; }
+        .stats-value { font-size: 28px; color: #2ecc71; font-weight: bold; }
 
-        .badge { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; background: #333; padding: 4px 8px; border-radius: 4px; color: #aaa; }
-        .tiempo { font-size: 2rem; color: #f1c40f; font-family: monospace; margin: 15px 0; }
+        .actions-bar { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .btn-action { padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         
-        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; padding: 12px; margin-top: 10px; color: white; }
-        .btn-iniciar { background: #2ecc71; } .btn-cobrar { background: #e74c3c; }
-        .btn-add { width: 40px; background: #f1c40f; color: black; padding: 8px; margin-left: 5px; }
+        .btn-inv { background: #f39c12; color: black; }
+        .btn-inv:hover { background: #d35400; }
+        
+        .btn-caja { background: #c0392b; color: white; }
+        .btn-caja:hover { background: #e74c3c; }
+        
+        .btn-reportes { background: #3498db; color: white; }
+        .btn-reportes:hover { background: #2980b9; }
 
-        .pedido-controls { display: flex; justify-content: center; align-items: center; gap: 5px; }
-        select { background: #222; color: white; border: 1px solid #555; padding: 8px; flex-grow: 1; border-radius: 5px; }
-        input[type="number"] { background: #222; color: white; border: 1px solid #555; padding: 8px; width: 50px; border-radius: 5px; text-align: center; }
+        /* GRID DE MESAS */
+        .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; transition: transform 0.2s; }
+        .mesa-card:hover { transform: translateY(-5px); border-color: #555; }
+        
+        .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .mesa-titulo { font-size: 20px; font-weight: bold; color: #f1c40f; }
+        .mesa-estado { font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .libre { background: #27ae60; color: white; }
+        .ocupada { background: #e74c3c; color: white; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; }
-        .modal-content { background: #222; margin: 10% auto; padding: 30px; border-radius: 15px; width: 350px; text-align: center; border: 1px solid #444; }
-        .reporte-row { display: flex; justify-content: space-between; margin: 10px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .info-tiempo { font-size: 24px; font-family: monospace; text-align: center; margin: 15px 0; color: #ddd; }
+        
+        .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-mesa { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-abrir { background: #27ae60; color: white; }
+        .btn-producto { background: #e67e22; color: white; }
+        .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
-        #toast {
-            visibility: hidden; min-width: 250px; background-color: #1a1a1a; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem; border: 2px solid #2ecc71; box-shadow: 0px 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.5s, bottom 0.5s;
-        }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        /* MODAL DE PRODUCTOS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: #222; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #444; }
+        .modal h2 { color: #f1c40f; margin-top: 0; }
+        .lista-productos { max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0; }
+        .prod-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; }
+        .prod-item:hover { background: #333; }
+        .prod-precio { color: #2ecc71; font-weight: bold; }
+        .btn-cancelar { background: #7f8c8d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
+
     <div class="header">
         <h1>🎱 La Esquina - Control</h1>
-        <div style="text-align: center; margin-bottom: 20px;">
-    <a href="/inventario.html" style="background: #f39c12; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-        📦 GESTIONAR INVENTARIO
-    </a>
-</div>
-        <div>
-            <button class="btn-reporte" onclick="verCaja()">💰 VER CAJA</button>
-            <button class="btn-logout" onclick="window.location.href='index.html'">SALIR</button>
+        <div class="stats-box">
+            <div class="stats-title">Caja Turno Actual</div>
+            <div class="stats-value" id="total-caja">S/ 0.00</div>
         </div>
     </div>
 
-    <div class="grid" id="contenedor"></div>
+    <div class="actions-bar">
+        <a href="/inventario.html" class="btn-action btn-inv">📦 Inventario</a>
+        <a href="/reportes.html" class="btn-action btn-reportes">📅 Ver Reportes Antiguos</a>
+        <button onclick="cerrarCaja()" class="btn-action btn-caja">🔒 CERRAR CAJA (Fin de Turno)</button>
+    </div>
 
-    <div id="modalCobro" class="modal">
+    <div id="grid-mesas" class="grid-mesas">
+        <p style="color: #666; text-align: center; grid-column: 1/-1;">Cargando mesas...</p>
+    </div>
+
+    <div id="modal-productos" class="modal">
         <div class="modal-content">
-            <h2 id="mTitulo" style="color:#f1c40f">CUENTA</h2>
-            <div id="detalle" style="text-align:left; margin:20px 0; line-height:1.6"></div>
-            <h1 id="totalF" style="color:#2ecc71; font-size:3rem; margin:20px 0"></h1>
-            <button class="btn-iniciar" onclick="location.reload()">ACEPTAR Y GUARDAR</button>
+            <h2>🍺 Agregar Producto</h2>
+            <p>Mesa: <span id="modal-mesa-nombre" style="color: #f39c12; font-weight: bold;"></span></p>
+            <div class="lista-productos" id="lista-productos-div">
+                </div>
+            <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
         </div>
     </div>
-
-    <div id="modalReporte" class="modal">
-        <div class="modal-content" style="border: 2px solid #3498db;">
-            <h2 style="color:#3498db">💵 CAJA DEL DÍA</h2>
-            <div id="detalleReporte" style="text-align:left; margin:20px 0; font-size: 1.1rem;"></div>
-            <h1 id="totalDia" style="color:white; font-size:3rem; margin:20px 0"></h1>
-            <button class="btn-reporte" onclick="document.getElementById('modalReporte').style.display='none'">CERRAR</button>
-        </div>
-    </div>
-
-    <div id="toast">✅ Producto Agregado</div>
 
     <script>
-        function mostrarNotificacion(mensaje) {
-            var x = document.getElementById("toast");
-            x.innerText = "✅ " + mensaje;
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        let intervaloCronometros = null;
+
+        // --- 1. CARGA INICIAL Y ACTUALIZACIÓN ---
+        async function cargarTodo() {
+            await cargarMesas();
+            await actualizarCaja();
         }
 
-        async function cargar() {
+        async function actualizarCaja() {
             try {
-                const [rM, rP] = await Promise.all([fetch('/api/mesas'), fetch('/api/productos')]);
-                const mesas = await rM.json(); const prods = await rP.json();
-                const cont = document.getElementById('contenedor');
-                cont.innerHTML = '';
-
-                mesas.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = `card ${m.estado}`;
-                    const esB = m.tipo === 'BILLAR';
-                    if(m.estado === 'OCUPADA') {
-                        div.innerHTML = `
-                            <span class="badge">${m.tipo}</span>
-                            <h3>Mesa ${m.numero_mesa}</h3>
-                            <div class="tiempo" data-inicio="${m.hora_inicio}">${esB ? '00:00:00' : 'OCUPADA'}</div>
-                            <div class="pedido-controls">
-                                <select id="s-${m.id}">${prods.map(p => `<option value="${p.id}">${p.nombre} - S/${p.precio_venta}</option>`).join('')}</select>
-                                <input type="number" id="c-${m.id}" value="1" min="1">
-                                <button class="btn-add" onclick="addP(${m.id})">+</button>
-                            </div>
-                            <button class="btn-cobrar" onclick="cobrar(${m.id})">FINALIZAR Y COBRAR</button>`;
-                    } else {
-                        div.innerHTML = `
-                            <span class="badge">${m.tipo}</span>
-                            <h3>Mesa ${m.numero_mesa}</h3>
-                            <p style="color:#888; margin: 30px 0;">${esB ? 'Tarifa: S/ 10.00/hr' : 'Libre'}</p>
-                            <button class="btn-iniciar" onclick="abrir(${m.id})">INICIAR</button>`;
-                    }
-                    cont.appendChild(div);
-                });
-            } catch (e) { console.error(e); }
+                // LLAMA A LA NUEVA API DE CAJA MANUAL
+                const res = await fetch('/api/caja/actual');
+                const data = await res.json();
+                document.getElementById('total-caja').innerText = 'S/ ' + parseFloat(data.total_dia).toFixed(2);
+            } catch (e) { console.error("Error cargando caja:", e); }
         }
 
-        setInterval(() => {
-            document.querySelectorAll('.tiempo').forEach(r => {
-                if(r.innerText.includes(':')) {
-                    const diff = Math.floor((new Date() - new Date(r.dataset.inicio)) / 1000);
-                    const h = Math.floor(diff/3600).toString().padStart(2,'0');
-                    const m = Math.floor((diff%3600)/60).toString().padStart(2,'0');
-                    const s = (diff%60).toString().padStart(2,'0');
-                    r.innerText = `${h}:${m}:${s}`;
+        // --- 2. GESTIÓN DE MESAS ---
+        async function cargarMesas() {
+            try {
+                const res = await fetch('/api/mesas');
+                const mesas = await res.json();
+                const contenedor = document.getElementById('grid-mesas');
+                contenedor.innerHTML = '';
+
+                mesas.forEach(mesa => {
+                    const esOcupada = mesa.estado === 'OCUPADA';
+                    const claseEstado = esOcupada ? 'ocupada' : 'libre';
+                    const textoEstado = esOcupada ? 'OCUPADA' : 'LIBRE';
+                    
+                    // Si está ocupada, calculamos tiempo inicial para el cronómetro
+                    let tiempoDisplay = '--:--:--';
+                    let dataInicio = '';
+                    
+                    if (esOcupada && mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
+                        dataInicio = mesa.hora_inicio; // Guardamos la hora para el JS
+                        tiempoDisplay = 'Calculando...';
+                    }
+
+                    const html = `
+                        <div class="mesa-card">
+                            <div class="mesa-header">
+                                <span class="mesa-titulo">Mesa ${mesa.numero_mesa} (${mesa.tipo})</span>
+                                <span class="mesa-estado ${claseEstado}">${textoEstado}</span>
+                            </div>
+                            
+                            <div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}">
+                                ${tiempoDisplay}
+                            </div>
+
+                            <div class="mesa-actions">
+                                ${!esOcupada ? 
+                                    `<button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">🟢 Abrir Mesa</button>` : 
+                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id}, ${mesa.numero_mesa})">🍺 Agregar Producto</button>
+                                     <button class="btn-mesa btn-cerrar" onclick="cerrarMesa(${mesa.id})">💰 Cobrar y Cerrar</button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                    contenedor.innerHTML += html;
+                });
+                
+                iniciarCronometros(); // Reactivar relojes
+            } catch (e) { console.error("Error cargando mesas:", e); }
+        }
+
+        // --- 3. ACCIONES DE MESAS ---
+        async function abrirMesa(id) {
+            if(!confirm("¿Abrir esta mesa ahora?")) return;
+            await fetch(`/api/mesas/abrir/${id}`, { method: 'POST' });
+            cargarTodo();
+        }
+
+        async function cerrarMesa(id) {
+            if(!confirm("¿Cerrar mesa y cobrar? Esta acción es final.")) return;
+            
+            const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
+            const data = await res.json();
+            
+            if (data.error) return alert("Error: " + data.error);
+
+            // Mensaje de Cobro
+            let mensaje = `💰 RESUMEN DE COBRO\n\n`;
+            mensaje += `⏰ Tiempo (${data.minReal} min): S/ ${data.totalT}\n`;
+            mensaje += `🍺 Productos: S/ ${data.totalC}\n`;
+            mensaje += `--------------------------\n`;
+            mensaje += `💵 TOTAL A PAGAR: S/ ${data.totalF}`;
+            
+            alert(mensaje);
+            cargarTodo();
+        }
+
+        // --- 4. PRODUCTOS (MODAL) ---
+        let mesaSeleccionadaId = null;
+
+        async function abrirModalProductos(idMesa, numMesa) {
+            mesaSeleccionadaId = idMesa;
+            document.getElementById('modal-mesa-nombre').innerText = numMesa;
+            document.getElementById('modal-productos').style.display = 'flex';
+            
+            // Cargar lista de productos
+            const res = await fetch('/api/productos');
+            const productos = await res.json();
+            const divLista = document.getElementById('lista-productos-div');
+            divLista.innerHTML = '';
+
+            productos.forEach(p => {
+                // Solo mostrar si hay stock
+                if(p.stock > 0) {
+                    divLista.innerHTML += `
+                        <div class="prod-item" onclick="agregarPedido(${p.id}, '${p.nombre}', ${p.precio_venta})">
+                            <span>${p.nombre} (Stock: ${p.stock})</span>
+                            <span class="prod-precio">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                        </div>
+                    `;
                 }
             });
-        }, 1000);
+        }
 
-        async function abrir(id) { await fetch('/api/mesas/abrir/'+id, {method:'POST'}); cargar(); }
-        
-        async function addP(id) {
-            const pId = document.getElementById('s-'+id).value;
-            const cant = document.getElementById('c-'+id).value;
+        function cerrarModal() {
+            document.getElementById('modal-productos').style.display = 'none';
+        }
+
+        async function agregarPedido(idProd, nombre, precio) {
+            const cantidad = prompt(`¿Cuántos "${nombre}" deseas agregar?`, "1");
+            if (cantidad && parseInt(cantidad) > 0) {
+                await fetch('/api/pedidos/agregar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        mesa_id: mesaSeleccionadaId, 
+                        producto_id: idProd, 
+                        cantidad: parseInt(cantidad) 
+                    })
+                });
+                alert("✅ Producto agregado");
+                cerrarModal();
+                actualizarCaja(); // Actualizar el total de caja en vivo
+            }
+        }
+
+        // --- 5. LÓGICA DE CIERRE DE CAJA (CORTE Z) ---
+        async function cerrarCaja() {
+            if(!confirm("⚠️ ¿Estás seguro de CERRAR LA CAJA?\n\nEsto finalizará el turno actual y reiniciará el contador a cero.")) return;
+
+            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
+            const data = await res.json();
+
+            if(data.success) {
+                alert(`✅ TURNO CERRADO CON ÉXITO.\n\nTotal recaudado: S/ ${parseFloat(data.total).toFixed(2)}\n\nEl sistema está listo para el siguiente turno.`);
+                location.reload(); 
+            } else {
+                alert("Error al cerrar caja: " + (data.error || "Desconocido"));
+            }
+        }
+
+        // --- 6. CRONÓMETROS EN TIEMPO REAL ---
+        function iniciarCronometros() {
+            if(intervaloCronometros) clearInterval(intervaloCronometros);
             
-            await fetch('/api/pedidos/agregar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ mesa_id: id, producto_id: pId, cantidad: cant })
-            });
-            mostrarNotificacion(cant + " Productos Agregados");
+            intervaloCronometros = setInterval(() => {
+                const timers = document.querySelectorAll('.info-tiempo');
+                timers.forEach(t => {
+                    const inicio = t.getAttribute('data-inicio');
+                    if(inicio && inicio !== '') {
+                        const fechaInicio = new Date(inicio).getTime();
+                        const ahora = new Date().getTime();
+                        const diff = ahora - fechaInicio;
+                        
+                        // Formato HH:MM:SS
+                        const horas = Math.floor(diff / (1000 * 60 * 60));
+                        const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+                        
+                        t.innerText = 
+                            (horas < 10 ? "0"+horas : horas) + ":" + 
+                            (minutos < 10 ? "0"+minutos : minutos) + ":" + 
+                            (segundos < 10 ? "0"+segundos : segundos);
+                    }
+                });
+            }, 1000);
         }
 
-        async function cobrar(id) {
-            const res = await fetch('/api/mesas/cerrar/'+id, {method:'POST'});
-            const d = await res.json();
-            document.getElementById('mTitulo').innerText = d.tipo;
-            document.getElementById('detalle').innerHTML = `
-                ${d.tipo==='BILLAR' ? `Tiempo: ${d.minReal} min<br>Importe Tiempo: S/ ${d.totalT}<br>` : ''}
-                Consumo: <b>S/ ${d.totalC}</b>
-            `;
-            document.getElementById('totalF').innerText = `S/ ${d.totalF}`;
-            document.getElementById('modalCobro').style.display = 'block';
-        }
+        // Iniciar todo
+        cargarTodo();
+        // Refrescar datos cada 30 segundos (por si alguien más abre mesas)
+        setInterval(cargarMesas, 30000); 
+        setInterval(actualizarCaja, 30000); 
 
-        async function verCaja() {
-            const res = await fetch('/api/reporte/hoy');
-            const d = await res.json();
-            document.getElementById('detalleReporte').innerHTML = `
-                <div class="reporte-row"><span>Mesas Cobradas:</span> <b>${d.cantidad_mesas}</b></div>
-                <div class="reporte-row"><span>Ingreso por Billar:</span> <b>S/ ${d.total_tiempo}</b></div>
-                <div class="reporte-row"><span>Ingreso por Bebidas:</span> <b>S/ ${d.total_productos}</b></div>
-            `;
-            document.getElementById('totalDia').innerText = `S/ ${d.total_dia}`;
-            document.getElementById('modalReporte').style.display = 'block';
-        }
-        cargar();
     </script>
 </body>
 </html>

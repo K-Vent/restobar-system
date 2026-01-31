@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Cierres</title>
+    <style>
+        body { background: #0c0c0c; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #f1c40f; }
+        table { width: 90%; max-width: 800px; margin: 20px auto; border-collapse: collapse; background: #181818; }
+        th, td { padding: 15px; border-bottom: 1px solid #333; }
+        th { background: #333; color: #f1c40f; }
+        .precio { color: #2ecc71; font-weight: bold; font-size: 1.2em; }
+        .fecha { color: #aaa; }
+        .btn-volver { background: #555; padding: 10px 20px; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>📅 Historial de Cierres de Caja</h1>
+    <table id="tabla-cierres">
+        <thead>
+            <tr>
+                <th>Fecha y Hora de Cierre</th>
+                <th>Mesas Atendidas</th>
+                <th>Total en Caja</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    
+    <a href="/dashboard.html" class="btn-volver">⬅ Volver al Panel</a>
+
+    <script>
+        async function cargarHistorial() {
+            const res = await fetch('/api/reportes/historial');
+            const datos = await res.json();
+            const tbody = document.querySelector('#tabla-cierres tbody');
+            tbody.innerHTML = '';
+
+            datos.forEach(d => {
+                const fecha = new Date(d.fecha_cierre).toLocaleString();
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fecha">${fecha}</td>
+                        <td>${d.cantidad_mesas}</td>
+                        <td class="precio">S/ ${parseFloat(d.total_ventas).toFixed(2)}</td>
+                    </tr>`;
+            });
+        }
+        cargarHistorial();
+    </script>
+</body>
+</html>
