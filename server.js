@@ -109,8 +109,23 @@ app.post('/api/productos/restar-stock', async (req, res) => {
 app.post('/api/productos/nuevo', async (req, res) => {
     try { await pool.query('INSERT INTO productos (nombre, precio_venta, stock) VALUES ($1, $2, $3)', [req.body.nombre, req.body.precio, req.body.stock||0]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
 });
+// [MODIFICADO] Eliminar producto y sus pedidos antiguos
 app.delete('/api/productos/eliminar/:id', async (req, res) => {
-    try { await pool.query('DELETE FROM productos WHERE id = $1', [req.params.id]); res.json({success:true}); } catch(e){res.status(400).json({error:'Error al eliminar'});}
+    try {
+        const { id } = req.params;
+        
+        // 1. Primero borramos el historial de pedidos de este producto
+        // (Esto elimina el rastro de que alguna vez se vendió)
+        await pool.query('DELETE FROM pedidos_mesa WHERE producto_id = $1', [id]);
+        
+        // 2. Ahora que está "limpio", borramos el producto
+        await pool.query('DELETE FROM productos WHERE id = $1', [id]);
+        
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e); // Para que veas el error en la consola si pasa algo
+        res.status(500).json({ error: 'No se pudo eliminar el producto.' });
+    }
 });
 
 app.post('/api/mesas/abrir/:id', async (req, res) => {
