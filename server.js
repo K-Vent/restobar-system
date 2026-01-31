@@ -8,9 +8,6 @@ const app = express();
 const pool = new Pool({connectionString: 'postgresql://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
     ssl: { rejectUnauthorized: false } 
 });
-    connectionString: 'postgres://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-0-sa-east-1.pooler.supabase.com:6543/postgres',
-    ssl: { rejectUnauthorized: false } 
-});
 
 app.use(cors());
 app.use(express.json());
