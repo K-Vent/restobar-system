@@ -10,82 +10,94 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
         h1 { margin: 0; color: #f1c40f; font-size: 24px; }
         
-        /* --- NUEVO: PANEL DE DINERO EN VIVO --- */
+        /* PANEL DE DINERO */
         .money-panel { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .stat-card { background: #181818; padding: 15px; border-radius: 10px; border: 1px solid #333; min-width: 180px; text-align: center; flex: 1; }
+        .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        .stat-value { font-size: 26px; font-weight: bold; }
         
-        .stat-card { background: #181818; padding: 20px; border-radius: 10px; border: 1px solid #333; min-width: 200px; text-align: center; flex: 1; }
-        .stat-title { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 10px; font-weight: bold; }
-        .stat-value { font-size: 32px; font-weight: bold; }
-        
-        /* Colores para diferenciar */
-        .card-total { border-color: #27ae60; }
-        .card-total .stat-value { color: #2ecc71; } /* Verde para el total */
-        
-        .card-mesas .stat-value { color: #f1c40f; } /* Amarillo para billar */
-        .card-prods .stat-value { color: #3498db; } /* Azul para productos */
+        .card-total { border-color: #27ae60; } .card-total .stat-value { color: #2ecc71; }
+        .card-mesas .stat-value { color: #f1c40f; }
+        .card-prods .stat-value { color: #3498db; }
 
         /* BOTONES DE ACCIÓN */
         .actions-bar { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
-        .btn-action { padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; }
+        .btn-action { padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; }
         .btn-action:hover { transform: scale(1.05); }
-        
         .btn-inv { background: #e67e22; color: white; }
         .btn-reportes { background: #34495e; color: white; }
-        .btn-caja { background: #c0392b; color: white; border: 2px solid #e74c3c; }
+        .btn-caja { background: #c0392b; color: white; border: 1px solid #e74c3c; }
 
         /* GRID DE MESAS */
-        .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
         
-        .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; }
-        .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .mesa-titulo { font-size: 20px; font-weight: bold; color: #fff; }
-        .mesa-estado { font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .mesa-card { background: #181818; border-radius: 8px; padding: 15px; border: 1px solid #333; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .mesa-titulo { font-size: 18px; font-weight: bold; color: #fff; }
+        .mesa-subtitulo { font-size: 12px; color: #777; font-weight: normal; } /* Tipo de mesa */
+        .mesa-estado { font-size: 11px; padding: 3px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .libre { background: #27ae60; color: white; }
-        .ocupada { background: #e74c3c; color: white; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); }
+        .ocupada { background: #e74c3c; color: white; }
 
-        .info-tiempo { font-size: 28px; font-family: monospace; text-align: center; margin: 20px 0; color: #ddd; background: #222; padding: 10px; border-radius: 5px; }
-        
-        .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-mesa { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
+        /* RELOJ MEJORADO */
+        .info-tiempo { 
+            font-size: 20px; /* MÁS PEQUEÑO (Antes 28px) */
+            font-family: monospace; 
+            text-align: center; 
+            margin: 10px 0; 
+            color: #ddd; 
+            background: #222; 
+            padding: 8px; 
+            border-radius: 5px; 
+            border: 1px solid #333;
+            min-height: 45px; /* Altura fija para evitar saltos */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .dinero-vivo { color: #f1c40f; font-size: 14px; margin-top: 4px; font-weight: bold; }
+
+        .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .btn-mesa { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; }
         .btn-abrir { background: #27ae60; color: white; }
         .btn-producto { background: #f39c12; color: black; }
-        .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; margin-top: 10px; }
+        .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
         /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: #222; padding: 25px; border-radius: 10px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #444; }
-        .lista-productos { max-height: 350px; overflow-y: auto; text-align: left; margin: 15px 0; }
-        .prod-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #333; cursor: pointer; transition: background 0.2s; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: #222; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #444; }
+        .lista-productos { max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0; }
+        .prod-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #333; cursor: pointer; }
         .prod-item:hover { background: #333; }
         .prod-precio { color: #2ecc71; font-weight: bold; }
-        .btn-cancelar { background: #7f8c8d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        .btn-cancelar { background: #555; color: white; padding: 10px; width: 100%; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🎱 La Esquina del Billar</h1>
-        <div style="font-size: 14px; color: #888;">Sistema de Control</div>
+        <h1>🎱 Control La Esquina</h1>
     </div>
 
     <div class="money-panel">
         <div class="stat-card card-total">
-            <div class="stat-title">💰 Total en Caja (Turno)</div>
+            <div class="stat-title">💰 Total Caja</div>
             <div class="stat-value" id="total-caja">S/ 0.00</div>
         </div>
         <div class="stat-card card-mesas">
-            <div class="stat-title">🎱 Ganancia Mesas</div>
+            <div class="stat-title">🎱 Mesas</div>
             <div class="stat-value" id="total-mesas">S/ 0.00</div>
         </div>
         <div class="stat-card card-prods">
-            <div class="stat-title">🍺 Ganancia Productos</div>
+            <div class="stat-title">🍺 Productos</div>
             <div class="stat-value" id="total-productos">S/ 0.00</div>
         </div>
     </div>
 
     <div class="actions-bar">
         <a href="/inventario.html" class="btn-action btn-inv">📦 Inventario</a>
-        <a href="/reportes.html" class="btn-action btn-reportes">📅 Historial Cierres</a>
+        <a href="/reportes.html" class="btn-action btn-reportes">📅 Historial</a>
         <button onclick="cerrarCaja()" class="btn-action btn-caja">🔒 CERRAR CAJA</button>
     </div>
 
@@ -95,8 +107,8 @@
 
     <div id="modal-productos" class="modal">
         <div class="modal-content">
-            <h2 style="color: #f1c40f;">Agregar Consumo</h2>
-            <p>Mesa <span id="modal-mesa-nombre" style="font-weight: bold; color: white;"></span></p>
+            <h2 style="color: #f1c40f; margin-top:0;">Agregar Pedido</h2>
+            <p style="color:#aaa;">Mesa <span id="modal-mesa-nombre" style="color:white; font-weight:bold;"></span></p>
             <div class="lista-productos" id="lista-productos-div"></div>
             <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
         </div>
@@ -110,20 +122,16 @@
             await actualizarCaja();
         }
 
-        // --- 1. ACTUALIZAR DINERO EN VIVO ---
         async function actualizarCaja() {
             try {
                 const res = await fetch('/api/caja/actual');
                 const data = await res.json();
-                
-                // Actualizamos las 3 tarjetas
                 document.getElementById('total-caja').innerText = 'S/ ' + parseFloat(data.total_dia).toFixed(2);
                 document.getElementById('total-mesas').innerText = 'S/ ' + parseFloat(data.total_tiempo).toFixed(2);
                 document.getElementById('total-productos').innerText = 'S/ ' + parseFloat(data.total_productos).toFixed(2);
-            } catch (e) { console.error("Error caja:", e); }
+            } catch (e) { console.error(e); }
         }
 
-        // --- 2. CARGAR MESAS ---
         async function cargarMesas() {
             try {
                 const res = await fetch('/api/mesas');
@@ -133,31 +141,40 @@
 
                 mesas.forEach(mesa => {
                     const esOcupada = mesa.estado === 'OCUPADA';
+                    const esBillar = mesa.tipo === 'BILLAR';
                     
-                    let tiempoDisplay = '--:--:--';
                     let dataInicio = '';
-                    
-                    if (esOcupada && mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
-                        dataInicio = mesa.hora_inicio;
-                        tiempoDisplay = 'Calculando...';
+                    let htmlReloj = '';
+
+                    // LÓGICA DE RELOJ: SOLO SI ES BILLAR
+                    if (esBillar) {
+                        if (esOcupada && mesa.hora_inicio) {
+                            dataInicio = mesa.hora_inicio;
+                            htmlReloj = `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">Calculando...</div>`;
+                        } else {
+                            htmlReloj = `<div class="info-tiempo" style="color:#444;">--:--:--</div>`;
+                        }
+                    } else {
+                        // SI ES CONSUMO: NO PONEMOS RELOJ
+                        htmlReloj = `<div style="height: 10px;"></div>`; // Espacio vacío pequeño
                     }
 
                     const html = `
                         <div class="mesa-card">
-                            <div class="mesa-header">
-                                <span class="mesa-titulo">Mesa ${mesa.numero_mesa}</span>
-                                <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
-                            </div>
-                            
-                            <div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}">
-                                ${tiempoDisplay}
+                            <div>
+                                <div class="mesa-header">
+                                    <span class="mesa-titulo">Mesa ${mesa.numero_mesa}</span>
+                                    <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
+                                </div>
+                                <div class="mesa-subtitulo">${mesa.tipo}</div>
+                                ${htmlReloj}
                             </div>
 
                             <div class="mesa-actions">
                                 ${!esOcupada ? 
-                                    `<button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">🟢 INICIAR TIEMPO</button>` : 
-                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id}, ${mesa.numero_mesa})">🍺 PRODUCTO</button>
-                                     <button class="btn-mesa btn-cerrar" onclick="cerrarMesa(${mesa.id})">💰 COBRAR TODO</button>`
+                                    `<button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">🟢 INICIAR</button>` : 
+                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id}, ${mesa.numero_mesa})">🍺 PEDIDO</button>
+                                     <button class="btn-mesa btn-cerrar" onclick="cerrarMesa(${mesa.id})">💰 COBRAR</button>`
                                 }
                             </div>
                         </div>
@@ -169,22 +186,20 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- 3. FUNCIONES DE BOTONES ---
         async function abrirMesa(id) {
             await fetch(`/api/mesas/abrir/${id}`, { method: 'POST' });
             cargarTodo();
         }
 
         async function cerrarMesa(id) {
-            if(!confirm("¿Cobrar y cerrar mesa?")) return;
+            if(!confirm("¿Cobrar mesa?")) return;
             const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
             const data = await res.json();
-            
-            alert(`💰 COBRO REALIZADO\n\n🎱 Tiempo: S/ ${data.totalT}\n🍺 Consumo: S/ ${data.totalC}\n================\n💵 TOTAL: S/ ${data.totalF}`);
+            alert(`💰 COBRO REALIZADO\n\nTiempo: S/ ${data.totalT}\nProductos: S/ ${data.totalC}\nTOTAL: S/ ${data.totalF}`);
             cargarTodo();
         }
 
-        // --- 4. MODAL PRODUCTOS ---
+        // --- MODAL Y PEDIDOS ---
         let mesaSel = null;
         async function abrirModalProductos(id, num) {
             mesaSel = id;
@@ -195,7 +210,6 @@
             const prods = await res.json();
             const lista = document.getElementById('lista-productos-div');
             lista.innerHTML = '';
-
             prods.forEach(p => {
                 if(p.stock > 0) {
                     lista.innerHTML += `
@@ -206,11 +220,9 @@
                 }
             });
         }
-
         function cerrarModal() { document.getElementById('modal-productos').style.display = 'none'; }
-
         async function pedir(idProd, nombre) {
-            const cant = prompt(`¿Cuántos ${nombre}?`, "1");
+            const cant = prompt(`¿Cantidad de ${nombre}?`, "1");
             if(cant > 0) {
                 await fetch('/api/pedidos/agregar', {
                     method: 'POST',
@@ -218,41 +230,51 @@
                     body: JSON.stringify({ mesa_id: mesaSel, producto_id: idProd, cantidad: cant })
                 });
                 cerrarModal();
-                alert("Agregado ✅");
-                actualizarCaja(); 
+                alert("Agregado");
+                actualizarCaja();
             }
         }
-
-        // --- 5. CERRAR CAJA ---
         async function cerrarCaja() {
-            if(!confirm("⚠️ ¿CERRAR CAJA DEL TURNO?\nSe reiniciará el contador a S/ 0.00")) return;
+            if(!confirm("⚠️ ¿CERRAR TURNO Y REINICIAR CAJA?")) return;
             const res = await fetch('/api/caja/cerrar', { method: 'POST' });
             const data = await res.json();
-            if(data.success) {
-                alert(`✅ TURNO CERRADO\nTotal guardado: S/ ${parseFloat(data.total).toFixed(2)}`);
-                location.reload();
-            }
+            if(data.success) { alert("Caja cerrada. Total: S/ " + data.total); location.reload(); }
         }
 
-        // --- 6. RELOJES ---
+        // --- RELOJES CON PRECIO EN VIVO ---
         function iniciarCronometros() {
             if(intervaloCronometros) clearInterval(intervaloCronometros);
             intervaloCronometros = setInterval(() => {
                 document.querySelectorAll('.info-tiempo').forEach(t => {
                     const inicio = t.getAttribute('data-inicio');
+                    const precioHora = parseFloat(t.getAttribute('data-precio')) || 10; // 10 soles por defecto si no hay precio
+
                     if(inicio) {
                         const diff = new Date() - new Date(inicio);
+                        // Tiempo
                         const h = Math.floor(diff/3600000);
                         const m = Math.floor((diff%3600000)/60000);
                         const s = Math.floor((diff%60000)/1000);
-                        t.innerText = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+                        const tiempoStr = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+
+                        // Dinero acumulado (Regla: Mínimo 30 min, luego fracción) 
+                        // NOTA: Para visualización mostramos el cálculo puro por minuto para que vean avanzar el dinero.
+                        // El cobro final real lo hace el servidor con la regla de 30 min.
+                        // Aquí mostramos el proporcional exacto para referencia:
+                        const minutosTotales = diff / 60000;
+                        const costoAprox = (minutosTotales / 60) * precioHora;
+                        
+                        t.innerHTML = `
+                            ${tiempoStr}
+                            <div class="dinero-vivo">S/ ${costoAprox.toFixed(2)}</div>
+                        `;
                     }
                 });
             }, 1000);
         }
 
         cargarTodo();
-        setInterval(cargarMesas, 15000); // Refresco automático
+        setInterval(cargarMesas, 15000);
     </script>
 </body>
 </html>
