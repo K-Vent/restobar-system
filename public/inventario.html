@@ -34,7 +34,7 @@
     <div class="form-nuevo">
         <h3 style="margin-top: 0;">✨ Agregar Nuevo Producto</h3>
         <input type="text" id="newNombre" placeholder="Nombre (Ej. Papitas)">
-        <input type="number" id="newPrecio" placeholder="Precio Venta">
+        <input type="number" id="newPrecio" placeholder="Precio (S/ 0.00)">
         <input type="number" id="newStock" placeholder="Stock Inicial">
         <button class="btn-crear" onclick="crearProducto()">GUARDAR</button>
     </div>
@@ -65,8 +65,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${p.nombre}</td>
-                        <td>$${p.precio_venta}</td>
-                        <td class="${stockClass}">${p.stock}</td>
+                        <td>S/ ${parseFloat(p.precio_venta).toFixed(2)}</td> <td class="${stockClass}">${p.stock}</td>
                         <td class="acciones">
                             <button class="btn-mas" onclick="modificarStock(${p.id}, 'agregar', '${p.nombre}')">➕</button>
                             <button class="btn-menos" onclick="modificarStock(${p.id}, 'restar', '${p.nombre}')">➖</button>
@@ -103,7 +102,6 @@
                 body: JSON.stringify({ nombre, precio, stock: stock || 0 })
             });
 
-            // Limpiar campos y recargar
             document.getElementById('newNombre').value = '';
             document.getElementById('newPrecio').value = '';
             document.getElementById('newStock').value = '';
