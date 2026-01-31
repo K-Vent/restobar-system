@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cierre de Caja - La Esquina</title>
+    <style>
+        /* ESTILOS BASE (Mismos del sistema) */
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
+        .logo-text { color: #f1c40f; font-size: 22px; font-weight: bold; margin: 0; }
+        .logo-sub { color: #666; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+        .menu { flex-grow: 1; padding: 20px 0; }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+        .menu-link:hover { background: #1a1a1a; color: white; border-left-color: #f1c40f; }
+        .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
+        .menu-icon { font-size: 20px; width: 25px; text-align: center; }
+        .logout-container { padding: 20px; border-top: 1px solid #222; }
+        .btn-logout { width: 100%; padding: 12px; background: #2c0b0b; color: #e74c3c; border: 1px solid #c0392b; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; }
+
+        /* MAIN */
+        .main-content { margin-left: 260px; padding: 40px; width: 100%; }
+        .header-page { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: white; margin: 0; font-size: 28px; }
+
+        /* TARJETAS RESUMEN */
+        .resumen-panel { display: flex; gap: 20px; margin-bottom: 30px; }
+        .card { background: #181818; padding: 20px; border-radius: 10px; border: 1px solid #333; flex: 1; text-align: center; }
+        .card-title { color: #888; font-size: 12px; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
+        .card-value { font-size: 32px; font-weight: bold; }
+        .c-verde { color: #2ecc71; } .c-amarillo { color: #f1c40f; } .c-azul { color: #3498db; }
+
+        /* TABLA DETALLE */
+        .tabla-container { background: #181818; border-radius: 10px; border: 1px solid #333; overflow: hidden; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #222; color: #aaa; font-size: 13px; text-transform: uppercase; }
+        td { font-size: 14px; }
+        .col-monto { text-align: right; font-weight: bold; color: #ddd; }
+        .col-hora { color: #666; font-family: monospace; }
+
+        /* BOTÓN FINAL */
+        .zona-accion { text-align: right; border-top: 1px solid #333; padding-top: 20px; }
+        .btn-cerrar-turno {
+            background: #c0392b; color: white; border: none; padding: 15px 40px; 
+            font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; 
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
+        }
+        .btn-cerrar-turno:hover { background: #e74c3c; transform: scale(1.02); }
+
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="logo-text">🎱 LA ESQUINA</h2>
+            <div class="logo-sub">Panel de Control</div>
+        </div>
+        <div class="menu">
+            <a href="/dashboard.html" class="menu-link">
+                <span class="menu-icon">🎱</span> Control de Mesas
+            </a>
+            <a href="/inventario.html" class="menu-link">
+                <span class="menu-icon">📦</span> Inventario
+            </a>
+            <a href="/reportes.html" class="menu-link">
+                <span class="menu-icon">📅</span> Historial
+            </a>
+            <a href="#" class="menu-link active"> <span class="menu-icon">🔒</span> Cerrar Caja
+            </a>
+        </div>
+        <div class="logout-container">
+            <button onclick="location.href='/index.html'" class="btn-logout">🚪 SALIR</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="header-page">
+            <h1>🔒 Cierre de Turno</h1>
+            <div style="color: #666;">Revisa el detalle antes de cerrar.</div>
+        </div>
+
+        <div class="resumen-panel">
+            <div class="card">
+                <div class="card-title">🎱 Billar</div>
+                <div class="card-value c-amarillo" id="r-billar">S/ 0.00</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🍺 Productos</div>
+                <div class="card-value c-azul" id="r-prods">S/ 0.00</div>
+            </div>
+            <div class="card" style="border-color: #27ae60;">
+                <div class="card-title">💰 TOTAL EN CAJA</div>
+                <div class="card-value c-verde" id="r-total">S/ 0.00</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; color: #f1c40f;">📜 Detalle de Ventas (Turno Actual)</h3>
+        <div class="tabla-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Mesa</th>
+                        <th>Tipo</th>
+                        <th class="col-monto">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <tr><td colspan="4" style="text-align:center; padding:20px;">Cargando ventas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="zona-accion">
+            <p style="color: #888; font-size: 14px; margin-bottom: 10px;">
+                ⚠️ Al confirmar, el contador volverá a cero y se guardará el reporte en el historial.
+            </p>
+            <button class="btn-cerrar-turno" onclick="cerrarCajaDefinitivo()">CONFIRMAR Y CERRAR CAJA</button>
+        </div>
+    </main>
+
+    <script>
+        async function cargarDatosCaja() {
+            try {
+                // Obtenemos los datos (Asegúrate de haber actualizado server.js como dijimos antes)
+                const res = await fetch('/api/caja/actual');
+                const data = await res.json();
+
+                // 1. Llenar tarjetas superiores
+                document.getElementById('r-billar').innerText = 'S/ ' + parseFloat(data.total_tiempo).toFixed(2);
+                document.getElementById('r-prods').innerText = 'S/ ' + parseFloat(data.total_productos).toFixed(2);
+                document.getElementById('r-total').innerText = 'S/ ' + parseFloat(data.total_dia).toFixed(2);
+
+                // 2. Llenar tabla
+                const tbody = document.getElementById('tabla-body');
+                tbody.innerHTML = '';
+
+                if (data.lista && data.lista.length > 0) {
+                    data.lista.forEach(venta => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="col-hora">${venta.hora}</td>
+                                <td>Mesa ${venta.mesa_id}</td>
+                                <td>${venta.tipo_mesa}</td>
+                                <td class="col-monto">S/ ${parseFloat(venta.total_final).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:#666;">No hay ventas registradas en este turno aún.</td></tr>`;
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Error cargando datos. Revisa la conexión.");
+            }
+        }
+
+        async function cerrarCajaDefinitivo() {
+            if(!confirm("¿Estás 100% seguro de cerrar la caja de este turno?")) return;
+
+            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.success) {
+                alert(`✅ CAJA CERRADA CORRECTAMENTE.\n\nTotal Final: S/ ${parseFloat(data.total).toFixed(2)}`);
+                window.location.href = '/dashboard.html'; // Volver al inicio limpio
+            } else {
+                alert("Error al cerrar caja.");
+            }
+        }
+
+        cargarDatosCaja();
+    </script>
+</body>
+</html>

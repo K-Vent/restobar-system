@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Historial - La Esquina</title>
     <style>
-        /* ESTILOS BASE Y SIDEBAR (Copia exacta para mantener consistencia) */
-        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
+        /* ESTILOS BASE */
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
         .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; transition: transform 0.3s ease; }
         body.menu-oculto .sidebar { transform: translateX(-260px); }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
@@ -18,28 +18,19 @@
         .menu-icon { font-size: 20px; width: 25px; text-align: center; }
         .logout-container { padding: 20px; border-top: 1px solid #222; }
         .btn-logout { width: 100%; padding: 12px; background: #2c0b0b; color: #e74c3c; border: 1px solid #c0392b; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; }
-        
+
         .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
         body.menu-oculto .main-content { margin-left: 0; }
         .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
         .btn-toggle { background: transparent; border: none; color: #f1c40f; font-size: 28px; cursor: pointer; margin-right: 20px; }
         .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
 
-        /* ESTILOS ESPECÍFICOS DE REPORTES */
+        /* TABLA REPORTES */
         table { width: 100%; border-collapse: collapse; background: #181818; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         th, td { padding: 20px; border-bottom: 1px solid #333; text-align: left; }
         th { background: #222; color: #f1c40f; text-transform: uppercase; font-size: 13px; }
         .precio-total { color: #2ecc71; font-weight: bold; font-size: 1.1em; }
         .fecha { color: #aaa; font-family: monospace; font-size: 14px; }
-        
-        /* MODALES */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #444; }
-        .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
-        .modal-btns { display: flex; gap: 15px; margin-top: 10px; }
-        .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { background: #444; color: white; } .btn-confirm { background: #27ae60; color: white; } .btn-danger { background: #c0392b; color: white; }
-
         @media (max-width: 768px) { .sidebar { transform: translateX(-260px); } .main-content { margin-left: 0; } body.menu-visible .sidebar { transform: translateX(0); } }
     </style>
 </head>
@@ -57,9 +48,10 @@
             <a href="/inventario.html" class="menu-link">
                 <span class="menu-icon">📦</span> Inventario
             </a>
-            <a href="#" class="menu-link active"> <span class="menu-icon">📅</span> Historial
+            <a href="#" class="menu-link active">
+                <span class="menu-icon">📅</span> Historial
             </a>
-            <a href="#" onclick="mostrarConfirmacion('caja')" class="menu-link">
+            <a href="/cierre_caja.html" class="menu-link">
                 <span class="menu-icon">🔒</span> Cerrar Caja
             </a>
         </div>
@@ -88,73 +80,31 @@
         </table>
     </main>
 
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="confirm-titulo">Título</div>
-            <p id="confirm-texto" style="color:#ddd; margin-bottom:20px;"></p>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
-                <button class="btn-modal btn-danger" id="btn-confirm-ok">Aceptar</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="modal-msg" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="msg-titulo">Aviso</div>
-            <p id="msg-texto" style="color:#ddd; margin-bottom:20px;"></p>
-            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
-        </div>
-    </div>
-
     <script>
         function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
         function cerrarSesion() { if(confirm("¿Cerrar sesión?")) window.location.href='/index.html'; }
-        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-        function mostrarMensaje(ti, tx) { document.getElementById('msg-titulo').innerText=ti; document.getElementById('msg-texto').innerHTML=tx; document.getElementById('modal-msg').style.display='flex'; }
 
         async function cargarHistorial() {
-            const res = await fetch('/api/reportes/historial');
-            const datos = await res.json();
-            const tbody = document.querySelector('#tabla-cierres tbody');
-            tbody.innerHTML = '';
-
-            if(datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay registros aún.</td></tr>';
-                return;
-            }
-
-            datos.forEach(d => {
-                const fecha = new Date(d.fecha_cierre).toLocaleString();
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="fecha">${fecha}</td>
-                        <td>${d.cantidad_mesas} Mesas</td>
-                        <td class="precio-total">S/ ${parseFloat(d.total_ventas).toFixed(2)}</td>
-                    </tr>`;
-            });
+            try {
+                const res = await fetch('/api/reportes/historial');
+                const datos = await res.json();
+                const tbody = document.querySelector('#tabla-cierres tbody');
+                tbody.innerHTML = '';
+                if(datos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">No hay registros aún.</td></tr>';
+                    return;
+                }
+                datos.forEach(d => {
+                    const fecha = new Date(d.fecha_cierre).toLocaleString();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fecha">${fecha}</td>
+                            <td>${d.cantidad_mesas} Mesas</td>
+                            <td class="precio-total">S/ ${parseFloat(d.total_ventas).toFixed(2)}</td>
+                        </tr>`;
+                });
+            } catch(e) { console.error(e); }
         }
-
-        // CIERRE DE CAJA GLOBAL
-        function mostrarConfirmacion(tipo) {
-            if(tipo === 'caja') {
-                document.getElementById('confirm-titulo').innerText = "🔒 Cerrar Caja";
-                document.getElementById('confirm-texto').innerHTML = "Finalizar turno y reiniciar contador a <b>S/ 0.00</b>.<br>¿Seguro?";
-                document.getElementById('btn-confirm-ok').onclick = ejecutarCierreCaja;
-                document.getElementById('modal-confirm').style.display = 'flex';
-            }
-        }
-        async function ejecutarCierreCaja() {
-            document.getElementById('modal-confirm').style.display = 'none';
-            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
-            const data = await res.json();
-            if(data.success) {
-                mostrarMensaje("✅ Caja Cerrada", `Turno finalizado.<br>Total: S/ ${parseFloat(data.total).toFixed(2)}`);
-                // En reportes, recargamos la tabla para ver el nuevo cierre
-                cargarHistorial(); 
-            }
-        }
-
         cargarHistorial();
     </script>
 </body>

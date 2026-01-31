@@ -4,150 +4,83 @@
     <meta charset="UTF-8">
     <title>Control de Mesas - La Esquina</title>
     <style>
-        /* --- ESTILOS GENERALES (LAYOUT) --- */
-        body { 
-            background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0; display: flex; min-height: 100vh; overflow-x: hidden;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px; background-color: #111; border-right: 1px solid #333;
-            display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0;
-            z-index: 500; transition: transform 0.3s ease;
-        }
+        /* LAYOUT GENERAL */
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; transition: transform 0.3s ease; }
         body.menu-oculto .sidebar { transform: translateX(-260px); }
-
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
         .logo-text { color: #f1c40f; font-size: 22px; font-weight: bold; margin: 0; }
         .logo-sub { color: #666; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-
         .menu { flex-grow: 1; padding: 20px 0; }
-        .menu-link {
-            display: flex; align-items: center; gap: 15px; padding: 15px 25px;
-            color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500;
-            transition: all 0.2s; border-left: 3px solid transparent;
-        }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
         .menu-link:hover { background: #1a1a1a; color: white; border-left-color: #f1c40f; }
         .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
         .menu-icon { font-size: 20px; width: 25px; text-align: center; }
-
         .logout-container { padding: 20px; border-top: 1px solid #222; }
-        .btn-logout {
-            width: 100%; padding: 12px; background: #2c0b0b; color: #e74c3c;
-            border: 1px solid #c0392b; border-radius: 6px; cursor: pointer; font-weight: bold;
-            display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s;
-        }
-        .btn-logout:hover { background: #c0392b; color: white; }
-
-        /* --- MAIN CONTENT --- */
-        .main-content {
-            margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease;
-        }
+        .btn-logout { width: 100%; padding: 12px; background: #2c0b0b; color: #e74c3c; border: 1px solid #c0392b; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; }
+        
+        /* CONTENIDO PRINCIPAL */
+        .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
         body.menu-oculto .main-content { margin-left: 0; }
-
         .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
-        .btn-toggle {
-            background: transparent; border: none; color: #f1c40f; font-size: 28px; cursor: pointer;
-            margin-right: 20px; padding: 5px;
-        }
+        .btn-toggle { background: transparent; border: none; color: #f1c40f; font-size: 28px; cursor: pointer; margin-right: 20px; }
         .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
 
-        /* --- STATS --- */
+        /* PANELES Y TARJETAS */
         .money-panel { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
         .stat-card { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; flex: 1; min-width: 200px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px; }
+        .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
         .stat-value { font-size: 28px; font-weight: bold; }
-        .card-total .stat-value { color: #2ecc71; }
-        .card-mesas .stat-value { color: #f1c40f; }
-        .card-prods .stat-value { color: #3498db; }
+        .card-total .stat-value { color: #2ecc71; } .card-mesas .stat-value { color: #f1c40f; } .card-prods .stat-value { color: #3498db; }
 
-        /* --- GRID MESAS --- */
+        /* GRID MESAS */
         .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; transition: transform 0.2s; }
         .mesa-card:hover { transform: translateY(-3px); border-color: #444; }
-        
         .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .mesa-titulo { font-size: 18px; font-weight: bold; color: white; }
-        .mesa-subtitulo { font-size: 12px; color: #777; margin-top: 2px; }
+        .mesa-titulo { font-size: 18px; font-weight: bold; }
+        .mesa-subtitulo { font-size: 12px; color: #777; }
         .mesa-estado { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .libre { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60; }
         .ocupada { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b; }
 
-        .info-tiempo { 
-            font-size: 20px; font-family: 'Consolas', monospace; text-align: center; margin: 15px 0; color: #eee; 
-            background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #333;
-        }
+        .info-tiempo { font-size: 20px; font-family: 'Consolas', monospace; text-align: center; margin: 15px 0; color: #eee; background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #333; }
         .dinero-vivo { color: #f1c40f; font-size: 14px; margin-top: 4px; font-weight: bold; }
 
         .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-mesa { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; transition: 0.2s; }
-        .btn-abrir { background: #27ae60; color: white; } .btn-abrir:hover { background: #219150; }
-        .btn-producto { background: #f39c12; color: black; } .btn-producto:hover { background: #d35400; }
-        .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; } .btn-cerrar:hover { background: #a93226; }
+        .btn-mesa { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; }
+        .btn-abrir { background: #27ae60; color: white; }
+        .btn-producto { background: #f39c12; color: black; }
+        .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
-        /* --- TOAST --- */
-        #toast {
-            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; 
-            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; 
-            left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; 
-            box-shadow: 0px 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
-        }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-
-        /* --- MODALES --- */
-        .modal-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; 
-            backdrop-filter: blur(5px);
-        }
-        .modal-box { 
-            background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 420px; 
-            text-align: center; border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-        }
+        /* MODALES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 420px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
         
-        .detalle-lista { text-align: left; margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .detalle-lista { text-align: left; margin-bottom: 20px; max-height: 250px; overflow-y: auto; }
         .detalle-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 14px; }
         .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 10px; padding-top: 15px; }
 
-        .modal-input {
-            width: 60%; padding: 12px; background: #333; border: 1px solid #555; color: white; 
-            border-radius: 6px; font-size: 22px; text-align: center; margin-bottom: 25px; outline: none;
-        }
-        .modal-input:focus { border-color: #f1c40f; }
-
+        .modal-input { width: 60%; padding: 12px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; font-size: 22px; text-align: center; margin-bottom: 25px; outline: none; }
         .modal-btns { display: flex; gap: 15px; margin-top: 10px; }
-        .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .btn-cancel { background: #444; color: white; } .btn-cancel:hover { background: #555; }
-        .btn-confirm { background: #27ae60; color: white; } .btn-confirm:hover { background: #219150; }
-        .btn-danger { background: #c0392b; color: white; } .btn-danger:hover { background: #a93226; }
+        .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background: #444; color: white; } .btn-confirm { background: #27ae60; color: white; } .btn-danger { background: #c0392b; color: white; }
+
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-        
-        /* Modales siempre encima */
         #modal-cantidad, #modal-msg, #modal-confirm { z-index: 1100 !important; }
-
-        /* Estilo para el resumen de caja */
-        .resumen-caja-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; color: #aaa; }
-        .resumen-caja-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
-        .resumen-lista-mesas { max-height: 150px; overflow-y: auto; margin-top: 10px; border-top: 1px dashed #333; padding-top: 10px; text-align: left; }
-        .item-mesa { font-size: 13px; padding: 4px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-260px); }
-            .main-content { margin-left: 0; }
-            body.menu-visible .sidebar { transform: translateX(0); }
-        }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-260px); } .main-content { margin-left: 0; } body.menu-visible .sidebar { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
     <div id="toast">✅ Acción realizada</div>
 
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar">
         <div class="sidebar-header">
             <h2 class="logo-text">🎱 LA ESQUINA</h2>
             <div class="logo-sub">Panel de Control</div>
@@ -162,7 +95,7 @@
             <a href="/reportes.html" class="menu-link">
                 <span class="menu-icon">📅</span> Historial
             </a>
-            <a href="#" onclick="mostrarCorteCaja()" class="menu-link">
+            <a href="/cierre_caja.html" class="menu-link">
                 <span class="menu-icon">🔒</span> Cerrar Caja
             </a>
         </div>
@@ -198,9 +131,7 @@
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="confirm-titulo">Título</div>
-            <div id="confirm-contenido">
-                <p id="confirm-texto" style="color:#ddd; margin-bottom:20px; font-size: 15px; line-height: 1.5;"></p>
-            </div>
+            <p id="confirm-texto" style="color:#ddd; margin-bottom:20px; font-size:15px;"></p>
             <div class="modal-btns">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
                 <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
@@ -223,7 +154,7 @@
         <div class="modal-box">
             <div class="modal-title" id="msg-titulo">Aviso</div>
             <p id="msg-texto" style="color:#ddd; margin-bottom:20px; font-size:16px;"></p>
-            <button class="btn-modal btn-confirm" style="width:100%" id="msg-btn-ok" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
+            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
         </div>
     </div>
 
@@ -248,12 +179,9 @@
 
     <script>
         let intervaloCronometros = null;
-        let mesaAccionId = null; 
-        let prodAccionId = null; 
+        let mesaAccionId = null; let prodAccionId = null; 
 
-        // INICIO
         async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
-
         function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
         function cerrarSesion() { if(confirm("¿Cerrar sesión?")) window.location.href = '/index.html'; }
 
@@ -273,7 +201,6 @@
                 const mesas = await res.json();
                 const contenedor = document.getElementById('grid-mesas');
                 contenedor.innerHTML = '';
-
                 mesas.forEach(mesa => {
                     const esOcupada = mesa.estado === 'OCUPADA';
                     const esBillar = mesa.tipo === 'BILLAR';
@@ -281,7 +208,6 @@
                     let htmlReloj = esBillar 
                         ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`)
                         : `<div style="height:10px;"></div>`;
-
                     const html = `
                         <div class="mesa-card">
                             <div class="mesa-header">
@@ -303,65 +229,10 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- UI HELPERS ---
-        function mostrarToast(mensaje) {
-            const toast = document.getElementById("toast");
-            toast.innerText = mensaje;
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
-        }
-
-        function mostrarMensaje(titulo, texto) {
-            document.getElementById('msg-titulo').innerText = titulo;
-            document.getElementById('msg-texto').innerHTML = texto;
-            document.getElementById('msg-btn-ok').onclick = function() { cerrarModal('modal-msg'); };
-            document.getElementById('modal-msg').style.display = 'flex';
-        }
-
-        // NUEVA FUNCIÓN PARA MOSTRAR RESUMEN DE CAJA
-        async function mostrarCorteCaja() {
-            // 1. Pedir datos actuales al servidor
-            const res = await fetch('/api/caja/actual');
-            const data = await res.json();
-
-            // 2. Construir HTML del resumen
-            let htmlMesas = '';
-            if(data.lista && data.lista.length > 0) {
-                data.lista.forEach(m => {
-                    htmlMesas += `
-                        <div class="item-mesa">
-                            <span>Mesa ${m.mesa_id} (${m.hora})</span>
-                            <span style="color:white;">S/ ${parseFloat(m.total_final).toFixed(2)}</span>
-                        </div>`;
-                });
-            } else {
-                htmlMesas = '<div style="color:#666; font-size:12px; font-style:italic;">No hay ventas registradas en este turno.</div>';
-            }
-
-            const html = `
-                <div class="resumen-caja-row"><span>🎱 Billar:</span> <span style="color:white;">S/ ${parseFloat(data.total_tiempo).toFixed(2)}</span></div>
-                <div class="resumen-caja-row"><span>🍺 Productos:</span> <span style="color:white;">S/ ${parseFloat(data.total_productos).toFixed(2)}</span></div>
-                
-                <div style="margin-top:10px; font-size:12px; color:#f1c40f; text-align:left;">DETALLE DE VENTAS:</div>
-                <div class="resumen-lista-mesas">
-                    ${htmlMesas}
-                </div>
-
-                <div class="resumen-caja-total">
-                    <span>TOTAL CAJA:</span>
-                    <span>S/ ${parseFloat(data.total_dia).toFixed(2)}</span>
-                </div>
-                <p style="color:#e74c3c; font-size:13px; margin-top:10px;">⚠️ Al aceptar, el contador volverá a cero.</p>
-            `;
-
-            // 3. Mostrar Modal
-            document.getElementById('confirm-titulo').innerText = "🔒 Resumen de Turno";
-            document.getElementById('confirm-texto').innerHTML = html; // Usamos innerHTML para meter la tabla
-            document.getElementById('btn-confirm-ok').innerText = "CERRAR CAJA";
-            document.getElementById('btn-confirm-ok').className = "btn-modal btn-danger";
-            document.getElementById('btn-confirm-ok').onclick = ejecutarCierreCaja;
-            document.getElementById('modal-confirm').style.display = 'flex';
-        }
+        // UI HELPERS
+        function mostrarToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.className = "show"; setTimeout(() => t.className = t.className.replace("show", ""), 2500); }
+        function mostrarMensaje(ti, tx) { document.getElementById('msg-titulo').innerText=ti; document.getElementById('msg-texto').innerHTML=tx; document.getElementById('modal-msg').style.display='flex'; }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function mostrarConfirmacion(tipo, id = null) {
             mesaAccionId = id;
@@ -384,16 +255,13 @@
             setTimeout(() => document.getElementById('input-cantidad').focus(), 100);
         }
 
-        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // --- ACCIONES ---
+        // ACCIONES
         async function ejecutarAbrirMesa() {
             cerrarModal('modal-confirm');
             await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST' });
             mostrarToast("✅ Mesa Abierta"); 
             cargarTodo();
         }
-
         async function abrirModalProductos(mesaId) {
             mesaAccionId = mesaId;
             const res = await fetch('/api/productos');
@@ -411,62 +279,34 @@
             });
             document.getElementById('modal-productos').style.display = 'flex';
         }
-
         async function ejecutarAgregarPedido() {
             const cant = document.getElementById('input-cantidad').value;
             if(cant > 0) {
-                await fetch('/api/pedidos/agregar', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant })
-                });
-                cerrarModal('modal-cantidad');
-                cerrarModal('modal-productos');
-                mostrarToast("✨ Producto Agregado");
-                actualizarCaja();
+                await fetch('/api/pedidos/agregar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant }) });
+                cerrarModal('modal-cantidad'); cerrarModal('modal-productos'); mostrarToast("✨ Producto Agregado"); actualizarCaja();
             }
         }
-
         async function prepararCobro(id) {
             document.getElementById('cobro-contenido').innerHTML = '<p>Calculando...</p>';
             document.getElementById('modal-cobro').style.display = 'flex';
             const res = await fetch(`/api/mesas/detalle/${id}`);
             const data = await res.json();
-            
             let html = '';
-            if (data.tipo === 'BILLAR') {
-                html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
-            }
+            if (data.tipo === 'BILLAR') html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
             if (data.listaProductos.length > 0) {
                 html += `<div style="border-top:1px dashed #444; margin:10px 0;"></div>`;
-                data.listaProductos.forEach(p => {
-                    html += `<div class="detalle-row"><span>${p.cantidad}x ${p.nombre}</span><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`;
-                });
+                data.listaProductos.forEach(p => { html += `<div class="detalle-row"><span>${p.cantidad}x ${p.nombre}</span><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`; });
             }
             html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
             document.getElementById('cobro-contenido').innerHTML = html;
             document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
         }
-
         async function ejecutarCobro(id) {
             const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
             const data = await res.json();
-            if (data.success) {
-                cerrarModal('modal-cobro');
-                mostrarMensaje("💰 Cobro Exitoso", "La mesa ha quedado libre.");
-                cargarTodo();
-            } else { mostrarMensaje("❌ Error", "No se pudo cobrar."); }
+            if (data.success) { cerrarModal('modal-cobro'); mostrarMensaje("💰 Cobro Exitoso", "La mesa ha quedado libre."); cargarTodo(); }
+            else { mostrarMensaje("❌ Error", "No se pudo cobrar."); }
         }
-
-        async function ejecutarCierreCaja() {
-            cerrarModal('modal-confirm');
-            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('msg-btn-ok').onclick = function() { location.reload(); };
-                mostrarMensaje("✅ Caja Cerrada", `Turno finalizado.<br><b>Total Guardado: S/ ${parseFloat(data.total).toFixed(2)}</b>`);
-            }
-        }
-
         function iniciarCronometros() {
             if(intervaloCronometros) clearInterval(intervaloCronometros);
             intervaloCronometros = setInterval(() => {
@@ -475,17 +315,14 @@
                     const precioHora = parseFloat(t.getAttribute('data-precio')) || 10;
                     if(inicio && inicio !== "undefined" && inicio !== "") {
                         const diff = new Date() - new Date(inicio);
-                        const h = Math.floor(diff/3600000);
-                        const m = Math.floor((diff%3600000)/60000);
+                        const h = Math.floor(diff/3600000); const m = Math.floor((diff%3600000)/60000);
                         const costo = (diff / 60000 / 60) * precioHora;
                         t.innerHTML = `${h}:${m<10?'0'+m:m} <div class="dinero-vivo">S/ ${costo.toFixed(2)}</div>`;
                     }
                 });
             }, 1000);
         }
-
-        cargarTodo();
-        setInterval(cargarMesas, 15000);
+        cargarTodo(); setInterval(cargarMesas, 15000);
     </script>
 </body>
 </html>
