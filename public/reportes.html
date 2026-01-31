@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Historial - La Esquina</title>
+    <link rel="icon" href="/logo.png" type="image/png">
     <style>
+        .logo-img {
+    width: 120px;       /* Ajusta el tamaño aquí */
+    height: auto;
+    display: block;
+    margin: 0 auto 10px; /* Centrado */
+    border-radius: 50%; /* Opcional: Si lo quieres redondo */
+}
         /* ESTILOS BASE */
         body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
         .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; transition: transform 0.3s ease; }
@@ -38,9 +46,10 @@
 
     <nav class="sidebar">
         <div class="sidebar-header">
-            <h2 class="logo-text">🎱 LA ESQUINA</h2>
-            <div class="logo-sub">Panel de Control</div>
-        </div>
+    <img src="/logo.png" alt="Logo" class="logo-img">
+    
+    <div class="logo-sub">Panel de Control</div>
+</div>
         <div class="menu">
             <a href="/dashboard.html" class="menu-link">
                 <span class="menu-icon">🎱</span> Control de Mesas
