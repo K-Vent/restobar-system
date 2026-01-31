@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - La Esquina</title>
+    <style>
+        body { background: #0c0c0c; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #f1c40f; margin-bottom: 20px; }
+        table { width: 100%; max-width: 600px; margin: 20px auto; border-collapse: collapse; background: #181818; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; border-bottom: 1px solid #333; text-align: left; }
+        th { background: #333; color: #f1c40f; text-transform: uppercase; font-size: 14px; }
+        td { color: #ddd; }
+        .stock-bajo { color: #e74c3c; font-weight: bold; }
+        .stock-bien { color: #2ecc71; font-weight: bold; }
+        
+        .btn-add { 
+            background: #27ae60; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 5px; font-weight: bold; 
+        }
+        .btn-add:hover { background: #2ecc71; }
+
+        .btn-volver { 
+            background: #c0392b; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 30px; font-weight: bold; 
+        }
+        .btn-volver:hover { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>📦 Control de Stock</h1>
+    <p>Gestiona la entrada de productos aquí.</p>
+
+    <table id="tabla-productos">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <a href="/dashboard.html" class="btn-volver">⬅ Volver al Panel</a>
+
+    <script>
+        async function cargarProductos() {
+            try {
+                const res = await fetch('/api/productos');
+                const productos = await res.json();
+                const tbody = document.querySelector('#tabla-productos tbody');
+                tbody.innerHTML = '';
+
+                productos.forEach(p => {
+                    const stockClass = p.stock < 10 ? 'stock-bajo' : 'stock-bien';
+                    const fila = `
+                        <tr>
+                            <td>${p.nombre}</td>
+                            <td class="${stockClass}">${p.stock}</td>
+                            <td>
+                                <button class="btn-add" onclick="sumarStock(${p.id}, '${p.nombre}')">➕ Agregar</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += fila;
+                });
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+            }
+        }
+
+        async function sumarStock(id, nombre) {
+            const cantidad = prompt(`¿Cuántas unidades de "${nombre}" vas a ingresar?`);
+            if (cantidad && parseInt(cantidad) > 0) {
+                await fetch('/api/productos/agregar-stock', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id: id, cantidad: parseInt(cantidad) })
+                });
+                alert('¡Stock actualizado con éxito!');
+                cargarProductos(); // Recargar la tabla para ver el cambio
+            }
+        }
+
+        // Cargar al iniciar
+        cargarProductos();
+    </script>
+</body>
+</html>

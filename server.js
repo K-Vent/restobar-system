@@ -4,10 +4,10 @@ const path = require('path');
 const cors = require('cors'); 
 const app = express();
 
-// CONFIGURACIÓN DE BASE DE DATOS
+// CONFIGURACIÓN DE BASE DE DATOS (CONEXIÓN AL POOLER 6543)
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:Shadow2022@localhost:5432/la_esquina_db',
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    connectionString: 'postgresql://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
+    ssl: { rejectUnauthorized: false } 
 });
 
 app.use(cors());
@@ -35,7 +35,8 @@ app.get('/api/mesas', async (req, res) => {
 
 app.get('/api/productos', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM productos WHERE stock > 0 ORDER BY nombre ASC');
+        // Ahora traemos TODOS los productos para el inventario, no solo los que tienen stock > 0
+        const result = await pool.query('SELECT * FROM productos ORDER BY nombre ASC');
         res.json(result.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -47,6 +48,16 @@ app.get('/api/reporte/hoy', async (req, res) => {
             FROM ventas WHERE DATE(fecha) = CURRENT_DATE
         `);
         res.json(result.rows[0]);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// --- RUTA NUEVA: PARA REABASTECER STOCK ---
+app.post('/api/productos/agregar-stock', async (req, res) => {
+    try {
+        const { id, cantidad } = req.body;
+        // Sumamos la cantidad nueva al stock actual
+        await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, id]);
+        res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -69,18 +80,15 @@ app.post('/api/pedidos/agregar', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- AQUÍ ESTÁ LA CORRECCIÓN DEL TIEMPO ---
 app.post('/api/mesas/cerrar/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
         
-        // 1. Declaramos las variables AFUERA del if para que no se pierdan
         let totalT = 0;
         let minReal = 0;
         let minCobrar = 0;
 
-        // 2. Calculamos tiempo solo si es BILLAR
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             minReal = Math.ceil(resT.rows[0].min || 0);
@@ -88,7 +96,6 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
             totalT = (minCobrar / 60) * 10.00;
         }
 
-        // 3. Calculamos productos
         const resC = await pool.query(`
             SELECT SUM(p.precio_venta * pm.cantidad) as total 
             FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id 
@@ -98,16 +105,14 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
         const totalC = parseFloat(resC.rows[0].total || 0);
         const totalF = totalT + totalC;
 
-        // 4. Guardamos venta y limpiamos
         await pool.query('INSERT INTO ventas (mesa_id, tipo_mesa, total_tiempo, total_productos, total_final) VALUES ($1, $2, $3, $4, $5)', [id, mesa.tipo, totalT, totalC, totalF]);
         await pool.query('UPDATE pedidos_mesa SET pagado = TRUE WHERE mesa_id = $1', [id]);
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', id]);
 
-        // 5. Enviamos las variables reales
         res.json({ 
             tipo: mesa.tipo, 
-            minReal: minReal,     // Ahora sí envía el valor real
-            minCobrar: minCobrar, // Ahora sí envía el valor real
+            minReal: minReal,     
+            minCobrar: minCobrar, 
             totalT: totalT.toFixed(2), 
             totalC: totalC.toFixed(2), 
             totalF: totalF.toFixed(2) 
