@@ -7,14 +7,14 @@
         body { background: #0c0c0c; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
         h1 { color: #f1c40f; margin-bottom: 20px; }
         
-        /* Formulario Nuevo Producto */
+        /* FORMULARIO NUEVO PRODUCTO */
         .form-nuevo { background: #181818; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto 30px; border: 1px solid #333; }
-        .form-nuevo input { padding: 10px; margin: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; width: 140px; }
-        .btn-crear { background: #f39c12; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .form-nuevo input { padding: 12px; margin: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; width: 140px; text-align: center; }
+        .btn-crear { background: #f39c12; color: black; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px; }
         .btn-crear:hover { background: #d35400; }
 
-        /* Tabla */
-        table { width: 100%; max-width: 700px; margin: 0 auto; border-collapse: collapse; background: #181818; border-radius: 8px; overflow: hidden; }
+        /* TABLA */
+        table { width: 100%; max-width: 800px; margin: 0 auto; border-collapse: collapse; background: #181818; border-radius: 8px; overflow: hidden; }
         th, td { padding: 15px; border-bottom: 1px solid #333; text-align: left; vertical-align: middle; }
         th { background: #333; color: #f1c40f; text-transform: uppercase; font-size: 14px; }
         
@@ -26,13 +26,52 @@
         .stock-bajo { color: #e74c3c; font-weight: bold; }
         .stock-bien { color: #2ecc71; font-weight: bold; }
         .btn-volver { background: #555; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 30px; font-weight: bold; }
+
+        /* --- NOTIFICACIÓN TOAST --- */
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; 
+            text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; 
+            left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; 
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        /* --- MODALES --- */
+        .modal-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; 
+            backdrop-filter: blur(5px);
+        }
+        .modal-box { 
+            background: #1e1e1e; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; 
+            text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
+        .modal-input {
+            width: 60%; padding: 10px; background: #333; border: 1px solid #555; color: white; 
+            border-radius: 5px; font-size: 20px; text-align: center; margin-bottom: 20px;
+        }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background: #555; color: white; }
+        .btn-confirm { background: #27ae60; color: white; }
+        .btn-danger { background: #c0392b; color: white; }
+        
+        /* Hover Effects */
+        .btn-cancel:hover { background: #666; }
+        .btn-confirm:hover { background: #2ecc71; }
+        .btn-danger:hover { background: #e74c3c; }
+
     </style>
 </head>
 <body>
+
+    <div id="toast">✅ Acción realizada</div>
+
     <h1>📦 Gestión de Inventario</h1>
 
     <div class="form-nuevo">
-        <h3 style="margin-top: 0;">✨ Agregar Nuevo Producto</h3>
+        <h3 style="margin-top: 0; color:#ddd;">✨ Agregar Nuevo Producto</h3>
         <input type="text" id="newNombre" placeholder="Nombre (Ej. Papitas)">
         <input type="number" id="newPrecio" placeholder="Precio (S/ 0.00)">
         <input type="number" id="newStock" placeholder="Stock Inicial">
@@ -53,7 +92,32 @@
 
     <a href="/dashboard.html" class="btn-volver">⬅ Volver al Panel</a>
 
+    <div id="modal-stock" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="stock-titulo">Modificar Stock</div>
+            <input type="number" id="input-stock" class="modal-input" value="1" min="1">
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-stock')">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="btn-stock-ok">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-borrar" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">⚠️ ¿Eliminar Producto?</div>
+            <p id="borrar-texto" style="color:#ddd; margin-bottom:20px;"></p>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-borrar')">Cancelar</button>
+                <button class="btn-modal btn-danger" id="btn-borrar-ok">ELIMINAR</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let prodAccionId = null; 
+        let accionActual = ''; // 'agregar' o 'restar'
+
         async function cargarProductos() {
             const res = await fetch('/api/productos');
             const productos = await res.json();
@@ -65,26 +129,59 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${p.nombre}</td>
-                        <td>S/ ${parseFloat(p.precio_venta).toFixed(2)}</td> <td class="${stockClass}">${p.stock}</td>
+                        <td>S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
+                        <td class="${stockClass}">${p.stock}</td>
                         <td class="acciones">
-                            <button class="btn-mas" onclick="modificarStock(${p.id}, 'agregar', '${p.nombre}')">➕</button>
-                            <button class="btn-menos" onclick="modificarStock(${p.id}, 'restar', '${p.nombre}')">➖</button>
-                            <button class="btn-borrar" onclick="eliminarProducto(${p.id}, '${p.nombre}')">🗑️</button>
+                            <button class="btn-mas" onclick="abrirModalStock(${p.id}, 'agregar', '${p.nombre}')">➕</button>
+                            <button class="btn-menos" onclick="abrirModalStock(${p.id}, 'restar', '${p.nombre}')">➖</button>
+                            <button class="btn-borrar" onclick="confirmarBorrar(${p.id}, '${p.nombre}')">🗑️</button>
                         </td>
                     </tr>`;
             });
         }
 
-        async function modificarStock(id, accion, nombre) {
-            const endpoint = accion === 'agregar' ? '/api/productos/agregar-stock' : '/api/productos/restar-stock';
-            const cantidad = prompt(`¿Cuántas unidades vas a ${accion === 'agregar' ? 'sumar' : 'restar'} a "${nombre}"?`);
+        // --- GESTIÓN DE MODALES ---
+
+        function abrirModalStock(id, accion, nombre) {
+            prodAccionId = id;
+            accionActual = accion;
+            document.getElementById('stock-titulo').innerText = (accion === 'agregar' ? '➕ Sumar a ' : '➖ Restar a ') + nombre;
+            document.getElementById('input-stock').value = 1;
+            document.getElementById('modal-stock').style.display = 'flex';
+            document.getElementById('btn-stock-ok').onclick = ejecutarCambioStock;
+            setTimeout(() => document.getElementById('input-stock').focus(), 100);
+        }
+
+        function confirmarBorrar(id, nombre) {
+            prodAccionId = id;
+            document.getElementById('borrar-texto').innerText = `¿Seguro que quieres borrar "${nombre}"?`;
+            document.getElementById('modal-borrar').style.display = 'flex';
+            document.getElementById('btn-borrar-ok').onclick = ejecutarBorrar;
+        }
+
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById("toast");
+            toast.innerText = mensaje;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
+        }
+
+        // --- ACCIONES CON API ---
+
+        async function ejecutarCambioStock() {
+            const cantidad = document.getElementById('input-stock').value;
+            const endpoint = accionActual === 'agregar' ? '/api/productos/agregar-stock' : '/api/productos/restar-stock';
             
             if (cantidad && parseInt(cantidad) > 0) {
                 await fetch(endpoint, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id: id, cantidad: parseInt(cantidad) })
+                    body: JSON.stringify({ id: prodAccionId, cantidad: parseInt(cantidad) })
                 });
+                cerrarModal('modal-stock');
+                mostrarToast(accionActual === 'agregar' ? "✅ Stock Agregado" : "📉 Stock Restado");
                 cargarProductos();
             }
         }
@@ -102,22 +199,24 @@
                 body: JSON.stringify({ nombre, precio, stock: stock || 0 })
             });
 
+            // Limpiar campos
             document.getElementById('newNombre').value = '';
             document.getElementById('newPrecio').value = '';
             document.getElementById('newStock').value = '';
+            
+            mostrarToast("✨ Producto Creado"); // <--- TOAST EN VEZ DE ALERT
             cargarProductos();
-            alert("¡Producto creado!");
         }
 
-        async function eliminarProducto(id, nombre) {
-            if(!confirm(`¿Seguro que quieres borrar "${nombre}" de la base de datos?`)) return;
-
-            const res = await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
+        async function ejecutarBorrar() {
+            const res = await fetch(`/api/productos/eliminar/${prodAccionId}`, { method: 'DELETE' });
+            cerrarModal('modal-borrar');
             
             if (res.ok) {
+                mostrarToast("🗑️ Producto Eliminado");
                 cargarProductos();
             } else {
-                alert("❌ No se puede eliminar: Este producto ya tiene ventas registradas en el historial.");
+                alert("❌ No se puede borrar: Tiene ventas en el historial.");
             }
         }
 
