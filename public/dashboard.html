@@ -8,12 +8,14 @@
         /* LAYOUT GENERAL */
         body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
         /* Estilo para el Logo */
+/* ✨ EL NUEVO ESTILO PARA QUE SE VEA GRANDE ✨ */
 .logo-img {
-    width: 120px;       /* Ajusta el tamaño aquí */
-    height: auto;
-    display: block;
-    margin: 0 auto 10px; /* Centrado */
-    border-radius: 50%; /* Opcional: Si lo quieres redondo */
+    width: 100%;         /* Intenta ocupar todo el ancho disponible */
+    max-width: 220px;    /* Límite máximo para que no se pixelee si es muy ancho */
+    height: auto;        /* Mantiene la proporción correcta (no se estira) */
+    display: block;      /* Necesario para centrarlo */
+    margin: 0 auto 15px; /* Centrado automático horizontal y 15px de espacio abajo */
+    object-fit: contain; /* Asegura que la imagen completa se vea dentro del espacio */
 }
         /* SIDEBAR */
         .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; transition: transform 0.3s ease; }
