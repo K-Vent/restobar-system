@@ -50,7 +50,34 @@
         .btn-producto { background: #f39c12; color: black; }
         .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
-        /* --- ESTILOS DE VENTANAS EMERGENTES (MODALES) --- */
+        /* --- NUEVO: NOTIFICACIÓN FLOTANTE (TOAST) --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #27ae60; /* Verde Éxito */
+            color: #fff;
+            text-align: center;
+            border-radius: 50px; /* Bordes redondos estilo App */
+            padding: 16px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px; /* Efecto de subir */
+        }
+
+        /* --- MODALES --- */
         .modal-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; 
@@ -66,13 +93,11 @@
         .detalle-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
         .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 10px; padding-top: 15px; }
 
-        /* Inputs del Modal */
         .modal-input {
-            width: 80%; padding: 10px; background: #333; border: 1px solid #555; color: white; 
-            border-radius: 5px; font-size: 18px; text-align: center; margin-bottom: 20px;
+            width: 60%; padding: 10px; background: #333; border: 1px solid #555; color: white; 
+            border-radius: 5px; font-size: 20px; text-align: center; margin-bottom: 20px;
         }
 
-        /* Botones del Modal */
         .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-cancel { background: #555; color: white; }
@@ -85,6 +110,8 @@
     </style>
 </head>
 <body>
+
+    <div id="toast">✅ Producto Agregado</div>
 
     <div class="header">
         <h1>🎱 Control La Esquina</h1>
@@ -139,7 +166,7 @@
         <div class="modal-box">
             <div class="modal-title" id="msg-titulo">Aviso</div>
             <p id="msg-texto" style="color:#ddd; margin-bottom:20px; font-size:16px;"></p>
-            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
+            <button class="btn-modal btn-confirm" style="width:100%" id="msg-btn-ok" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
         </div>
     </div>
 
@@ -162,16 +189,12 @@
         </div>
     </div>
 
-
     <script>
         let intervaloCronometros = null;
-        let mesaAccionId = null; // Para guardar el ID de la mesa en operaciones
-        let prodAccionId = null; // Para guardar el ID del producto
+        let mesaAccionId = null; 
+        let prodAccionId = null; 
 
-        async function cargarTodo() {
-            await cargarMesas();
-            await actualizarCaja();
-        }
+        async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
 
         async function actualizarCaja() {
             try {
@@ -194,15 +217,9 @@
                     const esOcupada = mesa.estado === 'OCUPADA';
                     const esBillar = mesa.tipo === 'BILLAR';
                     let dataInicio = (esOcupada && mesa.hora_inicio) ? mesa.hora_inicio : '';
-                    let htmlReloj = '';
-
-                    if (esBillar) {
-                        htmlReloj = esOcupada 
-                            ? `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">...</div>`
-                            : `<div class="info-tiempo" style="color:#444;">--:--</div>`;
-                    } else {
-                        htmlReloj = `<div style="height:10px;"></div>`;
-                    }
+                    let htmlReloj = esBillar 
+                        ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`)
+                        : `<div style="height:10px;"></div>`;
 
                     const html = `
                         <div class="mesa-card">
@@ -225,11 +242,18 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- MANEJO DE MODALES ---
+        // --- TOAST NOTIFICATION ---
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById("toast");
+            toast.innerText = mensaje;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500); // Se va a los 2.5 seg
+        }
 
         function mostrarMensaje(titulo, texto) {
             document.getElementById('msg-titulo').innerText = titulo;
             document.getElementById('msg-texto').innerHTML = texto;
+            document.getElementById('msg-btn-ok').onclick = function() { cerrarModal('modal-msg'); }; // Reset onclick
             document.getElementById('modal-msg').style.display = 'flex';
         }
 
@@ -247,32 +271,28 @@
                 btn.onclick = () => ejecutarAbrirMesa();
             } else if (tipo === 'caja') {
                 titulo.innerText = "🔒 Cerrar Caja";
-                texto.innerText = "Esto reiniciará el contador a S/ 0.00. ¿Seguro?";
+                texto.innerText = "Reiniciar contador a S/ 0.00. ¿Seguro?";
                 btn.className = "btn-modal btn-danger";
                 btn.onclick = () => ejecutarCierreCaja();
             }
-
             modal.style.display = 'flex';
         }
 
         function mostrarInputCantidad(prodId, nombre) {
             prodAccionId = prodId;
-            document.getElementById('cant-titulo').innerText = `Cantidad de ${nombre}`;
+            document.getElementById('cant-titulo').innerText = `${nombre}`;
             document.getElementById('input-cantidad').value = 1;
             document.getElementById('modal-cantidad').style.display = 'flex';
             document.getElementById('btn-cant-ok').onclick = ejecutarAgregarPedido;
-            document.getElementById('input-cantidad').focus();
+            setTimeout(() => document.getElementById('input-cantidad').focus(), 100);
         }
 
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // --- FUNCIONES LÓGICAS ---
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 
         async function ejecutarAbrirMesa() {
             cerrarModal('modal-confirm');
             await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST' });
+            mostrarToast("✅ Mesa Abierta"); // Toast en vez de alerta
             cargarTodo();
         }
 
@@ -282,13 +302,12 @@
             const prods = await res.json();
             const lista = document.getElementById('lista-productos-div');
             lista.innerHTML = '';
-            
             prods.forEach(p => {
                 if(p.stock > 0) {
                     lista.innerHTML += `
-                        <div class="detalle-row" style="cursor:pointer;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
-                            <span>${p.nombre} (${p.stock})</span>
-                            <span style="color:#2ecc71;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                        <div class="detalle-row" style="cursor:pointer; padding:12px; border-bottom:1px solid #333;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
+                            <span style="font-size:16px;">${p.nombre}</span>
+                            <span style="color:#2ecc71; font-weight:bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
                         </div>`;
                 }
             });
@@ -304,7 +323,7 @@
                 });
                 cerrarModal('modal-cantidad');
                 cerrarModal('modal-productos');
-                mostrarMensaje("✅ Agregado", "Producto añadido correctamente.");
+                mostrarToast("✨ Producto Agregado"); // <--- AQUI ESTA LA MAGIA
                 actualizarCaja();
             }
         }
@@ -312,7 +331,6 @@
         async function prepararCobro(id) {
             document.getElementById('cobro-contenido').innerHTML = '<p>Calculando...</p>';
             document.getElementById('modal-cobro').style.display = 'flex';
-            
             const res = await fetch(`/api/mesas/detalle/${id}`);
             const data = await res.json();
             
@@ -327,7 +345,6 @@
                 });
             }
             html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
-            
             document.getElementById('cobro-contenido').innerHTML = html;
             document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
         }
@@ -339,9 +356,7 @@
                 cerrarModal('modal-cobro');
                 mostrarMensaje("💰 Cobro Exitoso", "La mesa ha quedado libre.");
                 cargarTodo();
-            } else {
-                mostrarMensaje("❌ Error", "No se pudo cobrar la mesa.");
-            }
+            } else { mostrarMensaje("❌ Error", "No se pudo cobrar."); }
         }
 
         async function ejecutarCierreCaja() {
@@ -349,8 +364,9 @@
             const res = await fetch('/api/caja/cerrar', { method: 'POST' });
             const data = await res.json();
             if(data.success) {
-                alert("CAJA CERRADA. Total: S/ " + parseFloat(data.total).toFixed(2)); // Usamos alert aquí solo porque recargaremos la página inmediatamente y a veces el modal no se ve antes del reload.
-                location.reload();
+                // AQUÍ QUITAMOS EL ALERT BLANCO. Usamos el modal y recargamos al darle OK.
+                document.getElementById('msg-btn-ok').onclick = function() { location.reload(); };
+                mostrarMensaje("✅ Caja Cerrada", `Turno finalizado.<br><b>Total Guardado: S/ ${parseFloat(data.total).toFixed(2)}</b>`);
             }
         }
 
