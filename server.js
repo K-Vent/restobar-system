@@ -35,7 +35,6 @@ app.get('/api/mesas', async (req, res) => {
 
 app.get('/api/productos', async (req, res) => {
     try {
-        // Ahora traemos TODOS los productos para el inventario, no solo los que tienen stock > 0
         const result = await pool.query('SELECT * FROM productos ORDER BY nombre ASC');
         res.json(result.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -51,14 +50,44 @@ app.get('/api/reporte/hoy', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- RUTA NUEVA: PARA REABASTECER STOCK ---
+// --- GESTIÓN DE INVENTARIO (NUEVAS RUTAS) ---
+
+// 1. Sumar Stock
 app.post('/api/productos/agregar-stock', async (req, res) => {
     try {
         const { id, cantidad } = req.body;
-        // Sumamos la cantidad nueva al stock actual
         await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, id]);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 2. Restar Stock (Correcciones)
+app.post('/api/productos/restar-stock', async (req, res) => {
+    try {
+        const { id, cantidad } = req.body;
+        await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 3. Crear Nuevo Producto
+app.post('/api/productos/nuevo', async (req, res) => {
+    try {
+        const { nombre, precio, stock } = req.body;
+        await pool.query('INSERT INTO productos (nombre, precio_venta, stock) VALUES ($1, $2, $3)', [nombre, precio, stock || 0]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 4. Eliminar Producto
+app.delete('/api/productos/eliminar/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM productos WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (e) { 
+        // Si tiene ventas asociadas, no se puede borrar
+        res.status(400).json({ error: 'No se puede eliminar: El producto tiene historial de ventas.' });
+    }
 });
 
 // --- OPERACIONES DE MESAS ---
@@ -110,12 +139,8 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', id]);
 
         res.json({ 
-            tipo: mesa.tipo, 
-            minReal: minReal,     
-            minCobrar: minCobrar, 
-            totalT: totalT.toFixed(2), 
-            totalC: totalC.toFixed(2), 
-            totalF: totalF.toFixed(2) 
+            tipo: mesa.tipo, minReal: minReal, minCobrar: minCobrar, 
+            totalT: totalT.toFixed(2), totalC: totalC.toFixed(2), totalF: totalF.toFixed(2) 
         });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });

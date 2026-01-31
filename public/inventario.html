@@ -6,82 +6,123 @@
     <style>
         body { background: #0c0c0c; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
         h1 { color: #f1c40f; margin-bottom: 20px; }
-        table { width: 100%; max-width: 600px; margin: 20px auto; border-collapse: collapse; background: #181818; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 15px; border-bottom: 1px solid #333; text-align: left; }
+        
+        /* Formulario Nuevo Producto */
+        .form-nuevo { background: #181818; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto 30px; border: 1px solid #333; }
+        .form-nuevo input { padding: 10px; margin: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; width: 140px; }
+        .btn-crear { background: #f39c12; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-crear:hover { background: #d35400; }
+
+        /* Tabla */
+        table { width: 100%; max-width: 700px; margin: 0 auto; border-collapse: collapse; background: #181818; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; border-bottom: 1px solid #333; text-align: left; vertical-align: middle; }
         th { background: #333; color: #f1c40f; text-transform: uppercase; font-size: 14px; }
-        td { color: #ddd; }
+        
+        .acciones { display: flex; gap: 5px; }
+        .btn-mas { background: #27ae60; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-menos { background: #e67e22; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-borrar { background: #c0392b; color: white; border: none; padding: 8px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        
         .stock-bajo { color: #e74c3c; font-weight: bold; }
         .stock-bien { color: #2ecc71; font-weight: bold; }
-        
-        .btn-add { 
-            background: #27ae60; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 5px; font-weight: bold; 
-        }
-        .btn-add:hover { background: #2ecc71; }
-
-        .btn-volver { 
-            background: #c0392b; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 30px; font-weight: bold; 
-        }
-        .btn-volver:hover { background: #e74c3c; }
+        .btn-volver { background: #555; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 30px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>📦 Control de Stock</h1>
-    <p>Gestiona la entrada de productos aquí.</p>
+    <h1>📦 Gestión de Inventario</h1>
+
+    <div class="form-nuevo">
+        <h3 style="margin-top: 0;">✨ Agregar Nuevo Producto</h3>
+        <input type="text" id="newNombre" placeholder="Nombre (Ej. Papitas)">
+        <input type="number" id="newPrecio" placeholder="Precio Venta">
+        <input type="number" id="newStock" placeholder="Stock Inicial">
+        <button class="btn-crear" onclick="crearProducto()">GUARDAR</button>
+    </div>
 
     <table id="tabla-productos">
         <thead>
             <tr>
                 <th>Producto</th>
+                <th>Precio</th>
                 <th>Stock</th>
-                <th>Acción</th>
+                <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-            </tbody>
+        <tbody></tbody>
     </table>
 
     <a href="/dashboard.html" class="btn-volver">⬅ Volver al Panel</a>
 
     <script>
         async function cargarProductos() {
-            try {
-                const res = await fetch('/api/productos');
-                const productos = await res.json();
-                const tbody = document.querySelector('#tabla-productos tbody');
-                tbody.innerHTML = '';
+            const res = await fetch('/api/productos');
+            const productos = await res.json();
+            const tbody = document.querySelector('#tabla-productos tbody');
+            tbody.innerHTML = '';
 
-                productos.forEach(p => {
-                    const stockClass = p.stock < 10 ? 'stock-bajo' : 'stock-bien';
-                    const fila = `
-                        <tr>
-                            <td>${p.nombre}</td>
-                            <td class="${stockClass}">${p.stock}</td>
-                            <td>
-                                <button class="btn-add" onclick="sumarStock(${p.id}, '${p.nombre}')">➕ Agregar</button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += fila;
-                });
-            } catch (error) {
-                console.error('Error cargando productos:', error);
-            }
+            productos.forEach(p => {
+                const stockClass = p.stock < 10 ? 'stock-bajo' : 'stock-bien';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.nombre}</td>
+                        <td>$${p.precio_venta}</td>
+                        <td class="${stockClass}">${p.stock}</td>
+                        <td class="acciones">
+                            <button class="btn-mas" onclick="modificarStock(${p.id}, 'agregar', '${p.nombre}')">➕</button>
+                            <button class="btn-menos" onclick="modificarStock(${p.id}, 'restar', '${p.nombre}')">➖</button>
+                            <button class="btn-borrar" onclick="eliminarProducto(${p.id}, '${p.nombre}')">🗑️</button>
+                        </td>
+                    </tr>`;
+            });
         }
 
-        async function sumarStock(id, nombre) {
-            const cantidad = prompt(`¿Cuántas unidades de "${nombre}" vas a ingresar?`);
+        async function modificarStock(id, accion, nombre) {
+            const endpoint = accion === 'agregar' ? '/api/productos/agregar-stock' : '/api/productos/restar-stock';
+            const cantidad = prompt(`¿Cuántas unidades vas a ${accion === 'agregar' ? 'sumar' : 'restar'} a "${nombre}"?`);
+            
             if (cantidad && parseInt(cantidad) > 0) {
-                await fetch('/api/productos/agregar-stock', {
+                await fetch(endpoint, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ id: id, cantidad: parseInt(cantidad) })
                 });
-                alert('¡Stock actualizado con éxito!');
-                cargarProductos(); // Recargar la tabla para ver el cambio
+                cargarProductos();
             }
         }
 
-        // Cargar al iniciar
+        async function crearProducto() {
+            const nombre = document.getElementById('newNombre').value;
+            const precio = document.getElementById('newPrecio').value;
+            const stock = document.getElementById('newStock').value;
+
+            if(!nombre || !precio) return alert("Falta nombre o precio");
+
+            await fetch('/api/productos/nuevo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre, precio, stock: stock || 0 })
+            });
+
+            // Limpiar campos y recargar
+            document.getElementById('newNombre').value = '';
+            document.getElementById('newPrecio').value = '';
+            document.getElementById('newStock').value = '';
+            cargarProductos();
+            alert("¡Producto creado!");
+        }
+
+        async function eliminarProducto(id, nombre) {
+            if(!confirm(`¿Seguro que quieres borrar "${nombre}" de la base de datos?`)) return;
+
+            const res = await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
+            
+            if (res.ok) {
+                cargarProductos();
+            } else {
+                alert("❌ No se puede eliminar: Este producto ya tiene ventas registradas en el historial.");
+            }
+        }
+
         cargarProductos();
     </script>
 </body>
