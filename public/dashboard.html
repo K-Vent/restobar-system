@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Principal - La Esquina</title>
+    <title>Control de Mesas - La Esquina</title>
     <style>
         /* --- ESTRUCTURA GENERAL (LAYOUT) --- */
         body { 
             background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0; display: flex; min-height: 100vh;
+            margin: 0; padding: 0; display: flex; min-height: 100vh; overflow-x: hidden;
         }
 
         /* --- SIDEBAR (PANEL LATERAL) --- */
@@ -21,12 +21,19 @@
             height: 100%;
             top: 0; left: 0;
             z-index: 500;
+            transition: transform 0.3s ease; /* Animación suave */
+        }
+
+        /* Clase para esconder el sidebar */
+        body.menu-oculto .sidebar {
+            transform: translateX(-260px); /* Se mueve a la izquierda fuera de pantalla */
         }
 
         .sidebar-header {
             padding: 25px 20px;
             border-bottom: 1px solid #222;
             text-align: center;
+            position: relative;
         }
         .logo-text { color: #f1c40f; font-size: 22px; font-weight: bold; margin: 0; }
         .logo-sub { color: #666; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
@@ -45,7 +52,6 @@
         .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
         .menu-icon { font-size: 20px; width: 25px; text-align: center; }
 
-        /* Botón Cerrar Sesión (Abajo) */
         .logout-container { padding: 20px; border-top: 1px solid #222; }
         .btn-logout {
             width: 100%; padding: 12px;
@@ -62,11 +68,29 @@
             margin-left: 260px; /* Deja espacio al sidebar */
             padding: 30px;
             width: 100%;
+            transition: margin-left 0.3s ease; /* Animación suave al expandirse */
         }
 
+        /* Cuando el menú se oculta, el contenido ocupa todo el ancho */
+        body.menu-oculto .main-content {
+            margin-left: 0;
+        }
+
+        /* CABECERA SUPERIOR CON BOTÓN TOGGLE */
+        .top-bar {
+            display: flex; align-items: center; margin-bottom: 30px;
+        }
+        .btn-toggle {
+            background: transparent; border: none; color: #f1c40f; font-size: 28px; cursor: pointer;
+            margin-right: 20px; padding: 5px; border-radius: 5px;
+        }
+        .btn-toggle:hover { background: #222; }
+        
+        .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
+
         /* --- PANELES Y TARJETAS --- */
-        .money-panel { display: flex; gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; flex: 1; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .money-panel { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .stat-card { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; flex: 1; min-width: 200px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px; }
         .stat-value { font-size: 28px; font-weight: bold; }
         .card-total .stat-value { color: #2ecc71; }
@@ -135,22 +159,26 @@
         .btn-confirm { background: #27ae60; color: white; } .btn-confirm:hover { background: #219150; }
         .btn-danger { background: #c0392b; color: white; } .btn-danger:hover { background: #a93226; }
         
-        /* Ajuste de scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #666; }
 
-        /* Z-INDEX FIX */
         #modal-cantidad, #modal-msg, #modal-confirm { z-index: 1100 !important; }
 
+        /* Responsive: En celular el menú flota */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-260px); }
+            .main-content { margin-left: 0; }
+            body.menu-visible .sidebar { transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
 
     <div id="toast">✅ Acción realizada</div>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2 class="logo-text">🎱 LA ESQUINA</h2>
             <div class="logo-sub">Panel de Control</div>
@@ -158,7 +186,7 @@
 
         <div class="menu">
             <a href="#" class="menu-link active">
-                <span class="menu-icon">🏠</span> Dashboard
+                <span class="menu-icon">🎱</span> Control de Mesas
             </a>
             <a href="/inventario.html" class="menu-link">
                 <span class="menu-icon">📦</span> Inventario
@@ -180,6 +208,11 @@
 
     <main class="main-content">
         
+        <div class="top-bar">
+            <button class="btn-toggle" onclick="toggleMenu()">☰</button>
+            <h2 class="page-title">Mesas y Pedidos</h2>
+        </div>
+
         <div class="money-panel">
             <div class="stat-card card-total">
                 <div class="stat-title">💰 Total Caja (Turno)</div>
@@ -256,10 +289,16 @@
         // INICIO
         async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
 
-        // --- LÓGICA DE SESIÓN ---
+        // --- FUNCION PARA ESCONDER/MOSTRAR MENU ---
+        function toggleMenu() {
+            document.body.classList.toggle('menu-oculto');
+            // Nota: En móvil, podrías querer usar otra clase si prefieres que aparezca sobrepuesto
+            // pero con este CSS, en desktop empuja el contenido y en móvil (por media query) funciona igual.
+        }
+
         function cerrarSesion() {
             if(confirm("¿Seguro que quieres cerrar sesión?")) {
-                window.location.href = '/index.html'; // Te manda al login
+                window.location.href = '/index.html'; 
             }
         }
 
