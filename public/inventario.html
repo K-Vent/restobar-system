@@ -114,9 +114,17 @@
         </div>
     </div>
 
+    <div id="modal-msg" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="msg-titulo">Aviso</div>
+            <p id="msg-texto" style="color:#ddd; margin-bottom:20px; font-size:16px;"></p>
+            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
+        </div>
+    </div>
+
     <script>
         let prodAccionId = null; 
-        let accionActual = ''; // 'agregar' o 'restar'
+        let accionActual = '';
 
         async function cargarProductos() {
             const res = await fetch('/api/productos');
@@ -154,9 +162,15 @@
 
         function confirmarBorrar(id, nombre) {
             prodAccionId = id;
-            document.getElementById('borrar-texto').innerText = `¿Seguro que quieres borrar "${nombre}"?`;
+            document.getElementById('borrar-texto').innerText = `¿Seguro que quieres borrar "${nombre}" de la base de datos?`;
             document.getElementById('modal-borrar').style.display = 'flex';
             document.getElementById('btn-borrar-ok').onclick = ejecutarBorrar;
+        }
+
+        function mostrarMensaje(titulo, texto) {
+            document.getElementById('msg-titulo').innerText = titulo;
+            document.getElementById('msg-texto').innerText = texto;
+            document.getElementById('modal-msg').style.display = 'flex';
         }
 
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -191,7 +205,10 @@
             const precio = document.getElementById('newPrecio').value;
             const stock = document.getElementById('newStock').value;
 
-            if(!nombre || !precio) return alert("Falta nombre o precio");
+            if(!nombre || !precio) {
+                mostrarMensaje("Faltan Datos", "Por favor ingresa nombre y precio.");
+                return;
+            }
 
             await fetch('/api/productos/nuevo', {
                 method: 'POST',
@@ -199,12 +216,11 @@
                 body: JSON.stringify({ nombre, precio, stock: stock || 0 })
             });
 
-            // Limpiar campos
             document.getElementById('newNombre').value = '';
             document.getElementById('newPrecio').value = '';
             document.getElementById('newStock').value = '';
             
-            mostrarToast("✨ Producto Creado"); // <--- TOAST EN VEZ DE ALERT
+            mostrarToast("✨ Producto Creado");
             cargarProductos();
         }
 
@@ -216,7 +232,8 @@
                 mostrarToast("🗑️ Producto Eliminado");
                 cargarProductos();
             } else {
-                alert("❌ No se puede borrar: Tiene ventas en el historial.");
+                // AQUÍ ESTÁ EL CAMBIO: Usamos el Modal Oscuro en vez de alert()
+                mostrarMensaje("❌ No se puede borrar", "Este producto tiene ventas registradas en el historial. No se puede eliminar para no romper los reportes.");
             }
         }
 
