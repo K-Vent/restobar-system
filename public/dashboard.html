@@ -50,32 +50,11 @@
         .btn-producto { background: #f39c12; color: black; }
         .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
-        /* --- NUEVO: NOTIFICACIÓN FLOTANTE (TOAST) --- */
+        /* --- TOAST NOTIFICATION --- */
         #toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #27ae60; /* Verde Éxito */
-            color: #fff;
-            text-align: center;
-            border-radius: 50px; /* Bordes redondos estilo App */
-            padding: 16px;
-            position: fixed;
-            z-index: 2000;
-            left: 50%;
-            bottom: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
+            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; box-shadow: 0px 5px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
         }
-
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px; /* Efecto de subir */
-        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         /* --- MODALES --- */
         .modal-overlay { 
@@ -83,6 +62,12 @@
             background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; 
             backdrop-filter: blur(5px);
         }
+        
+        /* CORRECCIÓN DE CAPAS: Estos modales deben estar ENCIMA de la lista de productos */
+        #modal-cantidad, #modal-msg, #modal-confirm { 
+            z-index: 1100 !important; 
+        }
+
         .modal-box { 
             background: #1e1e1e; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; 
             text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -242,18 +227,18 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- TOAST NOTIFICATION ---
+        // --- UI HELPERS ---
         function mostrarToast(mensaje) {
             const toast = document.getElementById("toast");
             toast.innerText = mensaje;
             toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500); // Se va a los 2.5 seg
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
         }
 
         function mostrarMensaje(titulo, texto) {
             document.getElementById('msg-titulo').innerText = titulo;
             document.getElementById('msg-texto').innerHTML = texto;
-            document.getElementById('msg-btn-ok').onclick = function() { cerrarModal('modal-msg'); }; // Reset onclick
+            document.getElementById('msg-btn-ok').onclick = function() { cerrarModal('modal-msg'); };
             document.getElementById('modal-msg').style.display = 'flex';
         }
 
@@ -289,10 +274,11 @@
 
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        // --- LOGIC ---
         async function ejecutarAbrirMesa() {
             cerrarModal('modal-confirm');
             await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST' });
-            mostrarToast("✅ Mesa Abierta"); // Toast en vez de alerta
+            mostrarToast("✅ Mesa Abierta"); 
             cargarTodo();
         }
 
@@ -323,7 +309,7 @@
                 });
                 cerrarModal('modal-cantidad');
                 cerrarModal('modal-productos');
-                mostrarToast("✨ Producto Agregado"); // <--- AQUI ESTA LA MAGIA
+                mostrarToast("✨ Producto Agregado");
                 actualizarCaja();
             }
         }
@@ -364,7 +350,6 @@
             const res = await fetch('/api/caja/cerrar', { method: 'POST' });
             const data = await res.json();
             if(data.success) {
-                // AQUÍ QUITAMOS EL ALERT BLANCO. Usamos el modal y recargamos al darle OK.
                 document.getElementById('msg-btn-ok').onclick = function() { location.reload(); };
                 mostrarMensaje("✅ Caja Cerrada", `Turno finalizado.<br><b>Total Guardado: S/ ${parseFloat(data.total).toFixed(2)}</b>`);
             }
