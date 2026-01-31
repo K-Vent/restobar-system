@@ -37,7 +37,7 @@
         .libre { background: #27ae60; color: white; }
         .ocupada { background: #e74c3c; color: white; }
 
-        /* RELOJ PEQUEÑO Y ELEGANTE */
+        /* RELOJ */
         .info-tiempo { 
             font-size: 18px; font-family: monospace; text-align: center; margin: 10px 0; color: #ddd; 
             background: #222; padding: 8px; border-radius: 5px; border: 1px solid #333;
@@ -57,28 +57,31 @@
             backdrop-filter: blur(5px);
         }
         .modal-box { 
-            background: #1e1e1e; padding: 25px; border-radius: 12px; width: 90%; max-width: 420px; 
+            background: #1e1e1e; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; 
             text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .modal-title { font-size: 22px; color: #f1c40f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
         
-        /* Lista de detalles en el cobro */
-        .detalle-lista { text-align: left; margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
+        .detalle-lista { text-align: left; margin-bottom: 20px; max-height: 250px; overflow-y: auto; }
         .detalle-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
-        .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 20px; font-weight: bold; color: #2ecc71; margin-top: 10px; padding-top: 15px; }
-        .detalle-time { color: #f1c40f; font-weight: bold; }
+        .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 10px; padding-top: 15px; }
+
+        /* Inputs del Modal */
+        .modal-input {
+            width: 80%; padding: 10px; background: #333; border: 1px solid #555; color: white; 
+            border-radius: 5px; font-size: 18px; text-align: center; margin-bottom: 20px;
+        }
 
         /* Botones del Modal */
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-cancel { background: #555; color: white; }
         .btn-confirm { background: #27ae60; color: white; }
         .btn-danger { background: #c0392b; color: white; }
-        
-        /* Hover Effects */
         .btn-cancel:hover { background: #666; }
         .btn-confirm:hover { background: #2ecc71; }
         .btn-danger:hover { background: #e74c3c; }
+
     </style>
 </head>
 <body>
@@ -105,54 +108,66 @@
     <div class="actions-bar">
         <a href="/inventario.html" class="btn-action btn-inv">📦 Inventario</a>
         <a href="/reportes.html" class="btn-action btn-reportes">📅 Historial</a>
-        <button onclick="confirmarCierreCaja()" class="btn-action btn-caja">🔒 CERRAR CAJA</button>
+        <button onclick="mostrarConfirmacion('caja')" class="btn-action btn-caja">🔒 CERRAR CAJA</button>
     </div>
 
-    <div id="grid-mesas" class="grid-mesas">
-        <p style="text-align: center; width: 100%;">Cargando sistema...</p>
+    <div id="grid-mesas" class="grid-mesas"></div>
+
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="confirm-titulo">Título</div>
+            <p id="confirm-texto" style="color:#ddd; margin-bottom:20px;"></p>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cantidad" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="cant-titulo">Cantidad</div>
+            <input type="number" id="input-cantidad" class="modal-input" value="1" min="1">
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cantidad')">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="btn-cant-ok">AGREGAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-msg" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="msg-titulo">Aviso</div>
+            <p id="msg-texto" style="color:#ddd; margin-bottom:20px; font-size:16px;"></p>
+            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
+        </div>
     </div>
 
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">🧾 Resumen de Cuenta</div>
-            <div id="cobro-contenido" class="detalle-lista">
-                </div>
+            <div id="cobro-contenido" class="detalle-lista"></div>
             <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Seguir Jugando</button>
-                <button class="btn-modal btn-confirm" id="btn-confirmar-cobro">💰 COBRAR</button>
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button>
+                <button class="btn-modal btn-confirm" id="btn-cobrar-final">💰 COBRAR</button>
             </div>
         </div>
     </div>
 
     <div id="modal-productos" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">🍺 Agregar Pedido</div>
-            <p style="color:#aaa; margin-top:-10px;">Mesa <span id="modal-mesa-nombre" style="color:white; font-weight:bold;"></span></p>
-            <div class="detalle-lista" id="lista-productos-div" style="text-align: left;"></div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-productos')">Cancelar</button>
-            </div>
+            <div class="modal-title">🍺 Seleccionar Producto</div>
+            <div id="lista-productos-div" class="detalle-lista"></div>
+            <button class="btn-modal btn-cancel" style="width:100%" onclick="cerrarModal('modal-productos')">Cancelar</button>
         </div>
     </div>
 
-    <div id="modal-caja" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">⚠️ ¿Cerrar Turno?</div>
-            <p style="color: #ddd; margin-bottom: 20px;">
-                Esto guardará el total actual y <b>reiniciará la caja a S/ 0.00</b>.<br>
-                ¿Estás seguro?
-            </p>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-caja')">Cancelar</button>
-                <button class="btn-modal btn-danger" onclick="ejecutarCierreCaja()">🔒 SÍ, CERRAR</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         let intervaloCronometros = null;
+        let mesaAccionId = null; // Para guardar el ID de la mesa en operaciones
+        let prodAccionId = null; // Para guardar el ID del producto
 
-        // INICIO
         async function cargarTodo() {
             await cargarMesas();
             await actualizarCaja();
@@ -178,196 +193,179 @@
                 mesas.forEach(mesa => {
                     const esOcupada = mesa.estado === 'OCUPADA';
                     const esBillar = mesa.tipo === 'BILLAR';
-                    
-                    let dataInicio = '';
+                    let dataInicio = (esOcupada && mesa.hora_inicio) ? mesa.hora_inicio : '';
                     let htmlReloj = '';
 
-                    // LÓGICA DE VISUALIZACIÓN
                     if (esBillar) {
-                        if (esOcupada && mesa.hora_inicio) {
-                            dataInicio = mesa.hora_inicio;
-                            htmlReloj = `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">...</div>`;
-                        } else {
-                            htmlReloj = `<div class="info-tiempo" style="color:#444; font-size:16px;">--:--</div>`;
-                        }
+                        htmlReloj = esOcupada 
+                            ? `<div class="info-tiempo" id="timer-${mesa.id}" data-inicio="${dataInicio}" data-precio="${mesa.precio_hora}">...</div>`
+                            : `<div class="info-tiempo" style="color:#444;">--:--</div>`;
                     } else {
-                        htmlReloj = `<div style="height: 10px;"></div>`; // Espacio vacío para mesas de consumo
+                        htmlReloj = `<div style="height:10px;"></div>`;
                     }
 
                     const html = `
                         <div class="mesa-card">
                             <div class="mesa-header">
-                                <div>
-                                    <div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div>
-                                    <div class="mesa-subtitulo">${mesa.tipo}</div>
-                                </div>
+                                <div><div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div><div class="mesa-subtitulo">${mesa.tipo}</div></div>
                                 <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
                             </div>
-                            
                             ${htmlReloj}
-
                             <div class="mesa-actions">
                                 ${!esOcupada ? 
-                                    `<button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">🟢 INICIAR</button>` : 
-                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id}, ${mesa.numero_mesa})">🍺 PEDIDO</button>
-                                     <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id}, '${mesa.tipo}')">💰 COBRAR</button>`
+                                    `<button class="btn-mesa btn-abrir" onclick="mostrarConfirmacion('abrir', ${mesa.id})">🟢 INICIAR</button>` : 
+                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id})">🍺 PEDIDO</button>
+                                     <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id})">💰 COBRAR</button>`
                                 }
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     contenedor.innerHTML += html;
                 });
                 iniciarCronometros();
             } catch (e) { console.error(e); }
         }
 
-        // --- FUNCIONES DE BOTONES PRINCIPALES ---
-        async function abrirMesa(id) {
-            await fetch(`/api/mesas/abrir/${id}`, { method: 'POST' });
-            cargarTodo();
+        // --- MANEJO DE MODALES ---
+
+        function mostrarMensaje(titulo, texto) {
+            document.getElementById('msg-titulo').innerText = titulo;
+            document.getElementById('msg-texto').innerHTML = texto;
+            document.getElementById('modal-msg').style.display = 'flex';
         }
 
-        // --- LÓGICA NUEVA DE COBRO CON MODAL ---
-        async function prepararCobro(id, tipo) {
-            // 1. Mostrar "Cargando..."
-            const contenido = document.getElementById('cobro-contenido');
-            contenido.innerHTML = '<p style="text-align:center">Calculando cuenta...</p>';
-            document.getElementById('modal-cobro').style.display = 'flex';
+        function mostrarConfirmacion(tipo, id = null) {
+            mesaAccionId = id;
+            const titulo = document.getElementById('confirm-titulo');
+            const texto = document.getElementById('confirm-texto');
+            const btn = document.getElementById('btn-confirm-ok');
+            const modal = document.getElementById('modal-confirm');
 
-            // 2. Pedir datos al servidor (Pre-Cuenta)
-            const res = await fetch(`/api/mesas/detalle/${id}`);
-            const data = await res.json();
-
-            // 3. Construir el Ticket HTML
-            let html = '';
-
-            // Fila de Tiempo (Solo si es Billar y hay costo)
-            if (data.tipo === 'BILLAR') {
-                html += `
-                    <div class="detalle-row">
-                        <span class="detalle-time">🎱 Tiempo (${data.minutos} min)</span>
-                        <span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span>
-                    </div>`;
+            if(tipo === 'abrir') {
+                titulo.innerText = "🟢 Abrir Mesa";
+                texto.innerText = "¿Deseas iniciar el tiempo en esta mesa?";
+                btn.className = "btn-modal btn-confirm";
+                btn.onclick = () => ejecutarAbrirMesa();
+            } else if (tipo === 'caja') {
+                titulo.innerText = "🔒 Cerrar Caja";
+                texto.innerText = "Esto reiniciará el contador a S/ 0.00. ¿Seguro?";
+                btn.className = "btn-modal btn-danger";
+                btn.onclick = () => ejecutarCierreCaja();
             }
 
-            // Filas de Productos
-            if (data.listaProductos.length > 0) {
-                html += `<div style="margin: 10px 0; border-top: 1px dashed #444;"></div>`; // Separador
-                data.listaProductos.forEach(p => {
-                    html += `
-                        <div class="detalle-row">
-                            <span>${p.cantidad}x ${p.nombre}</span>
-                            <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-                        </div>`;
-                });
-            } else {
-                html += `<div class="detalle-row" style="color:#777;"><i>Sin consumo de productos</i></div>`;
-            }
-
-            // Total Final
-            html += `
-                <div class="detalle-row total-row">
-                    <span>TOTAL A PAGAR</span>
-                    <span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span>
-                </div>`;
-
-            // 4. Pintar y asignar botón confirmar
-            contenido.innerHTML = html;
-            document.getElementById('btn-confirmar-cobro').onclick = function() { ejecutarCobro(id); };
+            modal.style.display = 'flex';
         }
 
-        async function ejecutarCobro(id) {
-            // Llamar al cierre real
-            const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
-            const data = await res.json();
-            
-            if (data.success) {
-                cerrarModal('modal-cobro');
-                cargarTodo(); // Recargar pantalla
-            } else {
-                alert("Error al cobrar");
-            }
+        function mostrarInputCantidad(prodId, nombre) {
+            prodAccionId = prodId;
+            document.getElementById('cant-titulo').innerText = `Cantidad de ${nombre}`;
+            document.getElementById('input-cantidad').value = 1;
+            document.getElementById('modal-cantidad').style.display = 'flex';
+            document.getElementById('btn-cant-ok').onclick = ejecutarAgregarPedido;
+            document.getElementById('input-cantidad').focus();
         }
 
-        // --- MODAL PRODUCTOS ---
-        let mesaSel = null;
-        async function abrirModalProductos(id, num) {
-            mesaSel = id;
-            document.getElementById('modal-mesa-nombre').innerText = num;
-            document.getElementById('modal-productos').style.display = 'flex';
-            
-            const res = await fetch('/api/productos');
-            const prods = await res.json();
-            const lista = document.getElementById('lista-productos-div');
-            lista.innerHTML = '';
-            prods.forEach(p => {
-                if(p.stock > 0) {
-                    lista.innerHTML += `
-                        <div class="detalle-row" style="cursor:pointer;" onclick="pedir(${p.id}, '${p.nombre}')">
-                            <span>${p.nombre} (${p.stock})</span>
-                            <span style="color:#2ecc71; font-weight:bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                        </div>`;
-                }
-            });
-        }
-
-        async function pedir(idProd, nombre) {
-            // Usamos un prompt simple para la cantidad porque es rápido, 
-            // pero podríamos hacer otro modal si quisieras. Por ahora esto es funcional.
-            const cant = prompt(`¿Cuántos "${nombre}" agregar?`, "1");
-            if(cant > 0) {
-                await fetch('/api/pedidos/agregar', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ mesa_id: mesaSel, producto_id: idProd, cantidad: cant })
-                });
-                cerrarModal('modal-productos');
-                actualizarCaja(); 
-            }
-        }
-
-        // --- MODAL CAJA ---
-        function confirmarCierreCaja() {
-            document.getElementById('modal-caja').style.display = 'flex';
-        }
-
-        async function ejecutarCierreCaja() {
-            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
-            const data = await res.json();
-            if(data.success) {
-                alert(`✅ CAJA CERRADA.\nTotal: S/ ${parseFloat(data.total).toFixed(2)}`);
-                location.reload();
-            }
-        }
-
-        // --- UTILIDADES ---
         function cerrarModal(id) {
             document.getElementById(id).style.display = 'none';
         }
 
-        // --- RELOJES ---
+        // --- FUNCIONES LÓGICAS ---
+
+        async function ejecutarAbrirMesa() {
+            cerrarModal('modal-confirm');
+            await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST' });
+            cargarTodo();
+        }
+
+        async function abrirModalProductos(mesaId) {
+            mesaAccionId = mesaId;
+            const res = await fetch('/api/productos');
+            const prods = await res.json();
+            const lista = document.getElementById('lista-productos-div');
+            lista.innerHTML = '';
+            
+            prods.forEach(p => {
+                if(p.stock > 0) {
+                    lista.innerHTML += `
+                        <div class="detalle-row" style="cursor:pointer;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
+                            <span>${p.nombre} (${p.stock})</span>
+                            <span style="color:#2ecc71;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                        </div>`;
+                }
+            });
+            document.getElementById('modal-productos').style.display = 'flex';
+        }
+
+        async function ejecutarAgregarPedido() {
+            const cant = document.getElementById('input-cantidad').value;
+            if(cant > 0) {
+                await fetch('/api/pedidos/agregar', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant })
+                });
+                cerrarModal('modal-cantidad');
+                cerrarModal('modal-productos');
+                mostrarMensaje("✅ Agregado", "Producto añadido correctamente.");
+                actualizarCaja();
+            }
+        }
+
+        async function prepararCobro(id) {
+            document.getElementById('cobro-contenido').innerHTML = '<p>Calculando...</p>';
+            document.getElementById('modal-cobro').style.display = 'flex';
+            
+            const res = await fetch(`/api/mesas/detalle/${id}`);
+            const data = await res.json();
+            
+            let html = '';
+            if (data.tipo === 'BILLAR') {
+                html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
+            }
+            if (data.listaProductos.length > 0) {
+                html += `<div style="border-top:1px dashed #444; margin:10px 0;"></div>`;
+                data.listaProductos.forEach(p => {
+                    html += `<div class="detalle-row"><span>${p.cantidad}x ${p.nombre}</span><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`;
+                });
+            }
+            html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
+            
+            document.getElementById('cobro-contenido').innerHTML = html;
+            document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
+        }
+
+        async function ejecutarCobro(id) {
+            const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                cerrarModal('modal-cobro');
+                mostrarMensaje("💰 Cobro Exitoso", "La mesa ha quedado libre.");
+                cargarTodo();
+            } else {
+                mostrarMensaje("❌ Error", "No se pudo cobrar la mesa.");
+            }
+        }
+
+        async function ejecutarCierreCaja() {
+            cerrarModal('modal-confirm');
+            const res = await fetch('/api/caja/cerrar', { method: 'POST' });
+            const data = await res.json();
+            if(data.success) {
+                alert("CAJA CERRADA. Total: S/ " + parseFloat(data.total).toFixed(2)); // Usamos alert aquí solo porque recargaremos la página inmediatamente y a veces el modal no se ve antes del reload.
+                location.reload();
+            }
+        }
+
         function iniciarCronometros() {
             if(intervaloCronometros) clearInterval(intervaloCronometros);
             intervaloCronometros = setInterval(() => {
                 document.querySelectorAll('.info-tiempo').forEach(t => {
                     const inicio = t.getAttribute('data-inicio');
                     const precioHora = parseFloat(t.getAttribute('data-precio')) || 10;
-                    
-                    if(inicio && inicio !== "undefined") {
+                    if(inicio && inicio !== "undefined" && inicio !== "") {
                         const diff = new Date() - new Date(inicio);
                         const h = Math.floor(diff/3600000);
                         const m = Math.floor((diff%3600000)/60000);
-                        // Solo mostramos Hora y Minuto para que sea más limpio (HH:MM)
-                        const tiempoStr = `${h}:${m<10?'0'+m:m}`;
-                        
-                        // Dinero en vivo
-                        const minutosTotales = diff / 60000;
-                        const costoAprox = (minutosTotales / 60) * precioHora;
-                        
-                        t.innerHTML = `
-                            ${tiempoStr}
-                            <div class="dinero-vivo">S/ ${costoAprox.toFixed(2)}</div>
-                        `;
+                        const costo = (diff / 60000 / 60) * precioHora;
+                        t.innerHTML = `${h}:${m<10?'0'+m:m} <div class="dinero-vivo">S/ ${costo.toFixed(2)}</div>`;
                     }
                 });
             }, 1000);
