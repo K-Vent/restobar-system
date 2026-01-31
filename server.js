@@ -88,17 +88,37 @@ app.get('/api/reportes/historial', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [NUEVO] Eliminar un reporte de cierre
+// [CORREGIDO] Eliminar reporte Y sus ventas asociadas
 app.delete('/api/reportes/eliminar/:id', async (req, res) => {
     try {
         const { id } = req.params;
+
+        // 1. Averiguamos la fecha de ESTE reporte que queremos borrar
+        const target = await pool.query('SELECT fecha_cierre FROM cierres WHERE id = $1', [id]);
+        
+        if (target.rows.length === 0) {
+            return res.status(404).json({ error: 'Reporte no encontrado' });
+        }
+        const fechaEsteReporte = target.rows[0].fecha_cierre;
+
+        // 2. Averiguamos la fecha del reporte ANTERIOR a este
+        // (Para saber desde cuándo borrar las ventas)
+        const prev = await pool.query('SELECT MAX(fecha_cierre) as fecha FROM cierres WHERE fecha_cierre < $1', [fechaEsteReporte]);
+        const fechaReporteAnterior = prev.rows[0].fecha || '2000-01-01'; // Si no hay anterior, usamos fecha base
+
+        // 3. BORRAMOS LAS VENTAS que estaban dentro de ese rango de fechas
+        // (Esto elimina el dinero para que no regrese a la caja actual)
+        await pool.query('DELETE FROM ventas WHERE fecha > $1 AND fecha <= $2', [fechaReporteAnterior, fechaEsteReporte]);
+
+        // 4. Finalmente, borramos el reporte del historial
         await pool.query('DELETE FROM cierres WHERE id = $1', [id]);
+
         res.json({ success: true });
     } catch (e) {
+        console.error(e);
         res.status(500).json({ error: e.message });
     }
 });
-
 // --- OPERACIONES ---
 app.post('/api/productos/agregar-stock', async (req, res) => {
     try { await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [req.body.cantidad, req.body.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
