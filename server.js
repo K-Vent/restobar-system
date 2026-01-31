@@ -5,9 +5,11 @@ const cors = require('cors');
 const app = express();
 
 // CONFIGURACIÓN DE BASE DE DATOS
-const pool = new Pool({
-    connectionString: 'postgresql://postgres:Laesquinadelbillar@db.iqrhtvwddlqlrenfsaxa.supabase.co:5432/postgres',
-    ssl: { rejectUnauthorized: false }
+const pool = new Pool({connectionString: 'postgresql://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
+    ssl: { rejectUnauthorized: false } 
+});
+    connectionString: 'postgres://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-0-sa-east-1.pooler.supabase.com:6543/postgres',
+    ssl: { rejectUnauthorized: false } 
 });
 
 app.use(cors());
