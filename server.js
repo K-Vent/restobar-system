@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors'); 
-const app = express(); // <--- ¡ESTA LÍNEA FALTABA!
+const app = express(); 
 
 // CONEXIÓN A BASE DE DATOS
 const pool = new Pool({
@@ -40,7 +40,8 @@ app.get('/api/productos', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- CAJA Y REPORTES (LÓGICA NUEVA) ---
+// --- CAJA Y REPORTES ---
+
 app.get('/api/caja/actual', async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
@@ -85,6 +86,17 @@ app.get('/api/reportes/historial', async (req, res) => {
         const result = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 30');
         res.json(result.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// [NUEVO] Eliminar un reporte de cierre
+app.delete('/api/reportes/eliminar/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM cierres WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // --- OPERACIONES ---
