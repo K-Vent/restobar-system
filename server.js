@@ -41,7 +41,6 @@ app.get('/api/productos', async (req, res) => {
 });
 
 // --- CAJA Y REPORTES ---
-
 app.get('/api/caja/actual', async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
@@ -70,12 +69,7 @@ app.post('/api/caja/cerrar', async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
         const fechaInicio = ultimoCierre.rows[0].fecha;
-
-        const totales = await pool.query(`
-            SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad
-            FROM ventas WHERE fecha > $1
-        `, [fechaInicio]);
-
+        const totales = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [fechaInicio]);
         await pool.query('INSERT INTO cierres (total_ventas, cantidad_mesas, fecha_cierre) VALUES ($1, $2, NOW())', [totales.rows[0].total, totales.rows[0].cantidad]);
         res.json({ success: true, total: totales.rows[0].total });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -88,37 +82,20 @@ app.get('/api/reportes/historial', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [CORREGIDO] Eliminar reporte Y sus ventas asociadas
 app.delete('/api/reportes/eliminar/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
-        // 1. Averiguamos la fecha de ESTE reporte que queremos borrar
         const target = await pool.query('SELECT fecha_cierre FROM cierres WHERE id = $1', [id]);
-        
-        if (target.rows.length === 0) {
-            return res.status(404).json({ error: 'Reporte no encontrado' });
-        }
+        if (target.rows.length === 0) return res.status(404).json({ error: 'Reporte no encontrado' });
         const fechaEsteReporte = target.rows[0].fecha_cierre;
-
-        // 2. Averiguamos la fecha del reporte ANTERIOR a este
-        // (Para saber desde cuándo borrar las ventas)
         const prev = await pool.query('SELECT MAX(fecha_cierre) as fecha FROM cierres WHERE fecha_cierre < $1', [fechaEsteReporte]);
-        const fechaReporteAnterior = prev.rows[0].fecha || '2000-01-01'; // Si no hay anterior, usamos fecha base
-
-        // 3. BORRAMOS LAS VENTAS que estaban dentro de ese rango de fechas
-        // (Esto elimina el dinero para que no regrese a la caja actual)
+        const fechaReporteAnterior = prev.rows[0].fecha || '2000-01-01';
         await pool.query('DELETE FROM ventas WHERE fecha > $1 AND fecha <= $2', [fechaReporteAnterior, fechaEsteReporte]);
-
-        // 4. Finalmente, borramos el reporte del historial
         await pool.query('DELETE FROM cierres WHERE id = $1', [id]);
-
         res.json({ success: true });
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: e.message });
-    }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 // --- OPERACIONES ---
 app.post('/api/productos/agregar-stock', async (req, res) => {
     try { await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [req.body.cantidad, req.body.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
@@ -129,23 +106,13 @@ app.post('/api/productos/restar-stock', async (req, res) => {
 app.post('/api/productos/nuevo', async (req, res) => {
     try { await pool.query('INSERT INTO productos (nombre, precio_venta, stock) VALUES ($1, $2, $3)', [req.body.nombre, req.body.precio, req.body.stock||0]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
 });
-// [MODIFICADO] Eliminar producto y sus pedidos antiguos
 app.delete('/api/productos/eliminar/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        
-        // 1. Primero borramos el historial de pedidos de este producto
-        // (Esto elimina el rastro de que alguna vez se vendió)
         await pool.query('DELETE FROM pedidos_mesa WHERE producto_id = $1', [id]);
-        
-        // 2. Ahora que está "limpio", borramos el producto
         await pool.query('DELETE FROM productos WHERE id = $1', [id]);
-        
         res.json({ success: true });
-    } catch (e) {
-        console.error(e); // Para que veas el error en la consola si pasa algo
-        res.status(500).json({ error: 'No se pudo eliminar el producto.' });
-    }
+    } catch (e) { res.status(500).json({ error: 'Error al eliminar' }); }
 });
 
 app.post('/api/mesas/abrir/:id', async (req, res) => {
@@ -161,65 +128,59 @@ app.post('/api/pedidos/agregar', async (req, res) => {
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+app.delete('/api/pedidos/eliminar/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pedido = await pool.query('SELECT producto_id, cantidad FROM pedidos_mesa WHERE id = $1', [id]);
+        if (pedido.rows.length > 0) {
+            const { producto_id, cantidad } = pedido.rows[0];
+            await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, producto_id]);
+            await pool.query('DELETE FROM pedidos_mesa WHERE id = $1', [id]);
+        }
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
-// Ruta para ver detalle antes de cerrar (Pre-ticket)
+// [NUEVO] CAMBIAR DE MESA (MOVER)
+app.post('/api/mesas/cambiar', async (req, res) => {
+    try {
+        const { idOrigen, idDestino } = req.body;
+        // Validar
+        const origen = await pool.query('SELECT * FROM mesas WHERE id = $1', [idOrigen]);
+        const destino = await pool.query('SELECT * FROM mesas WHERE id = $1', [idDestino]);
+        
+        if(origen.rows[0].estado !== 'OCUPADA') return res.status(400).json({error: 'Mesa origen no ocupada'});
+        if(destino.rows[0].estado !== 'LIBRE') return res.status(400).json({error: 'Mesa destino ocupada'});
+
+        // Mover datos
+        const horaInicio = origen.rows[0].hora_inicio;
+        
+        // 1. Ocupar destino con hora vieja
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = $2 WHERE id = $3', ['OCUPADA', horaInicio, idDestino]);
+        // 2. Mover pedidos
+        await pool.query('UPDATE pedidos_mesa SET mesa_id = $1 WHERE mesa_id = $2', [idDestino, idOrigen]);
+        // 3. Liberar origen
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', idOrigen]);
+
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/mesas/detalle/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
-        
-        let totalT = 0;
-        let minReal = 0;
-        
+        let totalT = 0, minReal = 0;
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             minReal = Math.ceil(resT.rows[0].min || 0);
             const minCobrar = minReal <= 30 ? 30 : Math.ceil(minReal / 30) * 30;
             totalT = (minCobrar / 60) * 10.00;
         }
-// [NUEVO] Eliminar un pedido individual de una mesa (Corrección)
-app.delete('/api/pedidos/eliminar/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // 1. Averiguamos qué producto es y cuántos eran para devolver el stock
-        const pedido = await pool.query('SELECT producto_id, cantidad FROM pedidos_mesa WHERE id = $1', [id]);
-        
-        if (pedido.rows.length > 0) {
-            const { producto_id, cantidad } = pedido.rows[0];
-
-            // 2. Devolvemos el stock al inventario
-            await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, producto_id]);
-
-            // 3. Borramos el pedido de la mesa
-            await pool.query('DELETE FROM pedidos_mesa WHERE id = $1', [id]);
-        }
-
-        res.json({ success: true });
-    } catch (e) { 
-        res.status(500).json({ error: e.message }); 
-    }
-});
-        // [MODIFICADO] Ahora traemos el ID del pedido y el ID del producto
-        const resProds = await pool.query(`
-            SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta 
-            FROM pedidos_mesa pm 
-            JOIN productos p ON pm.producto_id = p.id 
-            WHERE pm.mesa_id = $1 AND pm.pagado = FALSE
-            ORDER BY pm.id ASC
-        `, [id]);
-
+        const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
         let totalC = 0;
-        const listaProductos = resProds.rows.map(p => {
-            const subtotal = p.precio_venta * p.cantidad;
-            totalC += subtotal;
-            return { ...p, subtotal };
-        });
-
-        res.json({
-            tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT,
-            listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC
-        });
+        const listaProductos = resProds.rows.map(p => { totalC += p.precio_venta * p.cantidad; return { ...p, subtotal: p.precio_venta * p.cantidad }; });
+        res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
