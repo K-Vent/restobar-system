@@ -100,16 +100,27 @@
 
         <div class="form-nuevo">
             <div class="form-group">
-                <span class="form-label">Producto</span>
-                <input type="text" id="newNombre" class="input-dark" placeholder="Ej. Papitas">
+                <span class="form-label">Nombre</span>
+                <input type="text" id="newNombre" class="input-dark" placeholder="Ej. Alitas BBQ">
             </div>
+            
             <div class="form-group">
-                <span class="form-label">Precio Venta (S/)</span>
+                <span class="form-label">Categoría</span>
+                <select id="newCategoria" class="input-dark" style="height: 42px;">
+                    <option value="Cervezas">🍺 Cervezas</option>
+                    <option value="Tragos">🍹 Cócteles</option>
+                    <option value="Comida">🍔 Comida</option>
+                    <option value="Otros">🍬 Otros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <span class="form-label">Precio (S/)</span>
                 <input type="number" id="newPrecio" class="input-dark" placeholder="0.00">
             </div>
             <div class="form-group">
-                <span class="form-label">Stock Inicial</span>
-                <input type="number" id="newStock" class="input-dark" placeholder="0">
+                <span class="form-label">Stock</span>
+                <input type="number" id="newStock" class="input-dark" placeholder="999">
             </div>
             <button class="btn-crear" onclick="crearProducto()">+ AGREGAR</button>
         </div>
@@ -213,10 +224,23 @@
             const n = document.getElementById('newNombre').value;
             const p = document.getElementById('newPrecio').value;
             const s = document.getElementById('newStock').value;
+            const c = document.getElementById('newCategoria').value; // Nueva línea
+
             if(!n || !p) return mostrarMensaje("Falta info", "Nombre y precio requeridos");
-            await fetch('/api/productos/nuevo', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n, precio:p, stock:s||0}) });
-            document.getElementById('newNombre').value=''; document.getElementById('newPrecio').value=''; document.getElementById('newStock').value='';
-            mostrarToast("✨ Producto Creado"); cargarProductos();
+            
+            await fetch('/api/productos/nuevo', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ nombre:n, precio:p, stock:s||0, categoria:c }) // Enviamos categoría
+            });
+            
+            // Limpiar
+            document.getElementById('newNombre').value=''; 
+            document.getElementById('newPrecio').value=''; 
+            document.getElementById('newStock').value='';
+            
+            mostrarToast("✨ Producto Creado"); 
+            cargarProductos();
         }
         async function ejecutarBorrar() {
             const res = await fetch(`/api/productos/eliminar/${prodAccionId}`, {method:'DELETE'});

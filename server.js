@@ -15,6 +15,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- [NUEVO] AUTO-MIGRACIÓN DE BASE DE DATOS ---
+// Esto se ejecuta solo al iniciar para crear la columna si falta
+(async () => {
+    try {
+        console.log("🔧 Verificando estructura de base de datos...");
+        // Intentamos agregar la columna. Si ya existe, dará error y no pasa nada.
+        await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'");
+        console.log("✅ Columna 'categoria' creada con éxito.");
+    } catch (e) {
+        // Si el error es "ya existe", lo ignoramos.
+        if (e.code === '42701') { 
+            console.log("👌 La columna 'categoria' ya existía. Todo correcto.");
+        } else {
+            console.log("ℹ️ Nota DB: " + e.message);
+        }
+    }
+})();
+
 // --- RUTAS DE LOGIN ---
 app.post(['/login', '/api/login'], async (req, res) => {
     try {
@@ -103,9 +121,17 @@ app.post('/api/productos/agregar-stock', async (req, res) => {
 app.post('/api/productos/restar-stock', async (req, res) => {
     try { await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [req.body.cantidad, req.body.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
 });
+
+// [MODIFICADO] CREAR PRODUCTO CON CATEGORÍA
 app.post('/api/productos/nuevo', async (req, res) => {
-    try { await pool.query('INSERT INTO productos (nombre, precio_venta, stock) VALUES ($1, $2, $3)', [req.body.nombre, req.body.precio, req.body.stock||0]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
+    try { 
+        const { nombre, precio, stock, categoria } = req.body;
+        const cat = categoria || 'General';
+        await pool.query('INSERT INTO productos (nombre, precio_venta, stock, categoria) VALUES ($1, $2, $3, $4)', [nombre, precio, stock||0, cat]); 
+        res.json({success:true}); 
+    } catch(e){res.status(500).json({error:e.message})}
 });
+
 app.delete('/api/productos/eliminar/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -128,6 +154,7 @@ app.post('/api/pedidos/agregar', async (req, res) => {
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 app.delete('/api/pedidos/eliminar/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,7 +186,7 @@ app.post('/api/mesas/cambiar', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [MODIFICADO] RUTA DETALLE CON TOLERANCIA
+// [CON TOLERANCIA 5 MIN]
 app.get('/api/mesas/detalle/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -170,17 +197,10 @@ app.get('/api/mesas/detalle/:id', async (req, res) => {
         
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
-            minReal = Math.ceil(resT.rows[0].min || 0); // Minutos reales (ej. 34)
+            minReal = Math.ceil(resT.rows[0].min || 0);
             
-            // LÓGICA DE TOLERANCIA 5 MINUTOS:
-            // Restamos 5 min al tiempo real para el cálculo de bloques.
-            // Ejemplo: Si lleva 34 min -> 34 - 5 = 29.
-            // 29 / 30 = 0.96 -> Math.ceil = 1 bloque.
-            // 1 bloque * 30 min * (10 soles / 60 min) = 5 soles.
-            
+            // Tolerancia 5 minutos
             let tiempoCalculo = minReal - 5;
-            
-            // Aseguramos que cobre al menos el mínimo (30 min) si estuvo poco tiempo
             let bloques = Math.ceil(tiempoCalculo / 30);
             if (bloques < 1) bloques = 1; 
 
@@ -188,17 +208,14 @@ app.get('/api/mesas/detalle/:id', async (req, res) => {
             totalT = (minCobrar / 60) * 10.00;
         }
 
-        const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
+        const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta, p.categoria FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
         let totalC = 0;
         const listaProductos = resProds.rows.map(p => { totalC += p.precio_venta * p.cantidad; return { ...p, subtotal: p.precio_venta * p.cantidad }; });
         
-        // Enviamos 'minReal' para que en pantalla se vea el tiempo real (ej: "34 min"), 
-        // pero 'totalTiempo' ya tiene el descuento aplicado.
         res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [MODIFICADO] RUTA CERRAR CON TOLERANCIA
 app.post('/api/mesas/cerrar/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -209,7 +226,6 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             const minReal = Math.ceil(resT.rows[0].min || 0);
             
-            // APLICAMOS LA MISMA TOLERANCIA AL CERRAR
             let tiempoCalculo = minReal - 5;
             let bloques = Math.ceil(tiempoCalculo / 30);
             if (bloques < 1) bloques = 1;
@@ -227,15 +243,6 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', id]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
-});
-// --- RUTA TEMPORAL (USAR UNA SOLA VEZ) ---
-app.get('/setup-categorias', async (req, res) => {
-    try {
-        await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'");
-        res.send("✅ Base de datos actualizada: Columna 'categoria' creada.");
-    } catch (e) {
-        res.send("⚠️ Error (quizás ya existe): " + e.message);
-    }
 });
 
 const PORT = process.env.PORT || 3000;

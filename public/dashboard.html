@@ -323,21 +323,45 @@
             mostrarToast("✅ Mesa Abierta"); 
             cargarTodo();
         }
+        // [MEJORADO] Modal con Títulos de Categoría
         async function abrirModalProductos(mesaId) {
             mesaAccionId = mesaId;
             const res = await fetch('/api/productos');
             const prods = await res.json();
             const lista = document.getElementById('lista-productos-div');
             lista.innerHTML = '';
+
+            // Agrupamos los productos por categoría
+            const categorias = { 'Cervezas': [], 'Tragos': [], 'Comida': [], 'Otros': [], 'General': [] };
+            
             prods.forEach(p => {
-                if(p.stock > 0) {
-                    lista.innerHTML += `
-                        <div class="detalle-row" style="cursor:pointer; padding:12px; border-bottom:1px solid #333;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
-                            <span style="font-size:16px;">${p.nombre}</span>
-                            <span style="color:#2ecc71; font-weight:bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                        </div>`;
-                }
+                const cat = p.categoria || 'General';
+                if (!categorias[cat]) categorias[cat] = []; // Si es una categoría nueva, la crea
+                categorias[cat].push(p);
             });
+
+            // Función para pintar una categoría
+            const pintarGrupo = (nombre, icono, items) => {
+                if (items.length === 0) return;
+                lista.innerHTML += `<div style="background:#222; color:#f1c40f; padding:8px; font-size:12px; font-weight:bold; margin-top:10px; border-radius:4px;">${icono} ${nombre.toUpperCase()}</div>`;
+                items.forEach(p => {
+                    if(p.stock > 0) {
+                        lista.innerHTML += `
+                            <div class="detalle-row" style="cursor:pointer; padding:12px; border-bottom:1px solid #333;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
+                                <span style="font-size:16px;">${p.nombre}</span>
+                                <span style="color:#2ecc71; font-weight:bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                            </div>`;
+                    }
+                });
+            };
+
+            // Pintamos en orden
+            pintarGrupo('Cervezas', '🍺', categorias['Cervezas']);
+            pintarGrupo('Cócteles', '🍹', categorias['Tragos']);
+            pintarGrupo('Comida', '🍔', categorias['Comida']);
+            pintarGrupo('Otros', '🍬', categorias['Otros']);
+            pintarGrupo('General', '📦', categorias['General']);
+
             document.getElementById('modal-productos').style.display = 'flex';
         }
         async function ejecutarAgregarPedido() {
