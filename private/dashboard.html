@@ -417,67 +417,54 @@
         async function prepararCobro(id) {
             mesaAccionId = id;
             const contenido = document.getElementById('cobro-contenido');
-            contenido.innerHTML = '<p style="color:#888; font-style:italic;">Calculando consumo...</p>';
+            
+            // 1. Ponemos el mensaje de carga
+            contenido.innerHTML = '<p style="color:#888; font-style:italic; text-align:center; padding:20px;">Calculando consumo...</p>';
             document.getElementById('modal-cobro').style.display = 'flex';
             
             try {
                 const res = await fetch(`/api/mesas/detalle/${id}`);
                 
-                // Si el servidor nos devuelve un error o nos manda al login (no es JSON)
+                // 2. Verificamos si el servidor nos mandó al Login (HTML) en vez de datos (JSON)
                 const text = await res.text();
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (err) {
-                    // Si falla al leer, es probable que nos haya mandado el HTML del login
-                    window.location.href = '/index.html'; // Nos vamos al login
+                    // Si falla al leer JSON, es que nos mandaron HTML (Login)
+                    // Significa que la sesión expiró.
+                    alert("⚠️ Tu sesión ha expirado. Por favor ingresa nuevamente.");
+                    window.location.href = '/index.html'; 
                     return;
                 }
 
-                if (data.error) {
-                    contenido.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
-                    return;
-                }
-                
+                // 3. Renderizamos los datos (Igual que antes)
                 let html = '';
-                
-                // Sección de Tiempo (Billar)
                 if (data.tipo === 'BILLAR') {
-                    html += `
-                    <div class="detalle-row">
-                        <span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span>
-                        <span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span>
-                    </div>`;
+                    html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
                 }
                 
-                // Sección de Productos
                 if (data.listaProductos && data.listaProductos.length > 0) {
                     html += `<div style="border-top:1px dashed #444; margin:10px 0;"></div>`;
-                    html += `<div style="font-size:12px; color:#666; margin-bottom:5px;">PRODUCTOS:</div>`;
-                    
-                    data.listaProductos.forEach(p => {
-                        html += `
-                        <div class="detalle-row" style="align-items: center;">
+                    data.listaProductos.forEach(p => { 
+                        html += `<div class="detalle-row" style="align-items: center;">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <button onclick="eliminarPedido(${p.id}, '${p.nombre}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer; padding:4px 8px; font-weight:bold;">🗑️</button>
                                 <span>${p.cantidad}x ${p.nombre}</span>
                             </div>
                             <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-                        </div>`;
+                        </div>`; 
                     });
-                } else {
-                    if(!data.listaProductos) { console.log('No hay lista de productos'); }
                 }
 
-                const total = parseFloat(data.totalFinal || 0).toFixed(2);
-                html += `<div class="detalle-row total-row"><span>TOTAL A COBRAR</span><span>S/ ${total}</span></div>`;
+                html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
                 
                 contenido.innerHTML = html;
                 document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
 
             } catch (e) {
                 console.error(e);
-                contenido.innerHTML = `<p style="color:#e74c3c">⚠️ Error de conexión. Recarga la página.</p>`;
+                contenido.innerHTML = `<p style="color:#e74c3c; text-align:center;">⚠️ Error de conexión.</p>`;
             }
         }
         async function eliminarPedido(pedidoId, nombreProd) {
