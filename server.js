@@ -228,6 +228,15 @@ app.post('/api/mesas/cerrar/:id', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// --- RUTA TEMPORAL (USAR UNA SOLA VEZ) ---
+app.get('/setup-categorias', async (req, res) => {
+    try {
+        await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'");
+        res.send("✅ Base de datos actualizada: Columna 'categoria' creada.");
+    } catch (e) {
+        res.send("⚠️ Error (quizás ya existe): " + e.message);
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🎱 Servidor funcionando en puerto ${PORT}`));
