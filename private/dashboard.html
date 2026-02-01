@@ -233,7 +233,12 @@
 
         async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
         function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
-        function cerrarSesion() { if(confirm("¿Cerrar sesión?")) window.location.href = '/index.html'; }
+        function cerrarSesion() {
+    if(confirm("¿Seguro que quieres cerrar sesión?")) {
+        // Ahora enviamos al usuario a la ruta del servidor que destruye el pase VIP
+        window.location.href = '/logout'; 
+    }
+}
 
         async function actualizarCaja() {
             try {
