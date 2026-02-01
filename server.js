@@ -191,6 +191,36 @@ app.get('/api/mesas/detalle/:id', async (req, res) => {
     }
 });
 
+// [ESTA ERA LA RUTA QUE FALTABA]
+app.post('/api/mesas/abrir/:id', async (req, res) => {
+    try { 
+        // Cambiamos estado a OCUPADA y guardamos la hora exacta de inicio
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NOW() WHERE id = $2', ['OCUPADA', req.params.id]); 
+        res.json({success:true}); 
+    } catch(e){
+        res.status(500).json({error:e.message})
+    }
+});
+
+// [TAMBIÉN FALTABA ESTA PARA CAMBIAR MESA]
+app.post('/api/mesas/cambiar', async (req, res) => {
+    try {
+        const { idOrigen, idDestino } = req.body;
+        const origen = await pool.query('SELECT * FROM mesas WHERE id = $1', [idOrigen]);
+        const destino = await pool.query('SELECT * FROM mesas WHERE id = $1', [idDestino]);
+        
+        if(origen.rows[0].estado !== 'OCUPADA') return res.status(400).json({error: 'Mesa origen no ocupada'});
+        if(destino.rows[0].estado !== 'LIBRE') return res.status(400).json({error: 'Mesa destino ocupada'});
+
+        const horaInicio = origen.rows[0].hora_inicio;
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = $2 WHERE id = $3', ['OCUPADA', horaInicio, idDestino]);
+        await pool.query('UPDATE pedidos_mesa SET mesa_id = $1 WHERE mesa_id = $2', [idDestino, idOrigen]);
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', idOrigen]);
+
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/mesas/cerrar/:id', async (req, res) => {
     const { id } = req.params;
     try {
