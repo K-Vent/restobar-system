@@ -162,21 +162,64 @@ app.post('/api/pedidos/agregar', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// Ruta para ver detalle antes de cerrar (Pre-ticket)
 app.get('/api/mesas/detalle/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
-        let totalT = 0, minReal = 0;
+        
+        let totalT = 0;
+        let minReal = 0;
+        
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             minReal = Math.ceil(resT.rows[0].min || 0);
             const minCobrar = minReal <= 30 ? 30 : Math.ceil(minReal / 30) * 30;
             totalT = (minCobrar / 60) * 10.00;
         }
-        const resProds = await pool.query(`SELECT p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE`, [id]);
+// [NUEVO] Eliminar un pedido individual de una mesa (Corrección)
+app.delete('/api/pedidos/eliminar/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Averiguamos qué producto es y cuántos eran para devolver el stock
+        const pedido = await pool.query('SELECT producto_id, cantidad FROM pedidos_mesa WHERE id = $1', [id]);
+        
+        if (pedido.rows.length > 0) {
+            const { producto_id, cantidad } = pedido.rows[0];
+
+            // 2. Devolvemos el stock al inventario
+            await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, producto_id]);
+
+            // 3. Borramos el pedido de la mesa
+            await pool.query('DELETE FROM pedidos_mesa WHERE id = $1', [id]);
+        }
+
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: e.message }); 
+    }
+});
+        // [MODIFICADO] Ahora traemos el ID del pedido y el ID del producto
+        const resProds = await pool.query(`
+            SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta 
+            FROM pedidos_mesa pm 
+            JOIN productos p ON pm.producto_id = p.id 
+            WHERE pm.mesa_id = $1 AND pm.pagado = FALSE
+            ORDER BY pm.id ASC
+        `, [id]);
+
         let totalC = 0;
-        const listaProductos = resProds.rows.map(p => { totalC += p.precio_venta * p.cantidad; return { ...p, subtotal: p.precio_venta * p.cantidad }; });
-        res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
+        const listaProductos = resProds.rows.map(p => {
+            const subtotal = p.precio_venta * p.cantidad;
+            totalC += subtotal;
+            return { ...p, subtotal };
+        });
+
+        res.json({
+            tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT,
+            listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC
+        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

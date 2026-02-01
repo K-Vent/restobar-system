@@ -296,20 +296,67 @@
                 cerrarModal('modal-cantidad'); cerrarModal('modal-productos'); mostrarToast("✨ Producto Agregado"); actualizarCaja();
             }
         }
+        // --- FUNCIÓN ACTUALIZADA CON BOTÓN DE BORRAR ---
         async function prepararCobro(id) {
-            document.getElementById('cobro-contenido').innerHTML = '<p>Calculando...</p>';
+            mesaAccionId = id; // Guardamos el ID por si acaso
+            document.getElementById('cobro-contenido').innerHTML = '<p style="color:#888">Calculando consumo...</p>';
             document.getElementById('modal-cobro').style.display = 'flex';
+            
             const res = await fetch(`/api/mesas/detalle/${id}`);
             const data = await res.json();
+            
             let html = '';
-            if (data.tipo === 'BILLAR') html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
+            
+            // Sección de Tiempo (Billar)
+            if (data.tipo === 'BILLAR') {
+                html += `
+                <div class="detalle-row">
+                    <span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span>
+                    <span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span>
+                </div>`;
+            }
+            
+            // Sección de Productos (Con botón de basura)
             if (data.listaProductos.length > 0) {
                 html += `<div style="border-top:1px dashed #444; margin:10px 0;"></div>`;
-                data.listaProductos.forEach(p => { html += `<div class="detalle-row"><span>${p.cantidad}x ${p.nombre}</span><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`; });
+                html += `<div style="font-size:12px; color:#666; margin-bottom:5px;">PRODUCTOS CONSUMIDOS:</div>`;
+                
+                data.listaProductos.forEach(p => {
+                    html += `
+                    <div class="detalle-row" style="align-items: center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button onclick="eliminarPedido(${p.id}, '${p.nombre}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer; padding:4px 8px; font-weight:bold;">🗑️</button>
+                            <span>${p.cantidad}x ${p.nombre}</span>
+                        </div>
+                        <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
+                    </div>`;
+                });
+            } else {
+                html += `<div style="padding:10px 0; color:#666; font-style:italic;">Sin consumo de barra</div>`;
             }
-            html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
+
+            html += `<div class="detalle-row total-row"><span>TOTAL A COBRAR</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
+            
             document.getElementById('cobro-contenido').innerHTML = html;
             document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
+        }
+
+        // [NUEVA] Función para borrar el pedido individual
+        async function eliminarPedido(pedidoId, nombreProd) {
+            if(!confirm(`⚠️ CORRECCIÓN:\n\n¿Eliminar el pedido de "${nombreProd}"?\nEl stock regresará al inventario.`)) return;
+
+            const res = await fetch(`/api/pedidos/eliminar/${pedidoId}`, { method: 'DELETE' });
+            const data = await res.json();
+            
+            if(data.success) {
+                mostrarToast("🗑️ Pedido corregido");
+                // Recargamos el modal de cobro para ver el nuevo total
+                prepararCobro(mesaAccionId);
+                // Actualizamos las tarjetas de dinero de fondo
+                actualizarCaja();
+            } else {
+                alert("Error al eliminar pedido");
+            }
         }
         async function ejecutarCobro(id) {
             const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
