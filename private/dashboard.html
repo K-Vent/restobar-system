@@ -417,28 +417,29 @@
         async function prepararCobro(id) {
             mesaAccionId = id;
             const contenido = document.getElementById('cobro-contenido');
-            
-            // 1. Ponemos el mensaje de carga
-            contenido.innerHTML = '<p style="color:#888; font-style:italic; text-align:center; padding:20px;">Calculando consumo...</p>';
+            contenido.innerHTML = '<p style="color:#888; font-style:italic;">Calculando consumo...</p>';
             document.getElementById('modal-cobro').style.display = 'flex';
             
             try {
                 const res = await fetch(`/api/mesas/detalle/${id}`);
+                const text = await res.text(); // Leemos como texto primero
                 
-                // 2. Verificamos si el servidor nos mandó al Login (HTML) en vez de datos (JSON)
-                const text = await res.text();
                 let data;
                 try {
                     data = JSON.parse(text);
-                } catch (err) {
-                    // Si falla al leer JSON, es que nos mandaron HTML (Login)
-                    // Significa que la sesión expiró.
-                    alert("⚠️ Tu sesión ha expirado. Por favor ingresa nuevamente.");
-                    window.location.href = '/index.html'; 
+                } catch (e) {
+                    // Si no es JSON, es un error grave (HTML)
+                    console.error("Error del servidor:", text);
+                    contenido.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Error Fatal del Servidor</p><p style="font-size:12px; color:#aaa;">Revisa la consola (F12) o los logs de Render.</p>`;
                     return;
                 }
 
-                // 3. Renderizamos los datos (Igual que antes)
+                // Si la API devolvió un error controlado
+                if (data.error) {
+                    contenido.innerHTML = `<p style="color:#e74c3c">❌ Error: ${data.error}</p>`;
+                    return;
+                }
+                
                 let html = '';
                 if (data.tipo === 'BILLAR') {
                     html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
@@ -464,7 +465,7 @@
 
             } catch (e) {
                 console.error(e);
-                contenido.innerHTML = `<p style="color:#e74c3c; text-align:center;">⚠️ Error de conexión.</p>`;
+                contenido.innerHTML = `<p style="color:#e74c3c">⚠️ Error de conexión.</p>`;
             }
         }
         async function eliminarPedido(pedidoId, nombreProd) {
