@@ -52,20 +52,50 @@
         .btn-mesa { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; }
         .btn-abrir { background: #27ae60; color: white; }
         .btn-producto { background: #f39c12; color: black; }
-        .btn-mover { background: #8e44ad; color: white; } /* COLOR MORADO PARA MOVER */
+        .btn-mover { background: #8e44ad; color: white; }
         .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
         /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 420px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-        .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
-        .detalle-lista { text-align: left; margin-bottom: 20px; max-height: 250px; overflow-y: auto; }
+        .modal-box { background: #1e1e1e; padding: 0; border-radius: 12px; width: 90%; max-width: 420px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; }
+        /* padding 0 para poder diseñar bien el layout dividido */
+
+        .modal-title { font-size: 20px; color: #f1c40f; padding: 20px; border-bottom: 1px solid #333; font-weight: bold; background: #222; margin: 0; }
+        
+        .detalle-lista { text-align: left; padding: 20px; max-height: 250px; overflow-y: auto; }
         .detalle-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 14px; }
         .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 10px; padding-top: 15px; }
         .modal-input { width: 60%; padding: 12px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; font-size: 22px; text-align: center; margin-bottom: 25px; outline: none; }
-        .modal-btns { display: flex; gap: 15px; margin-top: 10px; }
+        
+        .modal-btns { display: flex; gap: 15px; padding: 20px; background: #222; border-top: 1px solid #333; }
         .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-cancel { background: #444; color: white; } .btn-confirm { background: #27ae60; color: white; } .btn-danger { background: #c0392b; color: white; }
+
+        /* --- NUEVOS ESTILOS PARA EL MODAL DE PRODUCTOS DIVIDIDO --- */
+        .modal-box.wide { max-width: 700px; } /* Más ancho para que quepan las columnas */
+        
+        .split-container { display: flex; height: 400px; text-align: left; }
+        
+        /* Columna Izquierda (Categorías) */
+        .split-sidebar { width: 150px; background: #151515; border-right: 1px solid #333; overflow-y: auto; display: flex; flex-direction: column; }
+        .cat-btn { 
+            padding: 15px; border: none; background: transparent; color: #888; 
+            text-align: left; cursor: pointer; border-left: 3px solid transparent; 
+            font-weight: 500; font-size: 14px; transition: 0.2s; border-bottom: 1px solid #222;
+        }
+        .cat-btn:hover { background: #1a1a1a; color: white; }
+        .cat-btn.active { background: #1f1f1f; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
+
+        /* Columna Derecha (Productos) */
+        .split-content { flex: 1; padding: 0; overflow-y: auto; background: #1e1e1e; }
+        .prod-item { 
+            display: flex; justify-content: space-between; padding: 15px; 
+            border-bottom: 1px solid #333; cursor: pointer; transition: 0.2s; 
+        }
+        .prod-item:hover { background: #2a2a2a; }
+        .prod-name { font-size: 15px; font-weight: 500; color: white; }
+        .prod-price { color: #2ecc71; font-weight: bold; }
+        .prod-stock-low { color: #e74c3c; font-size: 11px; margin-left: 5px; }
 
         #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
@@ -126,15 +156,29 @@
         <div id="grid-mesas" class="grid-mesas"></div>
     </main>
 
-    <div id="modal-cambio" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">🔄 Mover Mesa</div>
-            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">Mover todo el consumo a:</p>
+    <div id="modal-productos" class="modal-overlay">
+        <div class="modal-box wide"> <div class="modal-title">🍺 Seleccionar Producto</div>
             
-            <select id="select-mesa-destino" class="modal-input" style="width:100%; text-align:left;">
-                </select>
+            <div class="split-container">
+                <div id="cat-sidebar" class="split-sidebar">
+                    </div>
+                
+                <div id="prod-content" class="split-content">
+                    </div>
+            </div>
 
             <div class="modal-btns">
+                <button class="btn-modal btn-cancel" style="width:100%" onclick="cerrarModal('modal-productos')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cambio" class="modal-overlay">
+        <div class="modal-box" style="padding: 20px;">
+            <div style="font-size:20px; color:#f1c40f; font-weight:bold; margin-bottom:20px;">🔄 Mover Mesa</div>
+            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">Mover todo el consumo a:</p>
+            <select id="select-mesa-destino" class="modal-input" style="width:100%; text-align:left;"></select>
+            <div class="modal-btns" style="border:none; padding:0;">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cambio')">Cancelar</button>
                 <button class="btn-modal" style="background:#8e44ad; color:white;" onclick="ejecutarCambioMesa()">CONFIRMAR</button>
             </div>
@@ -142,10 +186,10 @@
     </div>
 
     <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="confirm-titulo">Título</div>
+        <div class="modal-box" style="padding:20px;">
+            <div style="font-size:20px; color:#f1c40f; margin-bottom:15px;" id="confirm-titulo">Título</div>
             <p id="confirm-texto" style="color:#ddd; margin-bottom:20px; font-size:15px;"></p>
-            <div class="modal-btns">
+            <div class="modal-btns" style="border:none; padding:0;">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
                 <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
             </div>
@@ -153,10 +197,10 @@
     </div>
 
     <div id="modal-cantidad" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="cant-titulo">Cantidad</div>
+        <div class="modal-box" style="padding:20px;">
+            <div style="font-size:20px; color:#f1c40f; margin-bottom:15px;" id="cant-titulo">Cantidad</div>
             <input type="number" id="input-cantidad" class="modal-input" value="1" min="1">
-            <div class="modal-btns">
+            <div class="modal-btns" style="border:none; padding:0;">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cantidad')">Cancelar</button>
                 <button class="btn-modal btn-confirm" id="btn-cant-ok">AGREGAR</button>
             </div>
@@ -164,8 +208,8 @@
     </div>
 
     <div id="modal-msg" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="msg-titulo">Aviso</div>
+        <div class="modal-box" style="padding:20px;">
+            <div style="font-size:20px; color:#f1c40f; margin-bottom:15px;" id="msg-titulo">Aviso</div>
             <p id="msg-texto" style="color:#ddd; margin-bottom:20px; font-size:16px;"></p>
             <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
         </div>
@@ -182,17 +226,10 @@
         </div>
     </div>
 
-    <div id="modal-productos" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">🍺 Seleccionar Producto</div>
-            <div id="lista-productos-div" class="detalle-lista"></div>
-            <button class="btn-modal btn-cancel" style="width:100%" onclick="cerrarModal('modal-productos')">Cancelar</button>
-        </div>
-    </div>
-
     <script>
         let intervaloCronometros = null;
         let mesaAccionId = null; let prodAccionId = null; let mesaOrigenCambio = null;
+        let productosCache = []; // Para guardar los productos y no pedirlos a cada rato
 
         async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
         function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
@@ -246,67 +283,111 @@
             } catch (e) { console.error(e); }
         }
 
-        // LOGICA DE CAMBIO DE MESA
-        async function abrirModalCambio(id, numero) {
-            mesaOrigenCambio = id;
-            // Buscar mesas LIBRES
-            const res = await fetch('/api/mesas');
-            const mesas = await res.json();
-            const libres = mesas.filter(m => m.estado === 'LIBRE');
+        // --- NUEVA LÓGICA DE PRODUCTOS DIVIDIDOS ---
+        async function abrirModalProductos(mesaId) {
+            mesaAccionId = mesaId;
             
-            const select = document.getElementById('select-mesa-destino');
-            select.innerHTML = '';
+            // 1. Pedir productos al servidor
+            const res = await fetch('/api/productos');
+            productosCache = await res.json();
             
-            if(libres.length === 0) {
-                alert("No hay mesas libres para mover.");
+            // 2. Extraer categorías únicas
+            const categorias = ['Todos'];
+            productosCache.forEach(p => {
+                const cat = p.categoria || 'General';
+                if(!categorias.includes(cat)) categorias.push(cat);
+            });
+
+            // 3. Pintar la barra lateral (Izquierda)
+            const sidebar = document.getElementById('cat-sidebar');
+            sidebar.innerHTML = '';
+            categorias.forEach(cat => {
+                let icono = '📦';
+                if(cat==='Cervezas') icono='🍺';
+                if(cat==='Tragos'||cat==='Cócteles') icono='🍹';
+                if(cat==='Comida') icono='🍔';
+                
+                sidebar.innerHTML += `<button class="cat-btn" onclick="filtrarProductos('${cat}', this)">${icono} ${cat}</button>`;
+            });
+
+            // 4. Seleccionar la primera categoría por defecto ("Todos")
+            // Simular clic en el primer botón
+            if(sidebar.children.length > 0) {
+                filtrarProductos('Todos', sidebar.children[0]);
+            }
+
+            document.getElementById('modal-productos').style.display = 'flex';
+        }
+
+        function filtrarProductos(categoriaSeleccionada, btnElement) {
+            // Actualizar estilo de botones (Active)
+            const btns = document.querySelectorAll('.cat-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            // Filtrar y pintar en la derecha
+            const content = document.getElementById('prod-content');
+            content.innerHTML = '';
+
+            const filtrados = productosCache.filter(p => 
+                categoriaSeleccionada === 'Todos' ? true : (p.categoria || 'General') === categoriaSeleccionada
+            );
+
+            if(filtrados.length === 0) {
+                content.innerHTML = '<div style="padding:20px; color:#666; text-align:center;">No hay productos en esta categoría.</div>';
                 return;
             }
 
-            libres.forEach(m => {
-                select.innerHTML += `<option value="${m.id}">Mesa ${m.numero_mesa} (${m.tipo})</option>`;
+            filtrados.forEach(p => {
+                if(p.stock > 0) {
+                    content.innerHTML += `
+                        <div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
+                            <div class="prod-name">${p.nombre}</div>
+                            <div>
+                                <span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                            </div>
+                        </div>`;
+                }
             });
-
-            document.querySelector('#modal-cambio .modal-title').innerText = `🔄 Mover Mesa ${numero} a...`;
-            document.getElementById('modal-cambio').style.display = 'flex';
         }
 
+        // --- RESTO DE FUNCIONES (Iguales) ---
+        async function abrirModalCambio(id, numero) {
+            mesaOrigenCambio = id;
+            const res = await fetch('/api/mesas');
+            const mesas = await res.json();
+            const libres = mesas.filter(m => m.estado === 'LIBRE');
+            const select = document.getElementById('select-mesa-destino');
+            select.innerHTML = '';
+            if(libres.length === 0) { alert("No hay mesas libres."); return; }
+            libres.forEach(m => { select.innerHTML += `<option value="${m.id}">Mesa ${m.numero_mesa} (${m.tipo})</option>`; });
+            document.getElementById('modal-cambio').style.display = 'flex';
+        }
         async function ejecutarCambioMesa() {
             const idDestino = document.getElementById('select-mesa-destino').value;
             if(!idDestino) return;
-
             const res = await fetch('/api/mesas/cambiar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ idOrigen: mesaOrigenCambio, idDestino: idDestino })
             });
-
             const data = await res.json();
-            if(data.success) {
-                cerrarModal('modal-cambio');
-                mostrarToast("✅ Mesa movida con éxito");
-                cargarTodo();
-            } else {
-                alert("Error al mover mesa: " + (data.error || 'Desconocido'));
-            }
+            if(data.success) { cerrarModal('modal-cambio'); mostrarToast("✅ Mesa movida"); cargarTodo(); }
+            else { alert("Error al mover mesa"); }
         }
 
-        // UI HELPERS
         function mostrarToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.className = "show"; setTimeout(() => t.className = t.className.replace("show", ""), 2500); }
         function mostrarMensaje(ti, tx) { document.getElementById('msg-titulo').innerText=ti; document.getElementById('msg-texto').innerHTML=tx; document.getElementById('modal-msg').style.display='flex'; }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-
         function mostrarConfirmacion(tipo, id = null) {
             mesaAccionId = id;
             if(tipo === 'abrir') {
                 document.getElementById('confirm-titulo').innerText = "🟢 Abrir Mesa";
-                document.getElementById('confirm-texto').innerText = "¿Deseas iniciar el tiempo en esta mesa?";
+                document.getElementById('confirm-texto').innerText = "¿Deseas iniciar el tiempo?";
                 document.getElementById('btn-confirm-ok').className = "btn-modal btn-confirm";
-                document.getElementById('btn-confirm-ok').innerText = "Aceptar";
                 document.getElementById('btn-confirm-ok').onclick = ejecutarAbrirMesa;
                 document.getElementById('modal-confirm').style.display = 'flex';
             }
         }
-
         function mostrarInputCantidad(prodId, nombre) {
             prodAccionId = prodId;
             document.getElementById('cant-titulo').innerText = `${nombre}`;
@@ -315,54 +396,11 @@
             document.getElementById('btn-cant-ok').onclick = ejecutarAgregarPedido;
             setTimeout(() => document.getElementById('input-cantidad').focus(), 100);
         }
-
-        // ACCIONES
         async function ejecutarAbrirMesa() {
             cerrarModal('modal-confirm');
             await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST' });
             mostrarToast("✅ Mesa Abierta"); 
             cargarTodo();
-        }
-        // [MEJORADO] Modal con Títulos de Categoría
-        async function abrirModalProductos(mesaId) {
-            mesaAccionId = mesaId;
-            const res = await fetch('/api/productos');
-            const prods = await res.json();
-            const lista = document.getElementById('lista-productos-div');
-            lista.innerHTML = '';
-
-            // Agrupamos los productos por categoría
-            const categorias = { 'Cervezas': [], 'Tragos': [], 'Comida': [], 'Otros': [], 'General': [] };
-            
-            prods.forEach(p => {
-                const cat = p.categoria || 'General';
-                if (!categorias[cat]) categorias[cat] = []; // Si es una categoría nueva, la crea
-                categorias[cat].push(p);
-            });
-
-            // Función para pintar una categoría
-            const pintarGrupo = (nombre, icono, items) => {
-                if (items.length === 0) return;
-                lista.innerHTML += `<div style="background:#222; color:#f1c40f; padding:8px; font-size:12px; font-weight:bold; margin-top:10px; border-radius:4px;">${icono} ${nombre.toUpperCase()}</div>`;
-                items.forEach(p => {
-                    if(p.stock > 0) {
-                        lista.innerHTML += `
-                            <div class="detalle-row" style="cursor:pointer; padding:12px; border-bottom:1px solid #333;" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
-                                <span style="font-size:16px;">${p.nombre}</span>
-                                <span style="color:#2ecc71; font-weight:bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                            </div>`;
-                    }
-                });
-            };
-
-            // Pintamos en orden
-            pintarGrupo('Cervezas', '🍺', categorias['Cervezas']);
-            pintarGrupo('Cócteles', '🍹', categorias['Tragos']);
-            pintarGrupo('Comida', '🍔', categorias['Comida']);
-            pintarGrupo('Otros', '🍬', categorias['Otros']);
-            pintarGrupo('General', '📦', categorias['General']);
-
-            document.getElementById('modal-productos').style.display = 'flex';
         }
         async function ejecutarAgregarPedido() {
             const cant = document.getElementById('input-cantidad').value;
@@ -371,8 +409,6 @@
                 cerrarModal('modal-cantidad'); cerrarModal('modal-productos'); mostrarToast("✨ Producto Agregado"); actualizarCaja();
             }
         }
-        
-        // COBRO CON BOTÓN ELIMINAR
         async function prepararCobro(id) {
             mesaAccionId = id;
             document.getElementById('cobro-contenido').innerHTML = '<p>Calculando...</p>';
@@ -397,18 +433,12 @@
             document.getElementById('cobro-contenido').innerHTML = html;
             document.getElementById('btn-cobrar-final').onclick = () => ejecutarCobro(id);
         }
-
         async function eliminarPedido(pedidoId, nombreProd) {
-            if(!confirm(`⚠️ CORRECCIÓN:\n\n¿Eliminar el pedido de "${nombreProd}"?\nEl stock regresará al inventario.`)) return;
+            if(!confirm(`⚠️ ¿Borrar "${nombreProd}"? Stock regresa.`)) return;
             const res = await fetch(`/api/pedidos/eliminar/${pedidoId}`, { method: 'DELETE' });
             const data = await res.json();
-            if(data.success) {
-                mostrarToast("🗑️ Pedido corregido");
-                prepararCobro(mesaAccionId);
-                actualizarCaja();
-            } else { alert("Error al eliminar pedido"); }
+            if(data.success) { mostrarToast("🗑️ Borrado"); prepararCobro(mesaAccionId); actualizarCaja(); }
         }
-
         async function ejecutarCobro(id) {
             const res = await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
             const data = await res.json();
