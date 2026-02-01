@@ -141,63 +141,87 @@ app.delete('/api/pedidos/eliminar/:id', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [NUEVO] CAMBIAR DE MESA (MOVER)
 app.post('/api/mesas/cambiar', async (req, res) => {
     try {
         const { idOrigen, idDestino } = req.body;
-        // Validar
         const origen = await pool.query('SELECT * FROM mesas WHERE id = $1', [idOrigen]);
         const destino = await pool.query('SELECT * FROM mesas WHERE id = $1', [idDestino]);
         
         if(origen.rows[0].estado !== 'OCUPADA') return res.status(400).json({error: 'Mesa origen no ocupada'});
         if(destino.rows[0].estado !== 'LIBRE') return res.status(400).json({error: 'Mesa destino ocupada'});
 
-        // Mover datos
         const horaInicio = origen.rows[0].hora_inicio;
-        
-        // 1. Ocupar destino con hora vieja
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = $2 WHERE id = $3', ['OCUPADA', horaInicio, idDestino]);
-        // 2. Mover pedidos
         await pool.query('UPDATE pedidos_mesa SET mesa_id = $1 WHERE mesa_id = $2', [idDestino, idOrigen]);
-        // 3. Liberar origen
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', idOrigen]);
 
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// [MODIFICADO] RUTA DETALLE CON TOLERANCIA
 app.get('/api/mesas/detalle/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
-        let totalT = 0, minReal = 0;
+        
+        let totalT = 0;
+        let minReal = 0;
+        
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
-            minReal = Math.ceil(resT.rows[0].min || 0);
-            const minCobrar = minReal <= 30 ? 30 : Math.ceil(minReal / 30) * 30;
+            minReal = Math.ceil(resT.rows[0].min || 0); // Minutos reales (ej. 34)
+            
+            // LÓGICA DE TOLERANCIA 5 MINUTOS:
+            // Restamos 5 min al tiempo real para el cálculo de bloques.
+            // Ejemplo: Si lleva 34 min -> 34 - 5 = 29.
+            // 29 / 30 = 0.96 -> Math.ceil = 1 bloque.
+            // 1 bloque * 30 min * (10 soles / 60 min) = 5 soles.
+            
+            let tiempoCalculo = minReal - 5;
+            
+            // Aseguramos que cobre al menos el mínimo (30 min) si estuvo poco tiempo
+            let bloques = Math.ceil(tiempoCalculo / 30);
+            if (bloques < 1) bloques = 1; 
+
+            const minCobrar = bloques * 30; 
             totalT = (minCobrar / 60) * 10.00;
         }
+
         const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
         let totalC = 0;
         const listaProductos = resProds.rows.map(p => { totalC += p.precio_venta * p.cantidad; return { ...p, subtotal: p.precio_venta * p.cantidad }; });
+        
+        // Enviamos 'minReal' para que en pantalla se vea el tiempo real (ej: "34 min"), 
+        // pero 'totalTiempo' ya tiene el descuento aplicado.
         res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// [MODIFICADO] RUTA CERRAR CON TOLERANCIA
 app.post('/api/mesas/cerrar/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
         let totalT = 0;
+        
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             const minReal = Math.ceil(resT.rows[0].min || 0);
-            const minCobrar = minReal <= 30 ? 30 : Math.ceil(minReal / 30) * 30;
+            
+            // APLICAMOS LA MISMA TOLERANCIA AL CERRAR
+            let tiempoCalculo = minReal - 5;
+            let bloques = Math.ceil(tiempoCalculo / 30);
+            if (bloques < 1) bloques = 1;
+
+            const minCobrar = bloques * 30;
             totalT = (minCobrar / 60) * 10.00;
         }
+
         const resC = await pool.query(`SELECT SUM(p.precio_venta * pm.cantidad) as total FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE`, [id]);
         const totalC = parseFloat(resC.rows[0].total || 0);
         const totalF = totalT + totalC;
+        
         await pool.query('INSERT INTO ventas (mesa_id, tipo_mesa, total_tiempo, total_productos, total_final) VALUES ($1, $2, $3, $4, $5)', [id, mesa.tipo, totalT, totalC, totalF]);
         await pool.query('UPDATE pedidos_mesa SET pagado = TRUE WHERE mesa_id = $1', [id]);
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', id]);
