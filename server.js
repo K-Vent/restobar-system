@@ -102,24 +102,33 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Caja Actual
+// [CORREGIDO] Caja Actual con LISTA DE VENTAS
 app.get('/api/caja/actual', verificarSesion, async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
         const fechaInicio = ultimoCierre.rows[0].fecha;
+
+        // 1. Totales Generales
         const ventas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        const totalVentas = parseFloat(ventas.rows[0].total);
         const gastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [fechaInicio]);
-        const totalGastos = parseFloat(gastos.rows[0].total);
+        
+        // 2. Desglose
         const prod = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
         const mesas = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
 
+        // 3. [NUEVO] Lista para la tabla (Esto faltaba)
+        const lista = await pool.query(`
+            SELECT id, tipo_mesa, total_final, TO_CHAR(fecha, 'HH24:MI') as hora 
+            FROM ventas WHERE fecha > $1 ORDER BY fecha DESC
+        `, [fechaInicio]);
+
         res.json({
-            total_ventas: totalVentas,
-            total_gastos: totalGastos,
-            total_caja_real: totalVentas - totalGastos,
-            total_productos: parseFloat(prod.rows[0].total),
-            total_mesas: parseFloat(mesas.rows[0].total)
+            total_ventas: parseFloat(ventas.rows[0].total || 0),
+            total_gastos: parseFloat(gastos.rows[0].total || 0),
+            total_caja_real: parseFloat(ventas.rows[0].total || 0) - parseFloat(gastos.rows[0].total || 0),
+            total_productos: parseFloat(prod.rows[0].total || 0),
+            total_mesas: parseFloat(mesas.rows[0].total || 0),
+            lista: lista.rows // Enviamos la lista
         });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
