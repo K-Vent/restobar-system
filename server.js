@@ -30,9 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- MIDDLEWARES DE SEGURIDAD ---
-
-// 1. Verifica si está logueado
+// --- SEGURIDAD ---
 const verificarSesion = (req, res, next) => {
     if (req.session.usuario) { next(); } 
     else {
@@ -41,19 +39,13 @@ const verificarSesion = (req, res, next) => {
     }
 };
 
-// 2. [NUEVO] Verifica si es ADMIN (Dueño)
 const soloAdmin = (req, res, next) => {
-    if (req.session.usuario && req.session.usuario.rol === 'admin') {
-        next();
-    } else {
-        res.status(403).json({ error: '⛔ Acceso Denegado: Solo para Administradores.' });
-    }
+    if (req.session.usuario && req.session.usuario.rol === 'admin') { next(); } 
+    else { res.status(403).json({ error: '⛔ Acceso Denegado.' }); }
 };
 
-// --- RUTAS DE ARCHIVOS (HTML) ---
+// --- RUTAS HTML ---
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
-
-// [PROTEGIDO] Solo el Admin puede entrar a estas páginas
 app.get('/inventario.html', verificarSesion, (req, res) => {
     if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html');
     res.sendFile(path.join(__dirname, 'private', 'inventario.html'));
@@ -71,7 +63,6 @@ app.post(['/login', '/api/login'], loginLimiter, async (req, res) => {
         const result = await pool.query('SELECT * FROM usuarios WHERE username = $1 AND password = $2', [username, password]);
         if (result.rows.length > 0) {
             req.session.usuario = result.rows[0]; 
-            // Devolvemos el rol al frontend para que sepa qué ocultar
             res.json({ success: true, rol: result.rows[0].rol });
         } else {
             res.status(401).json({ success: false });
@@ -80,35 +71,88 @@ app.post(['/login', '/api/login'], loginLimiter, async (req, res) => {
 });
 
 app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/')); });
-
-// [NUEVO] Ruta para que el Frontend pregunte "¿Quién soy?"
 app.get('/api/usuario/actual', verificarSesion, (req, res) => {
-    res.json({ 
-        username: req.session.usuario.username, 
-        rol: req.session.usuario.rol || 'mozo' 
-    });
+    res.json({ username: req.session.usuario.username, rol: req.session.usuario.rol || 'mozo' });
 });
 
-// --- API ---
+// --- API NEGOCIO ---
 
-// [AUTO-MIGRACIÓN ROLES] 
-// (Esto agrega la columna 'rol' y crea un usuario 'mozo' de prueba si no existe)
+// [AUTO-MIGRACIÓN: GASTOS] 🔧
 (async () => {
     try { 
-        // 1. Agregar columna rol
-        await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) DEFAULT 'admin'"); 
-        console.log("✅ Columna ROL creada.");
-    } catch (e) {}
+        // 1. Tabla de Gastos
+        await pool.query("CREATE TABLE IF NOT EXISTS gastos (id SERIAL PRIMARY KEY, descripcion TEXT, monto DECIMAL(10,2), fecha TIMESTAMP DEFAULT NOW())");
+        console.log("✅ Tabla 'gastos' verificada.");
 
-    try {
-        // 2. Crear usuario mozo de prueba (si no existe)
-        const mozo = await pool.query("SELECT * FROM usuarios WHERE username = 'mozo'");
-        if(mozo.rows.length === 0) {
-            await pool.query("INSERT INTO usuarios (username, password, rol) VALUES ('mozo', '1234', 'mozo')");
-            console.log("✅ Usuario 'mozo' creado (Clave: 1234)");
-        }
-    } catch(e) { console.log(e.message); }
+        // 2. Columna total_gastos en Cierres (si no existe)
+        await pool.query("ALTER TABLE cierres ADD COLUMN total_gastos DECIMAL(10,2) DEFAULT 0");
+    } catch (e) { /* Ignoramos error si ya existe */ }
 })();
+
+// [NUEVO] Registrar Gasto
+app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
+    try {
+        const { descripcion, monto } = req.body;
+        await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [descripcion, monto]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// [MODIFICADO] Caja Actual (Ahora resta gastos)
+app.get('/api/caja/actual', verificarSesion, async (req, res) => {
+    try {
+        const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
+        const fechaInicio = ultimoCierre.rows[0].fecha;
+
+        // 1. Sumar Ventas
+        const ventas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
+        const totalVentas = parseFloat(ventas.rows[0].total);
+
+        // 2. Sumar Gastos
+        const gastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [fechaInicio]);
+        const totalGastos = parseFloat(gastos.rows[0].total);
+
+        // 3. Totales Desglosados
+        const prod = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
+        const mesas = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
+
+        res.json({
+            total_ventas: totalVentas,
+            total_gastos: totalGastos,
+            total_caja_real: totalVentas - totalGastos, // Esto es lo que debe haber en el cajón
+            total_productos: parseFloat(prod.rows[0].total),
+            total_mesas: parseFloat(mesas.rows[0].total)
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// [MODIFICADO] Cerrar Caja (Guarda ventas Y gastos)
+app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
+    try {
+        const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
+        const fechaInicio = ultimoCierre.rows[0].fecha;
+
+        // Calculamos totales finales
+        const resVentas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [fechaInicio]);
+        const resGastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [fechaInicio]);
+
+        const totalVentas = parseFloat(resVentas.rows[0].total);
+        const totalGastos = parseFloat(resGastos.rows[0].total);
+        const cantidadMesas = parseInt(resVentas.rows[0].cantidad);
+
+        // Guardamos el reporte
+        await pool.query(
+            'INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', 
+            [totalVentas, totalGastos, cantidadMesas]
+        );
+        
+        res.json({ success: true, total: totalVentas, gastos: totalGastos });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ... (RESTO DE RUTAS: mesas, productos, historial - MANTENER IGUAL QUE ANTES) ...
+// Copia aquí las rutas de /api/mesas, /api/productos, etc. que ya tenías.
+// IMPORTANTE: Recuerda pegar las rutas que faltan aquí abajo (verificarSesion, etc)
 
 // --- RUTAS PÚBLICAS (Para Mozos y Admins) ---
 app.get('/api/mesas', verificarSesion, async (req, res) => {
@@ -137,8 +181,7 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             minReal = Math.ceil(resT.rows[0].min || 0);
-            let tiempoCalculo = minReal - 5;
-            let bloques = Math.ceil(tiempoCalculo / 30); if (bloques < 1) bloques = 1; 
+            let tiempoCalculo = minReal - 5; let bloques = Math.ceil(tiempoCalculo / 30); if (bloques < 1) bloques = 1; 
             const minCobrar = bloques * 30; totalT = (minCobrar / 60) * 10.00;
         }
         const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
@@ -180,9 +223,7 @@ app.post('/api/mesas/cambiar', verificarSesion, async (req, res) => {
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-// --- RUTAS SOLO ADMIN (PROTEGIDAS) ---
-// Aquí aplicamos el middleware 'soloAdmin'
+// --- RUTAS SOLO ADMIN ---
 app.post('/api/productos/nuevo', verificarSesion, soloAdmin, async (req, res) => {
     try { 
         const { nombre, precio, stock, categoria } = req.body;
@@ -218,36 +259,9 @@ app.delete('/api/reportes/eliminar/:id', verificarSesion, soloAdmin, async (req,
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-// (Resto de reportes es solo lectura para admin)
 app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res) => {
     try { const result = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 30'); res.json(result.rows); } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-// Caja Actual (Visible para todos, para saber cuánto hay)
-app.get('/api/caja/actual', verificarSesion, async (req, res) => {
-    try {
-        const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
-        const fechaInicio = ultimoCierre.rows[0].fecha;
-        const result = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as total_tiempo, COALESCE(SUM(total_productos), 0) as total_productos, COALESCE(SUM(total_final), 0) as total_dia FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        const listaVentas = await pool.query(`SELECT mesa_id, tipo_mesa, total_final, total_tiempo, total_productos, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [fechaInicio]);
-        res.json({ ...result.rows[0], lista: listaVentas.rows });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
-    // NOTA: Cerrar caja lo permitimos al mozo? Generalmente sí, al final del turno.
-    // Si quieres restringirlo, agrega 'soloAdmin' aquí.
-    try {
-        const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
-        const fechaInicio = ultimoCierre.rows[0].fecha;
-        const totales = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        await pool.query('INSERT INTO cierres (total_ventas, cantidad_mesas, fecha_cierre) VALUES ($1, $2, NOW())', [totales.rows[0].total, totales.rows[0].cantidad]);
-        res.json({ success: true, total: totales.rows[0].total });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// CORRECCIÓN PEDIDOS (BORRAR UN PEDIDO MAL HECHO) - ¿PERMITIR A MOZO?
-// Generalmente esto requiere clave de administrador en sistemas POS para evitar robos.
-// Por ahora lo dejaremos abierto para agilidad, pero en el futuro puedes ponerle 'soloAdmin'.
 app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res) => {
     try {
         const { id } = req.params;
@@ -262,4 +276,4 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🎱 Servidor con Roles activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🎱 Servidor funcionando en puerto ${PORT}`));
