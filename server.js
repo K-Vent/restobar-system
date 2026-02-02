@@ -77,19 +77,23 @@ app.get('/api/usuario/actual', verificarSesion, (req, res) => {
 
 // --- API NEGOCIO ---
 
-// [AUTO-MIGRACIÓN: GASTOS] 🔧
+// [AUTO-MIGRACIÓN] 🔧
 (async () => {
     try { 
         // 1. Tabla de Gastos
         await pool.query("CREATE TABLE IF NOT EXISTS gastos (id SERIAL PRIMARY KEY, descripcion TEXT, monto DECIMAL(10,2), fecha TIMESTAMP DEFAULT NOW())");
-        console.log("✅ Tabla 'gastos' verificada.");
-
-        // 2. Columna total_gastos en Cierres (si no existe)
+        // 2. Columna total_gastos en Cierres
         await pool.query("ALTER TABLE cierres ADD COLUMN total_gastos DECIMAL(10,2) DEFAULT 0");
-    } catch (e) { /* Ignoramos error si ya existe */ }
+    } catch (e) {}
+
+    // 3. [NUEVO] Columna TIEMPO_LIMITE en Mesas (0 = libre, >0 = minutos)
+    try {
+        await pool.query("ALTER TABLE mesas ADD COLUMN tiempo_limite INTEGER DEFAULT 0");
+        console.log("✅ Columna 'tiempo_limite' agregada a Mesas.");
+    } catch (e) {}
 })();
 
-// [NUEVO] Registrar Gasto
+// Registrar Gasto
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
     try {
         const { descripcion, monto } = req.body;
@@ -98,41 +102,33 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [MODIFICADO] Caja Actual (Ahora resta gastos)
+// Caja Actual
 app.get('/api/caja/actual', verificarSesion, async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
         const fechaInicio = ultimoCierre.rows[0].fecha;
-
-        // 1. Sumar Ventas
         const ventas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
         const totalVentas = parseFloat(ventas.rows[0].total);
-
-        // 2. Sumar Gastos
         const gastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [fechaInicio]);
         const totalGastos = parseFloat(gastos.rows[0].total);
-
-        // 3. Totales Desglosados
         const prod = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
         const mesas = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as total FROM ventas WHERE fecha > $1`, [fechaInicio]);
 
         res.json({
             total_ventas: totalVentas,
             total_gastos: totalGastos,
-            total_caja_real: totalVentas - totalGastos, // Esto es lo que debe haber en el cajón
+            total_caja_real: totalVentas - totalGastos,
             total_productos: parseFloat(prod.rows[0].total),
             total_mesas: parseFloat(mesas.rows[0].total)
         });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// [MODIFICADO] Cerrar Caja (Guarda ventas Y gastos)
+// Cerrar Caja
 app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
     try {
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
         const fechaInicio = ultimoCierre.rows[0].fecha;
-
-        // Calculamos totales finales
         const resVentas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [fechaInicio]);
         const resGastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [fechaInicio]);
 
@@ -140,19 +136,13 @@ app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
         const totalGastos = parseFloat(resGastos.rows[0].total);
         const cantidadMesas = parseInt(resVentas.rows[0].cantidad);
 
-        // Guardamos el reporte
         await pool.query(
             'INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', 
             [totalVentas, totalGastos, cantidadMesas]
         );
-        
         res.json({ success: true, total: totalVentas, gastos: totalGastos });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-// ... (RESTO DE RUTAS: mesas, productos, historial - MANTENER IGUAL QUE ANTES) ...
-// Copia aquí las rutas de /api/mesas, /api/productos, etc. que ya tenías.
-// IMPORTANTE: Recuerda pegar las rutas que faltan aquí abajo (verificarSesion, etc)
 
 // --- RUTAS PÚBLICAS (Para Mozos y Admins) ---
 app.get('/api/mesas', verificarSesion, async (req, res) => {
@@ -161,9 +151,22 @@ app.get('/api/mesas', verificarSesion, async (req, res) => {
 app.get('/api/productos', verificarSesion, async (req, res) => {
     try { const result = await pool.query('SELECT * FROM productos ORDER BY nombre ASC'); res.json(result.rows); } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// [MODIFICADO] ABRIR MESA CON TIEMPO
 app.post('/api/mesas/abrir/:id', verificarSesion, async (req, res) => {
-    try { await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NOW() WHERE id = $2', ['OCUPADA', req.params.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
+    try { 
+        // Leemos los minutos que nos manda el Dashboard
+        const { minutos } = req.body; 
+        const limite = minutos ? parseInt(minutos) : 0; // Si no hay minutos, es 0 (Libre)
+
+        // Guardamos 'OCUPADA' y el 'tiempo_limite'
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NOW(), tiempo_limite = $2 WHERE id = $3', ['OCUPADA', limite, req.params.id]); 
+        res.json({success:true}); 
+    } catch(e){
+        res.status(500).json({error:e.message})
+    }
 });
+
 app.post('/api/pedidos/agregar', verificarSesion, async (req, res) => {
     try {
         const { mesa_id, producto_id, cantidad } = req.body;
@@ -173,6 +176,7 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res) => {
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
     try {
         const { id } = req.params;
@@ -190,6 +194,8 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
         res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// [MODIFICADO] CERRAR MESA Y REINICIAR TIEMPO
 app.post('/api/mesas/cerrar/:id', verificarSesion, async (req, res) => {
     const { id } = req.params;
     try {
@@ -205,10 +211,14 @@ app.post('/api/mesas/cerrar/:id', verificarSesion, async (req, res) => {
         const totalC = parseFloat(resC.rows[0].total || 0); const totalF = totalT + totalC;
         await pool.query('INSERT INTO ventas (mesa_id, tipo_mesa, total_tiempo, total_productos, total_final) VALUES ($1, $2, $3, $4, $5)', [id, mesa.tipo, totalT, totalC, totalF]);
         await pool.query('UPDATE pedidos_mesa SET pagado = TRUE WHERE mesa_id = $1', [id]);
-        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', id]);
+        
+        // [AQUÍ] Reiniciamos también el tiempo_limite a 0
+        await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL, tiempo_limite = 0 WHERE id = $2', ['LIBRE', id]);
+        
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
 app.post('/api/mesas/cambiar', verificarSesion, async (req, res) => {
     try {
         const { idOrigen, idDestino } = req.body;
@@ -223,6 +233,7 @@ app.post('/api/mesas/cambiar', verificarSesion, async (req, res) => {
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 // --- RUTAS SOLO ADMIN ---
 app.post('/api/productos/nuevo', verificarSesion, soloAdmin, async (req, res) => {
     try { 
