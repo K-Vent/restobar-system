@@ -231,7 +231,32 @@
         let mesaAccionId = null; let prodAccionId = null; let mesaOrigenCambio = null;
         let productosCache = []; // Para guardar los productos y no pedirlos a cada rato
 
-        async function cargarTodo() { await cargarMesas(); await actualizarCaja(); }
+        async function cargarTodo() { 
+            await verificarRol(); // <--- NUEVO: Preguntamos quiénes somos
+            await cargarMesas(); 
+            await actualizarCaja(); 
+        }
+
+        // [NUEVO] Función para ocultar cosas si es Mozo
+        async function verificarRol() {
+            try {
+                const res = await fetch('/api/usuario/actual');
+                const user = await res.json();
+                
+                // Si es mozo, ocultamos los enlaces prohibidos
+                if (user.rol !== 'admin') {
+                    // Ocultar Inventario e Historial del menú lateral
+                    // (Buscamos los enlaces por su href)
+                    const links = document.querySelectorAll('.menu-link');
+                    links.forEach(link => {
+                        const href = link.getAttribute('href');
+                        if (href && (href.includes('inventario') || href.includes('reportes'))) {
+                            link.style.display = 'none';
+                        }
+                    });
+                }
+            } catch(e) { console.error("Error verificando rol", e); }
+        }
         function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
         function cerrarSesion() { 
             if(confirm("¿Seguro que quieres salir del sistema?")) {
