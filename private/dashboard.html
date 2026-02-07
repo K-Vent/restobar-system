@@ -8,309 +8,65 @@
         /* =========================================
            1. ESTILOS GENERALES
            ========================================= */
-        body { 
-            background: #0c0c0c; 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-        }
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
         
-        /* --- BARRA LATERAL (SIDEBAR) --- */
-        .sidebar { 
-            width: 260px; 
-            background-color: #111; 
-            border-right: 1px solid #333; 
-            display: flex; 
-            flex-direction: column; 
-            position: fixed; 
-            height: 100%; 
-            top: 0; 
-            left: 0; 
-            z-index: 500; 
-        }
-        .sidebar-header { 
-            padding: 25px 20px; 
-            border-bottom: 1px solid #222; 
-            text-align: center; 
-        }
-        .logo-img { 
-            width: 100%; 
-            max-width: 220px; 
-            height: auto; 
-            display: block; 
-            margin: 0 auto 15px; 
-            object-fit: contain; 
-        }
+        /* --- BARRA LATERAL --- */
+        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
+        .logo-img { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto 15px; object-fit: contain; }
         
-        /* Botón de Gasto */
-        .btn-gasto { 
-            margin: 15px 20px; 
-            background: #c0392b; 
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            width: calc(100% - 40px); 
-            transition: 0.2s; 
-            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3); 
-        }
-        .btn-gasto:hover { 
-            background: #e74c3c; 
-            transform: translateY(-2px); 
-        }
+        .btn-gasto { margin: 15px 20px; background: #c0392b; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 40px); transition: 0.2s; box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3); }
+        .btn-gasto:hover { background: #e74c3c; transform: translateY(-2px); }
 
-        /* Menú */
-        .menu { 
-            flex-grow: 1; 
-            padding: 10px 0; 
-        }
-        .menu-link { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            padding: 15px 25px; 
-            color: #aaa; 
-            text-decoration: none; 
-            font-size: 16px; 
-            font-weight: 500; 
-            transition: all 0.2s; 
-            border-left: 3px solid transparent; 
-        }
-        .menu-link:hover { 
-            background: #1a1a1a; 
-            color: white; 
-            border-left-color: #f1c40f; 
-        }
-        .menu-link.active { 
-            background: #1a1a1a; 
-            color: #f1c40f; 
-            border-left-color: #f1c40f; 
-            font-weight: bold; 
-        }
-        .menu-icon { 
-            font-size: 20px; 
-            width: 25px; 
-            text-align: center; 
-        }
+        .menu { flex-grow: 1; padding: 10px 0; }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+        .menu-link:hover { background: #1a1a1a; color: white; border-left-color: #f1c40f; }
+        .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
+        .menu-icon { font-size: 20px; width: 25px; text-align: center; }
         
-        .logout-container { 
-            padding: 20px; 
-            border-top: 1px solid #222; 
-        }
-        .btn-logout { 
-            width: 100%; 
-            padding: 12px; 
-            background: #222; 
-            color: #e74c3c; 
-            border: 1px solid #333; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            transition: 0.2s; 
-        }
+        .logout-container { padding: 20px; border-top: 1px solid #222; }
+        .btn-logout { width: 100%; padding: 12px; background: #222; color: #e74c3c; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; transition: 0.2s; }
 
-        /* --- CONTENIDO PRINCIPAL --- */
-        .main-content { 
-            margin-left: 260px; 
-            padding: 30px; 
-            width: 100%; 
-            transition: margin-left 0.3s ease; 
-        }
-        .top-bar { 
-            display: flex; 
-            align-items: center; 
-            margin-bottom: 30px; 
-        }
-        .page-title { 
-            font-size: 24px; 
-            font-weight: bold; 
-            color: white; 
-            margin: 0; 
-        }
+        /* --- CONTENIDO --- */
+        .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
+        .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
 
-        /* --- PANEL DE DINERO --- */
-        .money-panel { 
-            display: flex; 
-            gap: 20px; 
-            margin-bottom: 30px; 
-            flex-wrap: wrap; 
-        }
-        .stat-card { 
-            background: #181818; 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid #333; 
-            flex: 1; 
-            min-width: 200px; 
-            text-align: center; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-        }
-        .stat-title { 
-            font-size: 12px; 
-            color: #888; 
-            text-transform: uppercase; 
-            margin-bottom: 8px; 
-            font-weight: bold; 
-            letter-spacing: 1px; 
-        }
-        .stat-value { 
-            font-size: 28px; 
-            font-weight: bold; 
-        }
+        .money-panel { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .stat-card { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; flex: 1; min-width: 200px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
+        .stat-value { font-size: 28px; font-weight: bold; }
         .card-total .stat-value { color: #2ecc71; }
         .card-gastos .stat-value { color: #e74c3c; }
-        .card-real { 
-            border: 1px solid #f39c12; 
-            background: rgba(243, 156, 18, 0.05); 
-        } 
+        .card-real { border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.05); } 
         .card-real .stat-value { color: #f39c12; }
 
-        /* --- GRID DE MESAS --- */
-        .grid-mesas { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 20px; 
-        }
-        .mesa-card { 
-            background: #181818; 
-            border-radius: 10px; 
-            padding: 20px; 
-            border: 1px solid #333; 
-            position: relative; 
-            transition: transform 0.2s, box-shadow 0.2s; 
-        }
-        .mesa-card:hover { 
-            transform: translateY(-5px); 
-            border-color: #555; 
-        }
-        
-        .mesa-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 15px; 
-        }
-        .mesa-titulo { 
-            font-size: 18px; 
-            font-weight: bold; 
-        }
-        .mesa-subtitulo { 
-            font-size: 12px; 
-            color: #777; 
-            margin-top: 2px; 
-        }
-        .mesa-estado { 
-            font-size: 11px; 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
-        .libre { 
-            background: rgba(39, 174, 96, 0.2); 
-            color: #2ecc71; 
-            border: 1px solid #27ae60; 
-        }
-        .ocupada { 
-            background: rgba(231, 76, 60, 0.2); 
-            color: #e74c3c; 
-            border: 1px solid #c0392b; 
-        }
+        .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+        .mesa-card:hover { transform: translateY(-5px); border-color: #555; }
+        .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .mesa-titulo { font-size: 18px; font-weight: bold; }
+        .mesa-subtitulo { font-size: 12px; color: #777; margin-top: 2px; }
+        .mesa-estado { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .libre { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60; }
+        .ocupada { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b; }
 
-        .info-tiempo { 
-            font-size: 20px; 
-            font-family: 'Consolas', monospace; 
-            text-align: center; 
-            margin: 15px 0; 
-            color: #eee; 
-            background: #252525; 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid #333; 
-        }
-        .dinero-vivo { 
-            color: #f1c40f; 
-            font-size: 14px; 
-            margin-top: 4px; 
-            font-weight: bold; 
-        }
+        .info-tiempo { font-size: 20px; font-family: 'Consolas', monospace; text-align: center; margin: 15px 0; color: #eee; background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        .dinero-vivo { color: #f1c40f; font-size: 14px; margin-top: 4px; font-weight: bold; }
 
-        .mesa-actions { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-top: 15px; 
-        }
-        .btn-mesa { 
-            padding: 12px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            width: 100%; 
-            font-size: 13px; 
-            transition: 0.2s; 
-        }
+        .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-mesa { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; transition: 0.2s; }
         .btn-abrir { background: #27ae60; color: white; }
         .btn-producto { background: #f39c12; color: black; }
         .btn-mover { background: #8e44ad; color: white; }
         .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
 
-        /* Animación de Alerta */
-        @keyframes parpadeo { 
-            0% { opacity: 1; } 
-            50% { opacity: 0.5; } 
-            100% { opacity: 1; } 
-        }
+        @keyframes parpadeo { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         /* --- MODALES --- */
-        .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 1000; 
-            justify-content: center; 
-            align-items: center; 
-            backdrop-filter: blur(5px); 
-        }
-        .modal-box { 
-            background: #1e1e1e; 
-            padding: 0; 
-            border-radius: 12px; 
-            width: 90%; 
-            max-width: 450px; 
-            text-align: center; 
-            border: 1px solid #444; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7); 
-            overflow: hidden; 
-        }
-        .modal-title { 
-            font-size: 18px; 
-            color: #f1c40f; 
-            padding: 20px; 
-            border-bottom: 1px solid #333; 
-            font-weight: bold; 
-            background: #222; 
-            margin: 0; 
-            text-transform: uppercase; 
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e1e1e; padding: 0; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #444; box-shadow: 0 20px 50px rgba(0,0,0,0.7); overflow: hidden; }
+        .modal-title { font-size: 18px; color: #f1c40f; padding: 20px; border-bottom: 1px solid #333; font-weight: bold; background: #222; margin: 0; text-transform: uppercase; }
         .modal-body { padding: 25px; }
         .form-group { margin-bottom: 20px; text-align: left; }
         .form-label { display: block; color: #aaa; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
@@ -320,20 +76,50 @@
         .btn-cancel { background: #444; color: white; } 
         .btn-confirm { background: #27ae60; color: white; } 
         .btn-danger { background: #c0392b; color: white; }
+        
+        /* Estilo especial botón WhatsApp */
+        .btn-whatsapp { 
+            background: #25D366; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+        }
+        .btn-whatsapp:hover { background: #128C7E; }
+
+        /* Estilo input WhatsApp */
+        .whatsapp-input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            border-top: 1px dashed #444;
+            padding-top: 15px;
+        }
+        .input-telefono {
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-telefono:focus { border-color: #25D366; }
 
         .modal-box.wide { max-width: 800px; }
         .split-container { display: flex; height: 450px; text-align: left; }
         .split-sidebar { width: 180px; background: #151515; border-right: 1px solid #333; overflow-y: auto; display: flex; flex-direction: column; }
         .cat-btn { padding: 15px 20px; border: none; background: transparent; color: #888; text-align: left; cursor: pointer; border-left: 4px solid transparent; font-weight: 600; font-size: 14px; border-bottom: 1px solid #222; }
-        .cat-btn:hover { background: #1a1a1a; color: white; } 
-        .cat-btn.active { background: #1f1f1f; color: #f1c40f; border-left-color: #f1c40f; }
+        .cat-btn:hover { background: #1a1a1a; color: white; } .cat-btn.active { background: #1f1f1f; color: #f1c40f; border-left-color: #f1c40f; }
         .split-content { flex: 1; padding: 0; overflow-y: auto; background: #1e1e1e; }
         .prod-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; }
         .prod-item:hover { background: #2a2a2a; padding-left: 25px; }
-        .prod-name { font-size: 15px; font-weight: 500; } 
-        .prod-price { color: #2ecc71; font-weight: bold; font-size: 15px; }
+        .prod-name { font-size: 15px; font-weight: 500; } .prod-price { color: #2ecc71; font-weight: bold; font-size: 15px; }
 
-        .detalle-lista { text-align: left; padding: 20px; max-height: 300px; overflow-y: auto; }
+        .detalle-lista { text-align: left; padding: 20px; max-height: 250px; overflow-y: auto; }
         .detalle-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 14px; }
         .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 20px; font-weight: bold; color: #2ecc71; margin-top: 15px; padding-top: 15px; }
         
@@ -353,9 +139,7 @@
             <div class="logo-sub">Panel de Control</div>
         </div>
         
-        <button class="btn-gasto" onclick="abrirModalGasto()">
-            💸 Registrar Gasto
-        </button>
+        <button class="btn-gasto" onclick="abrirModalGasto()">💸 Registrar Gasto</button>
 
         <div class="menu">
             <a href="#" class="menu-link active"><span class="menu-icon">🎱</span> Control de Mesas</a>
@@ -371,18 +155,9 @@
         <div class="top-bar"><h2 class="page-title">Mesas y Pedidos</h2></div>
         
         <div class="money-panel">
-            <div class="stat-card card-total">
-                <div class="stat-title">💰 Ventas Totales</div>
-                <div class="stat-value" id="total-ventas">S/ 0.00</div>
-            </div>
-            <div class="stat-card card-gastos">
-                <div class="stat-title">📉 Gastos (Salidas)</div>
-                <div class="stat-value" id="total-gastos">S/ 0.00</div>
-            </div>
-            <div class="stat-card card-real">
-                <div class="stat-title" style="color:#f39c12">💵 EFECTIVO EN CAJA</div>
-                <div class="stat-value" id="total-real">S/ 0.00</div>
-            </div>
+            <div class="stat-card card-total"><div class="stat-title">💰 Ventas Totales</div><div class="stat-value" id="total-ventas">S/ 0.00</div></div>
+            <div class="stat-card card-gastos"><div class="stat-title">📉 Gastos (Salidas)</div><div class="stat-value" id="total-gastos">S/ 0.00</div></div>
+            <div class="stat-card card-real"><div class="stat-title" style="color:#f39c12">💵 EFECTIVO EN CAJA</div><div class="stat-value" id="total-real">S/ 0.00</div></div>
         </div>
 
         <div id="grid-mesas" class="grid-mesas"></div>
@@ -393,9 +168,7 @@
             <div class="modal-title">🎱 Iniciar Mesa Billar</div>
             <div class="modal-body">
                 <p style="color:#aaa; margin-bottom:20px;">Selecciona el modo de juego:</p>
-                <button class="btn-modal" style="background:#2ecc71; color:white; width:100%; margin-bottom:15px; padding:15px;" onclick="ejecutarAbrirMesa(0)">
-                    ⏱️ TIEMPO LIBRE
-                </button>
+                <button class="btn-modal" style="background:#2ecc71; color:white; width:100%; margin-bottom:15px; padding:15px;" onclick="ejecutarAbrirMesa(0)">⏱️ TIEMPO LIBRE</button>
                 <div style="border-top:1px solid #333; margin:15px 0; padding-top:15px;">
                     <p style="color:#f1c40f; font-weight:bold; margin-bottom:10px;">⏳ TIEMPO FIJO (Límite)</p>
                     <div style="display:flex; gap:10px;">
@@ -458,19 +231,6 @@
         </div>
     </div>
 
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="confirm-titulo"></div>
-            <div class="modal-body">
-                <p id="confirm-texto" style="color:#ddd;"></p>
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
-                <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
-            </div>
-        </div>
-    </div>
-
     <div id="modal-cantidad" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="cant-titulo"></div>
@@ -486,8 +246,14 @@
 
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">🧾 Resumen</div>
+            <div class="modal-title">🧾 Resumen de Cuenta</div>
             <div id="cobro-contenido" class="detalle-lista"></div>
+            
+            <div class="whatsapp-input-container">
+                <input type="tel" id="input-telefono-cliente" class="input-telefono" placeholder="📱 Celular (Opcional)">
+                <button id="btn-whatsapp" class="btn-modal btn-whatsapp">📩 Enviar</button>
+            </div>
+
             <div class="modal-btns">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button>
                 <button class="btn-modal btn-confirm" id="btn-cobrar-final">💰 COBRAR</button>
@@ -495,12 +261,21 @@
         </div>
     </div>
 
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="confirm-titulo"></div>
+            <div class="modal-body"><p id="confirm-texto" style="color:#ddd;"></p></div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-msg" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title" id="msg-titulo"></div>
-            <div class="modal-body">
-                <p id="msg-texto" style="color:#ddd;"></p>
-            </div>
+            <div class="modal-body"><p id="msg-texto" style="color:#ddd;"></p></div>
             <div class="modal-btns">
                 <button class="btn-modal btn-confirm" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
             </div>
@@ -513,12 +288,11 @@
         let prodAccionId = null;
         let mesaOrigenCambio = null;
         let productosCache = [];
+        let mensajeTicketGlobal = ""; // Variable para guardar el texto del ticket
 
-        // Sonidos de alerta
         const audioAviso = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
         const audioFinal = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
 
-        // Función Principal de Inicio
         async function cargarTodo() {
             await solicitarPermisoNotificacion();
             await verificarRol();
@@ -526,7 +300,6 @@
             await actualizarCaja();
         }
 
-        // --- SISTEMA DE NOTIFICACIONES ---
         async function solicitarPermisoNotificacion() {
             if ("Notification" in window && Notification.permission !== "granted") { 
                 await Notification.requestPermission(); 
@@ -538,7 +311,6 @@
             }
         }
 
-        // --- SISTEMA DE ROLES ---
         async function verificarRol() {
             try {
                 const res = await fetch('/api/usuario/actual');
@@ -546,15 +318,12 @@
                 if (user.rol !== 'admin') {
                     document.querySelectorAll('.menu-link').forEach(link => {
                         const href = link.getAttribute('href');
-                        if (href && (href.includes('inventario') || href.includes('reportes'))) { 
-                            link.style.display = 'none'; 
-                        }
+                        if (href && (href.includes('inventario') || href.includes('reportes'))) { link.style.display = 'none'; }
                     });
                 }
             } catch (e) { console.error(e); }
         }
 
-        // --- SISTEMA DE GASTOS ---
         function abrirModalGasto() {
             document.getElementById('gasto-desc').value = '';
             document.getElementById('gasto-monto').value = '';
@@ -565,7 +334,6 @@
         async function ejecutarGasto() {
             const desc = document.getElementById('gasto-desc').value;
             const monto = document.getElementById('gasto-monto').value;
-            
             if (!desc || !monto) { alert("Datos incompletos"); return; }
             
             const res = await fetch('/api/gastos/nuevo', {
@@ -578,9 +346,7 @@
                 cerrarModal('modal-gasto');
                 mostrarToast("💸 Gasto registrado");
                 actualizarCaja();
-            } else {
-                alert("Error al registrar gasto");
-            }
+            } else { alert("Error"); }
         }
 
         async function actualizarCaja() {
@@ -593,7 +359,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- CARGAR MESAS (LÓGICA CORREGIDA) ---
         async function cargarMesas() {
             try {
                 const res = await fetch('/api/mesas');
@@ -604,18 +369,13 @@
                 mesas.forEach(mesa => {
                     const esOcupada = mesa.estado === 'OCUPADA';
                     const esBillar = mesa.tipo === 'BILLAR';
-                    
-                    // Datos para el cronómetro
                     const dataAttrs = `data-id="${mesa.id}" data-inicio="${mesa.hora_inicio}" data-precio="${mesa.precio_hora}" data-limite="${mesa.tiempo_limite || 0}" data-mesa="${mesa.numero_mesa}"`;
                     
-                    // Si es Billar, mostramos reloj. Si es Consumo, espacio vacío.
                     const htmlReloj = esBillar 
                         ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`) 
                         : `<div style="height:10px;"></div>`;
                     
-                    // [CORRECCIÓN LÓGICA] 
-                    // Si es Billar -> mostrarConfirmacion (Abre Modal de Tiempo)
-                    // Si es Consumo -> abrirMesaDirecta (Sin modal, inicia libre)
+                    // Lógica para abrir directo o con modal
                     const clickIniciar = esBillar 
                         ? `mostrarConfirmacion('abrir', ${mesa.id})` 
                         : `abrirMesaDirecta(${mesa.id})`;
@@ -623,10 +383,7 @@
                     cont.innerHTML += `
                         <div class="mesa-card">
                             <div class="mesa-header">
-                                <div>
-                                    <div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div>
-                                    <div class="mesa-subtitulo">${mesa.tipo}</div>
-                                </div>
+                                <div><div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div><div class="mesa-subtitulo">${mesa.tipo}</div></div>
                                 <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
                             </div>
                             ${htmlReloj}
@@ -635,7 +392,7 @@
                                     `<button class="btn-mesa btn-abrir" onclick="${clickIniciar}">🟢 INICIAR</button>` : 
                                     `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id})">🍺 PEDIDO</button>
                                      <button class="btn-mesa btn-mover" onclick="abrirModalCambio(${mesa.id})">🔄 MOVER</button>
-                                     <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id})">💰 COBRAR</button>`
+                                     <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id}, '${mesa.numero_mesa}')">💰 COBRAR</button>`
                                 }
                             </div>
                         </div>`;
@@ -644,38 +401,29 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- ABRIR MESA DIRECTA (Para Mesas de Consumo) ---
         async function abrirMesaDirecta(id) {
             mesaAccionId = id;
-            // Enviamos 0 minutos para indicar que es "Tiempo Libre" (aunque en consumo no cuenta el tiempo)
-            await ejecutarAbrirMesa(0); 
+            await ejecutarAbrirMesa(0);
         }
 
-        // --- ABRIR MESA BILLAR (Muestra Modal) ---
         function mostrarConfirmacion(tipo, id) {
             mesaAccionId = id;
-            if (tipo === 'abrir') {
-                document.getElementById('modal-abrir-mesa').style.display = 'flex';
-            }
+            if (tipo === 'abrir') document.getElementById('modal-abrir-mesa').style.display = 'flex';
         }
 
         async function ejecutarAbrirMesa(minutos) {
             cerrarModal('modal-abrir-mesa');
-            
             await fetch(`/api/mesas/abrir/${mesaAccionId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ minutos: minutos })
             });
-            
             mostrarToast(minutos > 0 ? `⏳ Mesa abierta por ${minutos} min` : "✅ Mesa abierta");
             cargarTodo();
         }
 
-        // --- CRONÓMETROS INTELIGENTES ---
         function iniciarCronometros() {
             if (intervaloCronometros) clearInterval(intervaloCronometros);
-            
             intervaloCronometros = setInterval(() => {
                 document.querySelectorAll('.info-tiempo').forEach(t => {
                     const inicio = t.getAttribute('data-inicio');
@@ -685,40 +433,22 @@
 
                     if (inicio && inicio !== "undefined") {
                         const diff = new Date() - new Date(inicio);
-                        
                         if (limite > 0) {
-                            // Modo Cuenta Regresiva
                             const restMs = (limite * 60000) - diff;
                             const restMin = Math.floor(restMs / 60000);
                             
-                            // Avisos de Tiempo
-                            if (restMin === 5 && t.dataset.aviso5 !== "true") { 
-                                enviarNotificacion(`⚠️ Mesa ${numMesa}`, "Quedan 5 min"); 
-                                audioAviso.play().catch(()=>{}); 
-                                t.dataset.aviso5 = "true"; 
-                            }
-                            if (restMs <= 0 && t.dataset.avisoFin !== "true") { 
-                                enviarNotificacion(`🚨 Mesa ${numMesa}`, "¡TIEMPO TERMINADO!"); 
-                                audioFinal.play().catch(()=>{}); 
-                                t.dataset.avisoFin = "true"; 
-                            }
+                            if (restMin === 5 && t.dataset.aviso5 !== "true") { enviarNotificacion(`⚠️ Mesa ${numMesa}`, "Quedan 5 min"); audioAviso.play().catch(()=>{}); t.dataset.aviso5 = "true"; }
+                            if (restMs <= 0 && t.dataset.avisoFin !== "true") { enviarNotificacion(`🚨 Mesa ${numMesa}`, "¡TIEMPO TERMINADO!"); audioFinal.play().catch(()=>{}); t.dataset.avisoFin = "true"; }
 
                             if (restMs <= 0) {
-                                t.innerHTML = `<div style="color:#e74c3c;font-weight:bold;animation:parpadeo 1s infinite;">⛔ ¡TIEMPO! ⛔</div>
-                                               <div class="dinero-vivo">Extra: ${Math.abs(restMin)} min</div>`;
+                                t.innerHTML = `<div style="color:#e74c3c;font-weight:bold;animation:parpadeo 1s infinite;">⛔ ¡TIEMPO! ⛔</div><div class="dinero-vivo">Extra: ${Math.abs(restMin)} min</div>`;
                                 t.parentElement.style.border = "2px solid #e74c3c";
                             } else {
-                                const h = Math.floor(restMs / 3600000); 
-                                const m = Math.floor((restMs % 3600000) / 60000); 
-                                const s = Math.floor((restMs % 60000) / 1000);
-                                t.innerHTML = `<div style="color:#f1c40f;font-size:12px;">⏳ Quedan:</div>
-                                               <div style="font-size:24px;font-weight:bold;">${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}</div>`;
+                                const h = Math.floor(restMs / 3600000); const m = Math.floor((restMs % 3600000) / 60000); const s = Math.floor((restMs % 60000) / 1000);
+                                t.innerHTML = `<div style="color:#f1c40f;font-size:12px;">⏳ Quedan:</div><div style="font-size:24px;font-weight:bold;">${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}</div>`;
                             }
                         } else {
-                            // Modo Tiempo Libre
-                            const h = Math.floor(diff / 3600000); 
-                            const m = Math.floor((diff % 3600000) / 60000); 
-                            const costo = (diff / 60000 / 60) * precio;
+                            const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const costo = (diff / 60000 / 60) * precio;
                             t.innerHTML = `${h}:${m < 10 ? '0' + m : m} <div class="dinero-vivo">S/ ${costo.toFixed(2)}</div>`;
                         }
                     }
@@ -726,29 +456,13 @@
             }, 1000);
         }
 
-        // --- PRODUCTOS ---
         async function abrirModalProductos(id) {
             mesaAccionId = id;
             const res = await fetch('/api/productos');
             productosCache = await res.json();
-            
-            const categorias = ['Todos'];
-            productosCache.forEach(p => { 
-                const c = p.categoria || 'General'; 
-                if (!categorias.includes(c)) categorias.push(c); 
-            });
-
-            const sb = document.getElementById('cat-sidebar');
-            sb.innerHTML = '';
-            
-            categorias.forEach(c => { 
-                let i = '📦'; 
-                if (c == 'Cervezas') i = '🍺'; 
-                if (c == 'Tragos' || c == 'Cócteles') i = '🍹'; 
-                if (c == 'Comida') i = '🍔'; 
-                sb.innerHTML += `<button class="cat-btn" onclick="filtrarProductos('${c}', this)">${i} ${c}</button>`; 
-            });
-
+            const cats = ['Todos']; productosCache.forEach(p => { const c = p.categoria || 'General'; if (!cats.includes(c)) cats.push(c); });
+            const sb = document.getElementById('cat-sidebar'); sb.innerHTML = '';
+            cats.forEach(c => { let i = '📦'; if (c == 'Cervezas') i = '🍺'; if (c == 'Tragos' || c == 'Cócteles') i = '🍹'; if (c == 'Comida') i = '🍔'; sb.innerHTML += `<button class="cat-btn" onclick="filtrarProductos('${c}', this)">${i} ${c}</button>`; });
             if (sb.children.length > 0) filtrarProductos('Todos', sb.children[0]);
             document.getElementById('modal-productos').style.display = 'flex';
         }
@@ -756,20 +470,9 @@
         function filtrarProductos(cat, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
-            
-            const cont = document.getElementById('prod-content');
-            cont.innerHTML = '';
-            
+            const cont = document.getElementById('prod-content'); cont.innerHTML = '';
             const list = productosCache.filter(p => cat === 'Todos' ? true : (p.categoria || 'General') === cat);
-            list.forEach(p => { 
-                if (p.stock > 0) { 
-                    cont.innerHTML += `
-                        <div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')">
-                            <div class="prod-name">${p.nombre}</div>
-                            <span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                        </div>`; 
-                } 
-            });
+            list.forEach(p => { if (p.stock > 0) { cont.innerHTML += `<div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')"><div class="prod-name">${p.nombre}</div><span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>`; } });
         }
 
         function mostrarInputCantidad(pid, nom) {
@@ -784,11 +487,7 @@
         async function ejecutarAgregarPedido() {
             const cant = document.getElementById('input-cantidad').value;
             if (cant > 0) {
-                await fetch('/api/pedidos/agregar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant })
-                });
+                await fetch('/api/pedidos/agregar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant }) });
                 cerrarModal('modal-cantidad');
                 cerrarModal('modal-productos');
                 mostrarToast("✨ Producto Agregado");
@@ -796,19 +495,25 @@
             }
         }
 
-        // --- COBRO ---
-        async function prepararCobro(id) {
+        // --- COBRO CON WHATSAPP (LÓGICA NUEVA) ---
+        async function prepararCobro(id, numMesa) {
             mesaAccionId = id;
             document.getElementById('cobro-contenido').innerHTML = 'Calculando...';
             document.getElementById('modal-cobro').style.display = 'flex';
+            document.getElementById('input-telefono-cliente').value = ''; // Limpiar input
             
             try {
                 const res = await fetch(`/api/mesas/detalle/${id}`);
                 const data = await res.json();
                 
                 let html = '';
+                // Construimos el mensaje de WhatsApp línea por línea
+                let texto = `🧾 *LA ESQUINA DEL BILLAR*%0A📅 Fecha: ${new Date().toLocaleDateString()}%0A🎱 *Mesa ${numMesa}*%0A------------------%0A`;
+
                 if (data.tipo === 'BILLAR') {
-                    html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
+                    const costoT = parseFloat(data.totalTiempo).toFixed(2);
+                    html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${costoT}</span></div>`;
+                    texto += `🎱 Tiempo (${data.minutos} min): S/ ${costoT}%0A`;
                 }
                 
                 if (data.listaProductos) {
@@ -822,12 +527,18 @@
                                 </div>
                                 <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
                             </div>`;
+                        texto += `🍺 ${p.cantidad}x ${p.nombre}: S/ ${parseFloat(p.subtotal).toFixed(2)}%0A`;
                     });
                 }
                 
-                html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(data.totalFinal).toFixed(2)}</span></div>`;
-                
+                const totalF = parseFloat(data.totalFinal).toFixed(2);
+                html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${totalF}</span></div>`;
+                texto += `------------------%0A💰 *TOTAL: S/ ${totalF}*%0A¡Gracias por tu visita!`;
+
+                // Guardamos el texto en variable global para usarlo en el botón
+                mensajeTicketGlobal = texto;
                 document.getElementById('cobro-contenido').innerHTML = html;
+
                 document.getElementById('btn-cobrar-final').onclick = async () => {
                     await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
                     cerrarModal('modal-cobro');
@@ -836,15 +547,33 @@
             } catch (e) { console.error(e); }
         }
 
+        // --- BOTÓN ENVIAR WHATSAPP (INTELIGENTE) ---
+        document.getElementById('btn-whatsapp').onclick = () => {
+            const telefono = document.getElementById('input-telefono-cliente').value.trim();
+            let url = '';
+            
+            if (telefono && telefono.length >= 9) {
+                // Si hay número, abrimos chat directo con el cliente
+                // Asumimos código Perú (51), puedes cambiarlo si usas otro país
+                url = `https://web.whatsapp.com/send?phone=51${telefono}&text=${mensajeTicketGlobal}`;
+            } else {
+                // Si NO hay número, abrimos la lista de contactos para reenviar
+                url = `https://web.whatsapp.com/send?text=${mensajeTicketGlobal}`;
+            }
+            
+            // Usamos window.open para abrir en nueva pestaña
+            window.open(url, '_blank');
+        };
+
         async function eliminarPedido(pid, nom) {
             if (confirm(`¿Eliminar "${nom}"?`)) {
                 await fetch(`/api/pedidos/eliminar/${pid}`, { method: 'DELETE' });
-                prepararCobro(mesaAccionId);
+                const numMesa = document.querySelector(`#timer-${mesaAccionId}`)?.getAttribute('data-mesa') || "?";
+                prepararCobro(mesaAccionId, numMesa);
                 actualizarCaja();
             }
         }
 
-        // --- CAMBIO DE MESA ---
         async function abrirModalCambio(id) {
             mesaOrigenCambio = id;
             const r = await fetch('/api/mesas');
@@ -852,9 +581,7 @@
             const l = m.filter(x => x.estado === 'LIBRE');
             const s = document.getElementById('select-mesa-destino');
             s.innerHTML = '';
-            
             if (l.length == 0) { alert("No hay mesas libres"); return; }
-            
             l.forEach(x => s.innerHTML += `<option value="${x.id}">Mesa ${x.numero_mesa}</option>`);
             document.getElementById('modal-cambio').style.display = 'flex';
         }
@@ -869,7 +596,6 @@
             cargarTodo();
         }
 
-        // --- UTILIDADES GLOBALES ---
         function cerrarSesion() { if (confirm("¿Seguro que quieres salir?")) window.location.href = '/logout'; }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
         function mostrarToast(m) {
@@ -879,9 +605,8 @@
             setTimeout(() => t.className = t.className.replace("show", ""), 2500);
         }
 
-        // Iniciar todo
         cargarTodo();
-        setInterval(cargarMesas, 15000); // Refresco automático cada 15 seg
+        setInterval(cargarMesas, 15000);
 
     </script>
 </body>
