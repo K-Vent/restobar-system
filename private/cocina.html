@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>📺 Monitor de Pedidos</title>
+    <meta http-equiv="refresh" content="10"> <style>
+        body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
+        .titulo { text-align: center; color: #f1c40f; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .grid-pedidos { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        
+        .ticket { background: #222; border: 1px solid #444; border-radius: 8px; padding: 15px; border-left: 5px solid #888; }
+        .ticket.comida { border-left-color: #e67e22; } /* Naranja para comida */
+        .ticket.tragos { border-left-color: #9b59b6; } /* Morado para tragos */
+        .ticket.cervezas { border-left-color: #f1c40f; } /* Amarillo chelas */
+
+        .mesa { font-size: 22px; font-weight: bold; color: white; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .hora { font-size: 14px; color: #aaa; font-weight: normal; }
+        .item { font-size: 18px; margin-top: 5px; color: #eee; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+        .cantidad { font-weight: bold; color: #2ecc71; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="titulo">🔥 Pedidos en Marcha</div>
+    <div id="grid" class="grid-pedidos">Cargando...</div>
+
+    <script>
+        async function cargarPedidos() {
+            try {
+                const res = await fetch('/api/kds/pendientes');
+                const pedidos = await res.json();
+                const grid = document.getElementById('grid');
+                grid.innerHTML = '';
+
+                if(pedidos.length === 0) {
+                    grid.innerHTML = '<div style="color:#555; text-align:center; grid-column: span 3;">No hay pedidos pendientes 😴</div>';
+                    return;
+                }
+
+                pedidos.forEach(p => {
+                    // Detectar tipo para el color del borde
+                    let tipo = 'otros';
+                    if(p.categoria === 'Comida') tipo = 'comida';
+                    if(p.categoria === 'Tragos' || p.categoria === 'Cócteles') tipo = 'tragos';
+                    if(p.categoria === 'Cervezas') tipo = 'cervezas';
+
+                    grid.innerHTML += `
+                        <div class="ticket ${tipo}">
+                            <div class="mesa">
+                                Mesa ${p.numero_mesa} 
+                                <span class="hora">${p.hora || ''}</span>
+                            </div>
+                            <div class="item">
+                                <span class="cantidad">${p.cantidad}x</span> ${p.nombre}
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) { console.error(e); }
+        }
+        cargarPedidos();
+    </script>
+</body>
+</html>

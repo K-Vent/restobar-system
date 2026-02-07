@@ -214,6 +214,22 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// --- KDS (SISTEMA DE COCINA/BARRA) ---
+app.get('/api/kds/pendientes', verificarSesion, async (req, res) => {
+    try {
+        // Traemos pedidos de las últimas 24 horas ordenados por hora
+        const result = await pool.query(`
+            SELECT pm.id, m.numero_mesa, p.nombre, pm.cantidad, p.categoria, to_char(pm.fecha_creacion, 'HH24:MI') as hora
+            FROM pedidos_mesa pm
+            JOIN mesas m ON pm.mesa_id = m.id
+            JOIN productos p ON pm.producto_id = p.id
+            WHERE pm.pagado = FALSE 
+            ORDER BY pm.id DESC
+        `);
+        res.json(result.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // [MODIFICADO] CERRAR MESA Y REINICIAR TIEMPO
 app.post('/api/mesas/cerrar/:id', verificarSesion, async (req, res) => {
     const { id } = req.params;
