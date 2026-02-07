@@ -46,6 +46,8 @@ const soloAdmin = (req, res, next) => {
 
 // --- RUTAS HTML ---
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
+// [NUEVO]
+app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cocina.html')));
 app.get('/inventario.html', verificarSesion, (req, res) => {
     if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html');
     res.sendFile(path.join(__dirname, 'private', 'inventario.html'));
