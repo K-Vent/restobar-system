@@ -12,21 +12,24 @@ const app = express();
 // 1. CONFIGURACIÓN Y CONEXIÓN
 // ==========================================
 
+// Configura aquí tu URL de base de datos de Supabase/Postgres
 const pool = new Pool({
     connectionString: 'postgresql://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
     ssl: { rejectUnauthorized: false } 
 });
 
-// Seguridad Básica
+// Seguridad: Confiar en proxy (Render) y proteger cabeceras
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false })); // Permite scripts en el HTML
+
+// Seguridad: Limitar intentos de login (Fuerza bruta)
 const loginLimiter = rateLimit({ 
     windowMs: 15 * 60 * 1000, // 15 minutos
     max: 10, // Máximo 10 intentos
     message: { error: "⛔ Demasiados intentos. Intenta más tarde." } 
 });
 
-// Configuración de Sesiones (Guardadas en Base de Datos)
+// Sesiones guardadas en Base de Datos (Persistentes)
 app.use(session({
     store: new pgSession({ pool : pool, tableName : 'session', createTableIfMissing: true }),
     secret: 'secreto_super_seguro_billar_123',
@@ -41,9 +44,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 2. MIDDLEWARES DE SEGURIDAD (PORTEROS)
+// 2. MIDDLEWARES (Los Porteros)
 // ==========================================
 
+// Verifica si hay alguien logueado
 const verificarSesion = (req, res, next) => {
     if (req.session.usuario) { 
         next(); 
@@ -53,6 +57,7 @@ const verificarSesion = (req, res, next) => {
     }
 };
 
+// Verifica si es el Dueño (Admin)
 const soloAdmin = (req, res, next) => {
     if (req.session.usuario && req.session.usuario.rol === 'admin') { 
         next(); 
@@ -62,14 +67,14 @@ const soloAdmin = (req, res, next) => {
 };
 
 // ==========================================
-// 3. RUTAS DE ARCHIVOS HTML (VISTAS)
+// 3. RUTAS DE VISTAS (HTML)
 // ==========================================
 
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
 app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cocina.html')));
 app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cierre_caja.html')));
 
-// Rutas protegidas solo para Admin
+// Vistas exclusivas de Admin
 app.get('/inventario.html', verificarSesion, (req, res) => {
     if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html');
     res.sendFile(path.join(__dirname, 'private', 'inventario.html'));
@@ -106,45 +111,48 @@ app.get('/api/usuario/actual', verificarSesion, (req, res) => {
 });
 
 // ==========================================
-// 5. AUTO-MIGRACIÓN (MANTENIMIENTO DB)
+// 5. MANTENIMIENTO AUTOMÁTICO (Migraciones)
 // ==========================================
-// Esto asegura que la base de datos tenga todas las columnas necesarias al iniciar.
+// Esto se ejecuta al iniciar para asegurar que la DB tenga las columnas correctas
 
 (async () => {
     try {
         // Tablas Básicas
-        await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'");
-        await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) DEFAULT 'admin'");
         await pool.query("CREATE TABLE IF NOT EXISTS gastos (id SERIAL PRIMARY KEY, descripcion TEXT, monto DECIMAL(10,2), fecha TIMESTAMP DEFAULT NOW())");
-        
-        // Configuración y Reportes
-        await pool.query("ALTER TABLE cierres ADD COLUMN total_gastos DECIMAL(10,2) DEFAULT 0");
         await pool.query("CREATE TABLE IF NOT EXISTS config (clave VARCHAR(50) PRIMARY KEY, valor TEXT)");
+        
+        // Actualizaciones de columnas (Ignoramos error si ya existen)
+        try { await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'"); } catch (e) {}
+        try { await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) DEFAULT 'admin'"); } catch (e) {}
+        try { await pool.query("ALTER TABLE cierres ADD COLUMN total_gastos DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
+        try { await pool.query("ALTER TABLE mesas ADD COLUMN tiempo_limite INTEGER DEFAULT 0"); } catch (e) {}
+        
+        // [IMPORTANTE] Columnas para KDS (Cocina)
+        try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN fecha_creacion TIMESTAMP DEFAULT NOW()"); } catch (e) {}
+        try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN entregado BOOLEAN DEFAULT FALSE"); } catch (e) {}
+
+        // Insertar configuración por defecto
         await pool.query("INSERT INTO config (clave, valor) VALUES ('precio_billar', '10') ON CONFLICT DO NOTHING");
 
-        // Funciones Avanzadas (Tiempo Límite y KDS)
-        await pool.query("ALTER TABLE mesas ADD COLUMN tiempo_limite INTEGER DEFAULT 0");
-        await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN fecha_creacion TIMESTAMP DEFAULT NOW()");
-        await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN entregado BOOLEAN DEFAULT FALSE");
-
-        console.log("✅ Base de datos actualizada y verificada.");
+        console.log("✅ Sistema verificado y listo.");
     } catch (e) { console.log("Nota sistema:", e.message); }
 })();
 
 // ==========================================
-// 6. API: KDS (SISTEMA DE COCINA)
+// 6. API: KDS (SISTEMA DE COCINA) - ¡ARREGLADO!
 // ==========================================
 
 app.get('/api/kds/pendientes', verificarSesion, async (req, res) => {
     try {
-        // Solo mostramos pedidos NO pagados y NO entregados
+        // CORRECCIÓN: Usamos (entregado IS FALSE OR entregado IS NULL) para que no fallen los antiguos
         const result = await pool.query(`
             SELECT pm.id, m.numero_mesa, p.nombre, pm.cantidad, p.categoria, 
                    to_char(COALESCE(pm.fecha_creacion, NOW()), 'HH24:MI') as hora
             FROM pedidos_mesa pm
             JOIN mesas m ON pm.mesa_id = m.id
             JOIN productos p ON pm.producto_id = p.id
-            WHERE pm.pagado = FALSE AND pm.entregado = FALSE 
+            WHERE pm.pagado = FALSE 
+              AND (pm.entregado IS FALSE OR pm.entregado IS NULL) 
             ORDER BY pm.fecha_creacion ASC
         `);
         res.json(result.rows);
@@ -172,18 +180,14 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
 
 app.get('/api/caja/actual', verificarSesion, async (req, res) => {
     try {
-        // Obtenemos la fecha del último cierre para calcular desde ahí
         const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
-        const fechaInicio = ultimoCierre.rows[0].fecha;
+        const f = ultimoCierre.rows[0].fecha;
 
-        // Consultas de totales
-        const ventas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        const gastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [fechaInicio]);
-        const prod = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        const mesas = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [fechaInicio]);
-        
-        // Lista detallada para la tabla de cierre
-        const lista = await pool.query(`SELECT id, tipo_mesa, total_final, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [fechaInicio]);
+        const ventas = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [f]);
+        const gastos = await pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [f]);
+        const prod = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [f]);
+        const mesas = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [f]);
+        const lista = await pool.query(`SELECT id, tipo_mesa, total_final, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]);
 
         res.json({ 
             total_ventas: parseFloat(ventas.rows[0].t), 
@@ -212,17 +216,14 @@ app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
 });
 
 // ==========================================
-// 8. API: MESAS Y PEDIDOS (EL NÚCLEO)
+// 8. API: MESAS Y PEDIDOS
 // ==========================================
 
 app.get('/api/mesas', verificarSesion, async (req, res) => {
     try {
-        // Obtenemos el precio configurado del billar
         const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'");
         const precio = parseFloat(conf.rows[0]?.valor || 10);
-        
         const r = await pool.query('SELECT * FROM mesas ORDER BY numero_mesa ASC');
-        // Le enviamos al frontend el precio actual
         const mesas = r.rows.map(m => ({ ...m, precio_hora: precio }));
         res.json(mesas);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -240,8 +241,6 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
     try {
         const { id } = req.params;
         const mesa = (await pool.query('SELECT * FROM mesas WHERE id = $1', [id])).rows[0];
-        
-        // Precio dinámico
         const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'");
         const precioHora = parseFloat(conf.rows[0]?.valor || 10);
 
@@ -249,12 +248,8 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
             minReal = Math.ceil(resT.rows[0].min || 0);
-            
-            // Cálculo con tolerancia 5 min y bloques de 30 min
             let tiempoCalculo = minReal - 5; 
-            let bloques = Math.ceil(tiempoCalculo / 30); 
-            if (bloques < 1) bloques = 1; 
-            
+            let bloques = Math.ceil(tiempoCalculo / 30); if (bloques < 1) bloques = 1; 
             totalT = (bloques * 30 / 60) * precioHora;
         }
         
@@ -266,14 +261,7 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
             return { ...p, subtotal: p.precio_venta * p.cantidad }; 
         });
         
-        res.json({ 
-            tipo: mesa.tipo, 
-            minutos: minReal, 
-            totalTiempo: totalT, 
-            listaProductos: listaProductos, 
-            totalProductos: totalC, 
-            totalFinal: totalT + totalC 
-        });
+        res.json({ tipo: mesa.tipo, minutos: minReal, totalTiempo: totalT, listaProductos: listaProductos, totalProductos: totalC, totalFinal: totalT + totalC });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -309,15 +297,12 @@ app.post('/api/mesas/cambiar', verificarSesion, async (req, res) => {
         const { idOrigen, idDestino } = req.body;
         const origen = await pool.query('SELECT * FROM mesas WHERE id = $1', [idOrigen]);
         const destino = await pool.query('SELECT * FROM mesas WHERE id = $1', [idDestino]);
-        
         if(origen.rows[0].estado !== 'OCUPADA') return res.status(400).json({error: 'Mesa origen no ocupada'});
         if(destino.rows[0].estado !== 'LIBRE') return res.status(400).json({error: 'Mesa destino ocupada'});
-        
         const horaInicio = origen.rows[0].hora_inicio;
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = $2 WHERE id = $3', ['OCUPADA', horaInicio, idDestino]);
         await pool.query('UPDATE pedidos_mesa SET mesa_id = $1 WHERE mesa_id = $2', [idDestino, idOrigen]);
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL WHERE id = $2', ['LIBRE', idOrigen]);
-        
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -325,7 +310,8 @@ app.post('/api/mesas/cambiar', verificarSesion, async (req, res) => {
 app.post('/api/pedidos/agregar', verificarSesion, async (req, res) => {
     try {
         const { mesa_id, producto_id, cantidad } = req.body;
-        await pool.query('INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion) VALUES ($1, $2, $3, NOW())', [mesa_id, producto_id, cantidad]);
+        // CORRECCIÓN: Insertamos fecha explícita y confiamos en el default de 'entregado'
+        await pool.query('INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion, entregado) VALUES ($1, $2, $3, NOW(), FALSE)', [mesa_id, producto_id, cantidad]);
         await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -345,7 +331,7 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res) => {
 });
 
 // ==========================================
-// 9. API: GESTIÓN DE PRODUCTOS Y CONFIG (ADMIN)
+// 9. API: GESTIÓN DE PRODUCTOS Y ADMIN
 // ==========================================
 
 app.get('/api/productos', verificarSesion, async (req, res) => {
@@ -369,13 +355,10 @@ app.delete('/api/productos/eliminar/:id', verificarSesion, soloAdmin, async (req
     } catch (e) { res.status(500).json({ error: 'Error al eliminar' }); }
 });
 
-// [MEJORADO] Stock + Gasto
 app.post('/api/productos/agregar-stock', verificarSesion, soloAdmin, async (req, res) => {
     try {
         const { id, cantidad, costo, nombre } = req.body;
         await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, id]);
-        
-        // Si hay costo, lo registramos como gasto
         if (costo && parseFloat(costo) > 0) {
             const desc = `Compra Inv: ${nombre} (+${cantidad})`;
             await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [desc, costo]);
@@ -384,11 +367,9 @@ app.post('/api/productos/agregar-stock', verificarSesion, soloAdmin, async (req,
     } catch(e){ res.status(500).json({error:e.message}) }
 });
 
-// Configuración
 app.get('/api/config', async (req, res) => { try { const r = await pool.query("SELECT * FROM config"); res.json(r.rows); } catch (e) { res.status(500).json({error:e.message})} });
 app.post('/api/config', verificarSesion, soloAdmin, async (req, res) => { try { await pool.query("UPDATE config SET valor = $1 WHERE clave = 'precio_billar'", [req.body.precio_billar]); res.json({ success: true }); } catch (e) { res.status(500).json({error:e.message})} });
 
-// Estadísticas Gráficas
 app.get('/api/estadisticas/semana', verificarSesion, soloAdmin, async (req, res) => {
     try {
         const v = await pool.query(`SELECT TO_CHAR(fecha, 'DD/MM') as dia, SUM(total_final) as total FROM ventas WHERE fecha > NOW() - INTERVAL '7 days' GROUP BY dia ORDER BY MIN(fecha) ASC`);
@@ -397,17 +378,14 @@ app.get('/api/estadisticas/semana', verificarSesion, soloAdmin, async (req, res)
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Reportes Historial
 app.delete('/api/reportes/eliminar/:id', verificarSesion, soloAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const t = await pool.query('SELECT fecha_cierre FROM cierres WHERE id = $1', [id]);
         if (t.rows.length === 0) return res.status(404).json({ error: 'Reporte no encontrado' });
-        
         const f = t.rows[0].fecha_cierre;
         const p = await pool.query('SELECT MAX(fecha_cierre) as fecha FROM cierres WHERE fecha_cierre < $1', [f]);
         const fa = p.rows[0].fecha || '2000-01-01';
-        
         await pool.query('DELETE FROM ventas WHERE fecha > $1 AND fecha <= $2', [fa, f]);
         await pool.query('DELETE FROM cierres WHERE id = $1', [id]);
         res.json({ success: true });
@@ -423,4 +401,4 @@ app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res) 
 // ==========================================
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🎱 Sistema 'La Esquina' (Versión Maestra) corriendo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🎱 Servidor Maesto activo en ${PORT}`));
