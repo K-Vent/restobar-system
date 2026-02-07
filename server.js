@@ -260,8 +260,24 @@ app.delete('/api/productos/eliminar/:id', verificarSesion, soloAdmin, async (req
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: 'Error al eliminar' }); }
 });
+// [MEJORADO] AGREGAR STOCK Y REGISTRAR GASTO AUTOMÁTICO
 app.post('/api/productos/agregar-stock', verificarSesion, soloAdmin, async (req, res) => {
-    try { await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [req.body.cantidad, req.body.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}
+    try {
+        const { id, cantidad, costo, nombre } = req.body;
+        
+        // 1. Actualizamos el Stock Físico
+        await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [cantidad, id]);
+        
+        // 2. Si hubo un costo (compra), registramos el gasto automáticamente
+        if (costo && parseFloat(costo) > 0) {
+            const descripcion = `Compra Inventario: ${nombre} (+${cantidad}u)`;
+            await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [descripcion, costo]);
+        }
+
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: e.message }); 
+    }
 });
 app.post('/api/productos/restar-stock', verificarSesion, soloAdmin, async (req, res) => {
     try { await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [req.body.cantidad, req.body.id]); res.json({success:true}); } catch(e){res.status(500).json({error:e.message})}

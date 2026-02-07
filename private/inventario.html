@@ -3,251 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <title>Inventario - La Esquina</title>
-     <link rel="icon" href="/logo.png" type="image/png">
+    <link rel="icon" href="/logo.png" type="image/png">
     <style>
-        /* ESTILOS BASE */
-        /* Estilo para el Logo */
-.logo-img {
-    width: 120px;       /* Ajusta el tamaño aquí */
-    height: auto;
-    display: block;
-    margin: 0 auto 10px; /* Centrado */
-    border-radius: 50%; /* Opcional: Si lo quieres redondo */
-}
-        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
-        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; transition: transform 0.3s ease; }
-        body.menu-oculto .sidebar { transform: translateX(-260px); }
-        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
-        .logo-text { color: #f1c40f; font-size: 22px; font-weight: bold; margin: 0; }
-        .logo-sub { color: #666; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-        .menu { flex-grow: 1; padding: 20px 0; }
-        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
-        .menu-link:hover { background: #1a1a1a; color: white; border-left-color: #f1c40f; }
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; }
+        .sidebar-header { padding: 25px; text-align: center; border-bottom: 1px solid #222; }
+        .logo-img { width: 180px; }
+        .menu { padding: 20px 0; flex-grow: 1; }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; transition: 0.2s; border-left: 3px solid transparent; }
+        .menu-link:hover { background: #1a1a1a; color: white; }
         .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
-        .menu-icon { font-size: 20px; width: 25px; text-align: center; }
-        .logout-container { padding: 20px; border-top: 1px solid #222; }
-        .btn-logout { width: 100%; padding: 12px; background: #2c0b0b; color: #e74c3c; border: 1px solid #c0392b; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; }
+        .btn-logout { width: 90%; margin: 0 auto 20px; padding: 12px; background: #222; color: #e74c3c; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-weight: bold; display: block; }
+
+        .main-content { margin-left: 260px; padding: 40px; width: 100%; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 28px; font-weight: bold; color: white; }
+
+        /* BUSCADOR */
+        .search-bar { padding: 12px; width: 300px; background: #181818; border: 1px solid #333; color: white; border-radius: 6px; outline: none; }
+        .search-bar:focus { border-color: #f1c40f; }
+
+        /* FORMULARIO NUEVO PRODUCTO */
+        .card-nuevo { background: #181818; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 150px; }
+        .form-label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+        .input-dark { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-crear { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; height: 38px; }
         
-        .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
-        body.menu-oculto .main-content { margin-left: 0; }
-        .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
-        .btn-toggle { background: transparent; border: none; color: #f1c40f; font-size: 28px; cursor: pointer; margin-right: 20px; }
-        .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
+        /* TABLA */
+        .tabla-container { background: #181818; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
+        th { background: #222; color: #f1c40f; font-size: 12px; text-transform: uppercase; }
+        tr:hover { background: #1f1f1f; }
+        
+        .stock-tag { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .stock-ok { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+        .stock-low { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
 
-        /* ESPECÍFICO INVENTARIO */
-        .form-nuevo { background: #181818; padding: 25px; border-radius: 12px; border: 1px solid #333; margin-bottom: 30px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-label { font-size: 12px; color: #888; margin-left: 5px; }
-        .input-dark { padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; outline: none; min-width: 150px; }
-        .input-dark:focus { border-color: #f1c40f; }
-        .btn-crear { background: #f39c12; color: black; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 42px; }
-        .btn-crear:hover { background: #d35400; }
+        .acciones { display: flex; gap: 5px; }
+        .btn-icon { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-add { background: #3498db; color: white; }
+        .btn-del { background: #c0392b; color: white; }
 
-        table { width: 100%; border-collapse: collapse; background: #181818; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        th, td { padding: 15px; border-bottom: 1px solid #333; text-align: left; }
-        th { background: #222; color: #f1c40f; text-transform: uppercase; font-size: 13px; }
-        .stock-bajo { color: #e74c3c; font-weight: bold; } .stock-bien { color: #2ecc71; font-weight: bold; }
-        .acciones { display: flex; gap: 8px; }
-        .btn-icon { border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; color: white; font-size: 14px; }
-        .btn-mas { background: #27ae60; } .btn-menos { background: #e67e22; } .btn-borrar { background: #c0392b; }
-
-        /* MODALES */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #444; }
-        .modal-title { font-size: 20px; color: #f1c40f; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: bold; }
-        .modal-input { width: 60%; padding: 12px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; font-size: 22px; text-align: center; margin-bottom: 25px; }
-        .modal-btns { display: flex; gap: 15px; margin-top: 10px; }
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 400px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-title { font-size: 20px; color: #f1c40f; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
         .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { background: #444; color: white; } .btn-confirm { background: #27ae60; color: white; } .btn-danger { background: #c0392b; color: white; }
-        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        @media (max-width: 768px) { .sidebar { transform: translateX(-260px); } .main-content { margin-left: 0; } body.menu-visible .sidebar { transform: translateX(0); } }
+
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
     </style>
 </head>
 <body>
+
     <div id="toast">✅ Acción realizada</div>
 
     <nav class="sidebar">
-       <div class="sidebar-header">
-    <img src="/logo.png" alt="Logo" class="logo-img">
-    
-    <div class="logo-sub">Panel de Control</div>
-</div>
+        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
         <div class="menu">
-            <a href="/dashboard.html" class="menu-link">
-                <span class="menu-icon">🎱</span> Control de Mesas
-            </a>
-            <a href="#" class="menu-link active">
-                <span class="menu-icon">📦</span> Inventario
-            </a>
-            <a href="/reportes.html" class="menu-link">
-                <span class="menu-icon">📅</span> Historial
-            </a>
-            <a href="/cierre_caja.html" class="menu-link">
-                <span class="menu-icon">🔒</span> Cerrar Caja
-            </a>
+            <a href="/dashboard.html" class="menu-link"><span class="menu-icon">🎱</span> Control de Mesas</a>
+            <a href="#" class="menu-link active"><span class="menu-icon">📦</span> Inventario</a>
+            <a href="/reportes.html" class="menu-link"><span class="menu-icon">📅</span> Historial</a>
+            <a href="/cierre_caja.html" class="menu-link"><span class="menu-icon">🔒</span> Cerrar Caja</a>
         </div>
-        <div class="logout-container">
-            <button onclick="cerrarSesion()" class="btn-logout">🚪 CERRAR SESIÓN</button>
-        </div>
+        <button onclick="location.href='/logout'" class="btn-logout">🚪 SALIR</button>
     </nav>
 
     <main class="main-content">
-        <div class="top-bar">
-            <button class="btn-toggle" onclick="toggleMenu()">☰</button>
+        <div class="page-header">
             <h2 class="page-title">📦 Gestión de Inventario</h2>
+            <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()">
         </div>
 
-        <div class="form-nuevo">
+        <div class="card-nuevo">
             <div class="form-group">
-                <span class="form-label">Nombre</span>
-                <input type="text" id="newNombre" class="input-dark" placeholder="Ej. Alitas BBQ">
+                <span class="form-label">Nombre del Producto</span>
+                <input type="text" id="newNombre" class="input-dark" placeholder="Ej. Pilsen Botella">
             </div>
-            
             <div class="form-group">
                 <span class="form-label">Categoría</span>
-                <select id="newCategoria" class="input-dark" style="height: 42px;">
+                <select id="newCategoria" class="input-dark">
                     <option value="Cervezas">🍺 Cervezas</option>
                     <option value="Tragos">🍹 Cócteles</option>
                     <option value="Comida">🍔 Comida</option>
                     <option value="Otros">🍬 Otros</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <span class="form-label">Precio (S/)</span>
+                <span class="form-label">Precio Venta (S/)</span>
                 <input type="number" id="newPrecio" class="input-dark" placeholder="0.00">
             </div>
             <div class="form-group">
-                <span class="form-label">Stock</span>
-                <input type="number" id="newStock" class="input-dark" placeholder="999">
+                <span class="form-label">Stock Inicial</span>
+                <input type="number" id="newStock" class="input-dark" placeholder="0">
             </div>
             <button class="btn-crear" onclick="crearProducto()">+ AGREGAR</button>
         </div>
 
-        <table id="tabla-productos">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="tabla-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio Venta</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-productos"></tbody>
+            </table>
+        </div>
     </main>
 
     <div id="modal-stock" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title" id="stock-titulo">Modificar Stock</div>
-            <input type="number" id="input-stock" class="modal-input" value="1" min="1">
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-stock')">Cancelar</button>
-                <button class="btn-modal btn-confirm" id="btn-stock-ok">CONFIRMAR</button>
+            <div class="modal-title">📥 Reponer Stock</div>
+            <p id="stock-prod-name" style="text-align:center; color:#ccc; margin-bottom:20px;"></p>
+            
+            <div class="form-group">
+                <span class="form-label">Cantidad a agregar (Unidades/Cajas)</span>
+                <input type="number" id="stock-cantidad" class="input-dark" placeholder="Ej. 24" oninput="calcularUnitario()">
             </div>
-        </div>
-    </div>
-
-    <div id="modal-borrar" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">⚠️ ¿Eliminar Producto?</div>
-            <p id="borrar-texto" style="color:#ddd; margin-bottom:20px;"></p>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-borrar')">Cancelar</button>
-                <button class="btn-modal btn-danger" id="btn-borrar-ok">ELIMINAR</button>
+            
+            <div class="form-group" style="margin-top:15px;">
+                <span class="form-label">💰 Costo Total de la Compra (S/)</span>
+                <input type="number" id="stock-costo" class="input-dark" placeholder="Ej. 120.00 (Opcional)" oninput="calcularUnitario()">
+                <small style="color:#888; font-size:11px; display:block; margin-top:5px;">
+                    Si pones un monto, se registrará como <b>GASTO</b> automáticamente.
+                </small>
             </div>
-        </div>
-    </div>
 
-    <div id="modal-msg" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="msg-titulo">Aviso</div>
-            <p id="msg-texto" style="color:#ddd; margin-bottom:20px;"></p>
-            <button class="btn-modal btn-confirm" style="width:100%" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
+            <div id="info-unitario" style="text-align:center; color:#f1c40f; font-size:13px; margin-top:10px; font-weight:bold;"></div>
+
+            <div class="modal-btns">
+                <button class="btn-modal" style="background:#444; color:white;" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-modal" style="background:#3498db; color:white;" onclick="ejecutarAgregarStock()">CONFIRMAR</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let prodAccionId = null; let accionActual = '';
-        function toggleMenu() { document.body.classList.toggle('menu-oculto'); }
-        function cerrarSesion() { if(confirm("¿Cerrar sesión?")) window.location.href='/index.html'; }
-        
+        let prodSeleccionadoId = null;
+        let prodSeleccionadoNombre = "";
+        let listaProductos = [];
+
         async function cargarProductos() {
             const res = await fetch('/api/productos');
-            const productos = await res.json();
-            const tbody = document.querySelector('#tabla-productos tbody');
+            listaProductos = await res.json();
+            pintarTabla(listaProductos);
+        }
+
+        function pintarTabla(datos) {
+            const tbody = document.getElementById('tabla-productos');
             tbody.innerHTML = '';
-            productos.forEach(p => {
-                const stockClass = p.stock < 10 ? 'stock-bajo' : 'stock-bien';
+            datos.forEach(p => {
+                const stockClass = p.stock < 10 ? 'stock-low' : 'stock-ok';
                 tbody.innerHTML += `
                     <tr>
-                        <td>${p.nombre}</td>
-                        <td>S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
-                        <td class="${stockClass}">${p.stock}</td>
-                        <td class="acciones">
-                            <button class="btn-icon btn-mas" onclick="abrirModalStock(${p.id}, 'agregar', '${p.nombre}')">➕</button>
-                            <button class="btn-icon btn-menos" onclick="abrirModalStock(${p.id}, 'restar', '${p.nombre}')">➖</button>
-                            <button class="btn-icon btn-borrar" onclick="confirmarBorrar(${p.id}, '${p.nombre}')">🗑️</button>
+                        <td style="font-weight:bold;">${p.nombre}</td>
+                        <td>${p.categoria || '-'}</td>
+                        <td style="color:#2ecc71;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
+                        <td><span class="stock-tag ${stockClass}">${p.stock} un.</span></td>
+                        <td>
+                            <div class="acciones">
+                                <button class="btn-icon btn-add" onclick="abrirModalStock(${p.id}, '${p.nombre}')" title="Reponer Stock">➕</button>
+                                <button class="btn-icon btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar">🗑️</button>
+                            </div>
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
             });
         }
 
-        function abrirModalStock(id, accion, nombre) {
-            prodAccionId = id; accionActual = accion;
-            document.getElementById('stock-titulo').innerText = (accion==='agregar'?'➕ Sumar a ':'➖ Restar a ') + nombre;
-            document.getElementById('input-stock').value = 1;
-            document.getElementById('modal-stock').style.display = 'flex';
-            document.getElementById('btn-stock-ok').onclick = ejecutarCambioStock;
-            setTimeout(()=>document.getElementById('input-stock').focus(),100);
+        function filtrarTabla() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const filtrados = listaProductos.filter(p => p.nombre.toLowerCase().includes(txt));
+            pintarTabla(filtrados);
         }
-        function confirmarBorrar(id, nombre) {
-            prodAccionId = id;
-            document.getElementById('borrar-texto').innerText = `¿Eliminar "${nombre}"?`;
-            document.getElementById('modal-borrar').style.display = 'flex';
-            document.getElementById('btn-borrar-ok').onclick = ejecutarBorrar;
-        }
-        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-        function mostrarToast(msg) { const t=document.getElementById("toast"); t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
-        function mostrarMensaje(ti, tx) { document.getElementById('msg-titulo').innerText=ti; document.getElementById('msg-texto').innerHTML=tx; document.getElementById('modal-msg').style.display='flex'; }
 
-        async function ejecutarCambioStock() {
-            const cant = document.getElementById('input-stock').value;
-            const end = accionActual==='agregar' ? '/api/productos/agregar-stock' : '/api/productos/restar-stock';
-            if(cant>0) {
-                await fetch(end, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:prodAccionId, cantidad:parseInt(cant)}) });
-                cerrarModal('modal-stock'); mostrarToast("Stock Actualizado"); cargarProductos();
-            }
-        }
         async function crearProducto() {
             const n = document.getElementById('newNombre').value;
+            const c = document.getElementById('newCategoria').value;
             const p = document.getElementById('newPrecio').value;
             const s = document.getElementById('newStock').value;
-            const c = document.getElementById('newCategoria').value; // Nueva línea
 
-            if(!n || !p) return mostrarMensaje("Falta info", "Nombre y precio requeridos");
-            
-            await fetch('/api/productos/nuevo', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({ nombre:n, precio:p, stock:s||0, categoria:c }) // Enviamos categoría
+            if(!n || !p) return alert("Falta nombre o precio");
+
+            await fetch('/api/productos/nuevo', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ nombre:n, precio:p, stock:s||0, categoria:c })
             });
             
-            // Limpiar
-            document.getElementById('newNombre').value=''; 
-            document.getElementById('newPrecio').value=''; 
-            document.getElementById('newStock').value='';
-            
-            mostrarToast("✨ Producto Creado"); 
+            document.getElementById('newNombre').value = '';
+            document.getElementById('newPrecio').value = '';
+            document.getElementById('newStock').value = '';
+            mostrarToast("✨ Producto Creado");
             cargarProductos();
         }
-        async function ejecutarBorrar() {
-            const res = await fetch(`/api/productos/eliminar/${prodAccionId}`, {method:'DELETE'});
-            cerrarModal('modal-borrar');
-            if(res.ok) { mostrarToast("🗑️ Eliminado"); cargarProductos(); }
-            else { mostrarMensaje("Error", "No se puede eliminar: Tiene ventas asociadas."); }
+
+        // --- LÓGICA DE STOCK INTELIGENTE ---
+        function abrirModalStock(id, nombre) {
+            prodSeleccionadoId = id;
+            prodSeleccionadoNombre = nombre;
+            document.getElementById('stock-prod-name').innerText = nombre;
+            document.getElementById('stock-cantidad').value = '';
+            document.getElementById('stock-costo').value = '';
+            document.getElementById('info-unitario').innerText = '';
+            document.getElementById('modal-stock').style.display = 'flex';
+            document.getElementById('stock-cantidad').focus();
         }
+
+        function calcularUnitario() {
+            const cant = parseFloat(document.getElementById('stock-cantidad').value) || 0;
+            const costo = parseFloat(document.getElementById('stock-costo').value) || 0;
+            if(cant > 0 && costo > 0) {
+                const unitario = costo / cant;
+                document.getElementById('info-unitario').innerText = `Costo Unitario: S/ ${unitario.toFixed(2)} c/u`;
+            } else {
+                document.getElementById('info-unitario').innerText = '';
+            }
+        }
+
+        async function ejecutarAgregarStock() {
+            const cant = document.getElementById('stock-cantidad').value;
+            const costo = document.getElementById('stock-costo').value;
+
+            if(!cant || cant <= 0) return alert("Ingresa una cantidad válida");
+
+            // Enviamos stock Y costo al servidor
+            await fetch('/api/productos/agregar-stock', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ 
+                    id: prodSeleccionadoId, 
+                    cantidad: cant, 
+                    costo: costo, // Si está vacío, el servidor lo ignora como gasto
+                    nombre: prodSeleccionadoNombre 
+                })
+            });
+
+            cerrarModal();
+            mostrarToast(costo > 0 ? "✅ Stock y Gasto registrados" : "✅ Stock actualizado");
+            cargarProductos();
+        }
+
+        async function eliminarProducto(id) {
+            if(confirm("¿Seguro de eliminar? Esto borrará el historial de este producto.")) {
+                await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
+                cargarProductos();
+            }
+        }
+
+        function cerrarModal() { document.getElementById('modal-stock').style.display = 'none'; }
+        function mostrarToast(msg) { const t=document.getElementById("toast"); t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
+
         cargarProductos();
     </script>
 </body>
