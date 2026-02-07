@@ -468,11 +468,28 @@
         }
 
         function filtrarProductos(cat, btn) {
+            // Manejo de botones de categoría
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
-            const cont = document.getElementById('prod-content'); cont.innerHTML = '';
+            
+            const cont = document.getElementById('prod-content'); 
+            cont.innerHTML = '';
+            
             const list = productosCache.filter(p => cat === 'Todos' ? true : (p.categoria || 'General') === cat);
-            list.forEach(p => { if (p.stock > 0) { cont.innerHTML += `<div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${p.nombre}')"><div class="prod-name">${p.nombre}</div><span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>`; } });
+            
+            list.forEach(p => { 
+                if (p.stock > 0) { 
+                    // [CORRECCIÓN IMPORTANTE] 
+                    // Si el nombre tiene comillas (ej: Mike's), las "escapamos" para no romper el código HTML
+                    const nombreSeguro = p.nombre.replace(/'/g, "\\'"); 
+                    
+                    cont.innerHTML += `
+                        <div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${nombreSeguro}')">
+                            <div class="prod-name">${p.nombre}</div>
+                            <span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                        </div>`; 
+                } 
+            });
         }
 
         function mostrarInputCantidad(pid, nom) {
