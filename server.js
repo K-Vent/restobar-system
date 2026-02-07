@@ -155,7 +155,17 @@ app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
 
 // --- RUTAS PÚBLICAS (Para Mozos y Admins) ---
 app.get('/api/mesas', verificarSesion, async (req, res) => {
-    try { const result = await pool.query('SELECT * FROM mesas ORDER BY numero_mesa ASC'); res.json(result.rows); } catch (e) { res.status(500).json({ error: e.message }); }
+    try {
+        // Obtenemos precio configurado
+        const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'");
+        const precioHora = parseFloat(conf.rows[0]?.valor || 10);
+
+        const result = await pool.query('SELECT * FROM mesas ORDER BY numero_mesa ASC');
+        // Inyectamos el precio actual a cada mesa para que el frontend sepa calcular
+        const mesasConPrecio = result.rows.map(m => ({ ...m, precio_hora: precioHora }));
+        
+        res.json(mesasConPrecio);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.get('/api/productos', verificarSesion, async (req, res) => {
     try { const result = await pool.query('SELECT * FROM productos ORDER BY nombre ASC'); res.json(result.rows); } catch (e) { res.status(500).json({ error: e.message }); }
@@ -309,6 +319,53 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res) => {
         }
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
+});
+// --- RUTAS DE ESTADÍSTICAS (Business Intelligence) ---
+app.get('/api/estadisticas/semana', verificarSesion, soloAdmin, async (req, res) => {
+    try {
+        // Ventas de los últimos 7 días
+        const ventas = await pool.query(`
+            SELECT TO_CHAR(fecha, 'DD/MM') as dia, SUM(total_final) as total 
+            FROM ventas 
+            WHERE fecha > NOW() - INTERVAL '7 days' 
+            GROUP BY dia 
+            ORDER BY MIN(fecha) ASC
+        `);
+        
+        // Top 5 Productos más vendidos
+        const productos = await pool.query(`
+            SELECT p.nombre, SUM(pm.cantidad) as cantidad 
+            FROM pedidos_mesa pm
+            JOIN productos p ON pm.producto_id = p.id
+            GROUP BY p.nombre 
+            ORDER BY cantidad DESC 
+            LIMIT 5
+        `);
+
+        res.json({ ventas: ventas.rows, top_productos: productos.rows });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// [CONFIGURACIÓN] Ruta para cambiar precio del billar (Guardado en DB o variable global)
+// Para hacerlo simple y "completo", crearemos una tabla de configuración rápida.
+(async () => {
+    try {
+        await pool.query("CREATE TABLE IF NOT EXISTS config (clave VARCHAR(50) PRIMARY KEY, valor TEXT)");
+        // Insertamos precio por defecto si no existe
+        await pool.query("INSERT INTO config (clave, valor) VALUES ('precio_billar', '10') ON CONFLICT DO NOTHING");
+    } catch (e) {}
+})();
+
+app.get('/api/config', async (req, res) => {
+    try { const r = await pool.query("SELECT * FROM config"); res.json(r.rows); } catch (e) { res.status(500).json({error:e.message})}
+});
+
+app.post('/api/config', verificarSesion, soloAdmin, async (req, res) => {
+    try {
+        const { precio_billar } = req.body;
+        await pool.query("UPDATE config SET valor = $1 WHERE clave = 'precio_billar'", [precio_billar]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({error:e.message})}
 });
 
 const PORT = process.env.PORT || 3000;
