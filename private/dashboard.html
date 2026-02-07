@@ -5,74 +5,49 @@
     <title>Control de Mesas - La Esquina</title>
     <link rel="icon" href="/logo.png" type="image/png">
     <style>
-        /* =========================================
-           1. ESTILOS GENERALES
-           ========================================= */
-        body { 
-            background: #0c0c0c; 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-        }
-        
-        /* BARRA LATERAL */
+        /* ESTILOS (IGUAL QUE ANTES) */
+        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
         .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
         .logo-img { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto 15px; object-fit: contain; }
-        
         .btn-gasto { margin: 15px 20px; background: #c0392b; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 40px); transition: 0.2s; box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3); }
         .btn-gasto:hover { background: #e74c3c; transform: translateY(-2px); }
-
         .menu { flex-grow: 1; padding: 10px 0; }
         .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
         .menu-link:hover { background: #1a1a1a; color: white; border-left-color: #f1c40f; }
         .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
         .menu-icon { font-size: 20px; width: 25px; text-align: center; }
-        
         .logout-container { padding: 20px; border-top: 1px solid #222; }
         .btn-logout { width: 100%; padding: 12px; background: #222; color: #e74c3c; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; transition: 0.2s; }
-
-        /* CONTENIDO PRINCIPAL */
         .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
         .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
-
         .money-panel { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
         .stat-card { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; flex: 1; min-width: 200px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .stat-title { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
         .stat-value { font-size: 28px; font-weight: bold; }
         .card-total .stat-value { color: #2ecc71; }
         .card-gastos .stat-value { color: #e74c3c; }
-        .card-real { border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.05); } 
-        .card-real .stat-value { color: #f39c12; }
-
+        .card-real { border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.05); } .card-real .stat-value { color: #f39c12; }
         .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .mesa-card:hover { transform: translateY(-5px); border-color: #555; }
-        
         .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .mesa-titulo { font-size: 18px; font-weight: bold; }
         .mesa-subtitulo { font-size: 12px; color: #777; margin-top: 2px; }
         .mesa-estado { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         .libre { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60; }
         .ocupada { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b; }
-
         .info-tiempo { font-size: 20px; font-family: 'Consolas', monospace; text-align: center; margin: 15px 0; color: #eee; background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #333; }
         .dinero-vivo { color: #f1c40f; font-size: 14px; margin-top: 4px; font-weight: bold; }
-
         .mesa-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .btn-mesa { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; transition: 0.2s; }
         .btn-abrir { background: #27ae60; color: white; }
         .btn-producto { background: #f39c12; color: black; }
         .btn-mover { background: #8e44ad; color: white; }
         .btn-cerrar { background: #c0392b; color: white; grid-column: span 2; }
-
         @keyframes parpadeo { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        /* --- MODALES --- */
+        /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-box { background: #1e1e1e; padding: 0; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #444; box-shadow: 0 20px 50px rgba(0,0,0,0.7); overflow: hidden; }
         .modal-title { font-size: 18px; color: #f1c40f; padding: 20px; border-bottom: 1px solid #333; font-weight: bold; background: #222; margin: 0; text-transform: uppercase; }
@@ -85,16 +60,11 @@
         .btn-cancel { background: #444; color: white; } 
         .btn-confirm { background: #27ae60; color: white; } 
         .btn-danger { background: #c0392b; color: white; }
-        
-        /* Botón WhatsApp */
         .btn-whatsapp { background: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-whatsapp:hover { background: #128C7E; }
-        
-        /* Input Teléfono */
         .whatsapp-input-container { display: flex; gap: 10px; margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; }
         .input-telefono { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; text-align: center; font-size: 16px; outline: none; }
         .input-telefono:focus { border-color: #25D366; }
-
         .modal-box.wide { max-width: 800px; }
         .split-container { display: flex; height: 450px; text-align: left; }
         .split-sidebar { width: 180px; background: #151515; border-right: 1px solid #333; overflow-y: auto; display: flex; flex-direction: column; }
@@ -104,15 +74,12 @@
         .prod-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; }
         .prod-item:hover { background: #2a2a2a; padding-left: 25px; }
         .prod-name { font-size: 15px; font-weight: 500; } .prod-price { color: #2ecc71; font-weight: bold; font-size: 15px; }
-
         .detalle-lista { text-align: left; padding: 20px; max-height: 250px; overflow-y: auto; }
         .detalle-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 14px; }
         .detalle-row.total-row { border-top: 2px solid #555; border-bottom: none; font-size: 20px; font-weight: bold; color: #2ecc71; margin-top: 15px; padding-top: 15px; }
-        
         #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; font-size: 16px; font-weight: bold; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         #modal-cantidad, #modal-msg, #modal-confirm { z-index: 1100 !important; }
-
         @media (max-width: 768px) { .sidebar { transform: translateX(-260px); } .main-content { margin-left: 0; } body.menu-visible .sidebar { transform: translateX(0); } }
     </style>
 </head>
@@ -159,9 +126,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-abrir-mesa')">Cancelar</button>
-            </div>
+            <div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-abrir-mesa')">Cancelar</button></div>
         </div>
     </div>
 
@@ -175,12 +140,10 @@
         <div class="modal-box">
             <div class="modal-title">🧾 Resumen de Cuenta</div>
             <div id="cobro-contenido" class="detalle-lista"></div>
-            
             <div class="whatsapp-input-container">
                 <input type="tel" id="input-telefono-cliente" class="input-telefono" placeholder="📱 Celular (Opcional)">
                 <button id="btn-whatsapp" class="btn-modal btn-whatsapp">📩 Enviar</button>
             </div>
-
             <div style="padding: 20px; background: #222; border-top: 1px solid #333;">
                 <p style="color:#aaa; font-size:12px; margin-bottom:10px; font-weight:bold;">SELECCIONA MÉTODO DE PAGO:</p>
                 <div style="display:flex; gap:10px; flex-direction: column;">
@@ -191,10 +154,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button>
-            </div>
+            <div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button></div>
         </div>
     </div>
 
@@ -243,6 +203,7 @@
         }
         async function actualizarCaja() { try { const res = await fetch('/api/caja/actual'); const data = await res.json(); document.getElementById('total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas).toFixed(2); document.getElementById('total-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos).toFixed(2); document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.total_caja_real).toFixed(2); } catch (e) { console.error(e); } }
 
+        // --- CARGAR MESAS (CON CRONÓMETRO CORREGIDO) ---
         async function cargarMesas() {
             try {
                 const res = await fetch('/api/mesas');
@@ -253,9 +214,20 @@
                 mesas.forEach(mesa => {
                     const esOcupada = mesa.estado === 'OCUPADA';
                     const esBillar = mesa.tipo === 'BILLAR';
-                    const dataAttrs = `data-id="${mesa.id}" data-inicio="${mesa.hora_inicio}" data-precio="${mesa.precio_hora}" data-limite="${mesa.tiempo_limite || 0}" data-mesa="${mesa.numero_mesa}"`;
                     
-                    const htmlReloj = esBillar ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`) : `<div style="height:10px;"></div>`;
+                    // [CORRECCIÓN HORA] Usamos los segundos que vienen del servidor
+                    let fechaInicioJS = "";
+                    if (esOcupada && mesa.segundos > 0) {
+                        // Restamos los segundos transcurridos al tiempo actual del navegador
+                        fechaInicioJS = new Date(Date.now() - (mesa.segundos * 1000)).toISOString();
+                    }
+
+                    const dataAttrs = `data-id="${mesa.id}" data-inicio="${fechaInicioJS}" data-precio="${mesa.precio_hora}" data-limite="${mesa.tiempo_limite || 0}" data-mesa="${mesa.numero_mesa}"`;
+                    
+                    const htmlReloj = esBillar 
+                        ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`) 
+                        : `<div style="height:10px;"></div>`;
+                    
                     const clickIniciar = esBillar ? `mostrarConfirmacion('abrir', ${mesa.id})` : `abrirMesaDirecta(${mesa.id})`;
 
                     cont.innerHTML += `
@@ -289,13 +261,16 @@
                     const limite = parseInt(t.getAttribute('data-limite') || 0);
                     const numMesa = t.getAttribute('data-mesa');
 
-                    if (inicio && inicio !== "undefined") {
-                        const diff = new Date() - new Date(inicio);
+                    if (inicio && inicio !== "undefined" && inicio !== "") {
+                        const diff = new Date() - new Date(inicio); // Esto ahora es preciso porque "inicio" se ajustó al navegador
+                        
                         if (limite > 0) {
                             const restMs = (limite * 60000) - diff;
                             const restMin = Math.floor(restMs / 60000);
+                            
                             if (restMin === 5 && t.dataset.aviso5 !== "true") { enviarNotificacion(`⚠️ Mesa ${numMesa}`, "Quedan 5 min"); audioAviso.play().catch(()=>{}); t.dataset.aviso5 = "true"; }
                             if (restMs <= 0 && t.dataset.avisoFin !== "true") { enviarNotificacion(`🚨 Mesa ${numMesa}`, "¡TIEMPO TERMINADO!"); audioFinal.play().catch(()=>{}); t.dataset.avisoFin = "true"; }
+
                             if (restMs <= 0) { t.innerHTML = `<div style="color:#e74c3c;font-weight:bold;animation:parpadeo 1s infinite;">⛔ ¡TIEMPO! ⛔</div><div class="dinero-vivo">Extra: ${Math.abs(restMin)} min</div>`; t.parentElement.style.border = "2px solid #e74c3c"; } 
                             else { const h = Math.floor(restMs / 3600000); const m = Math.floor((restMs % 3600000) / 60000); const s = Math.floor((restMs % 60000) / 1000); t.innerHTML = `<div style="color:#f1c40f;font-size:12px;">⏳ Quedan:</div><div style="font-size:24px;font-weight:bold;">${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}</div>`; }
                         } else {
@@ -322,7 +297,7 @@
             const list = productosCache.filter(p => cat === 'Todos' ? true : (p.categoria || 'General') === cat);
             list.forEach(p => { 
                 if (p.stock > 0) { 
-                    // [CORRECCIÓN MIKE'S] Escapamos las comillas
+                    // [CORRECCIÓN MIKE'S]
                     const nombreSeguro = p.nombre.replace(/'/g, "\\'"); 
                     cont.innerHTML += `<div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${nombreSeguro}')"><div class="prod-name">${p.nombre}</div><span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>`; 
                 } 
@@ -350,7 +325,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- WHATSAPP DETECTOR ---
         document.getElementById('btn-whatsapp').onclick = () => {
             const tel = document.getElementById('input-telefono-cliente').value.trim();
             const esCel = /Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -359,7 +333,6 @@
             window.open(url, '_blank');
         };
 
-        // --- COBRO FINAL ---
         async function ejecutarCobroFinal(metodo) {
             if(!confirm(`¿Cobrar con ${metodo}?`)) return;
             await fetch(`/api/mesas/cerrar/${mesaAccionId}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ metodo: metodo }) });
