@@ -548,20 +548,30 @@
         }
 
         // --- BOTÓN ENVIAR WHATSAPP (INTELIGENTE) ---
+        // --- BOTÓN ENVIAR WHATSAPP (CORREGIDO PARA CELULAR) ---
         document.getElementById('btn-whatsapp').onclick = () => {
             const telefono = document.getElementById('input-telefono-cliente').value.trim();
+            
+            // Detectamos si es un celular (Android o iPhone)
+            const esCelular = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Si es celular usa "api.whatsapp.com" (abre la App). 
+            // Si es PC usa "web.whatsapp.com" (abre WhatsApp Web directo).
+            const baseUrl = esCelular ? "https://api.whatsapp.com/send" : "https://web.whatsapp.com/send";
+            
             let url = '';
             
+            // Codificamos el texto para que símbolos como #, & o saltos de línea no rompan el enlace
+            // (Nota: mensajeTicketGlobal ya tiene %0A, así que lo enviamos directo)
+            
             if (telefono && telefono.length >= 9) {
-                // Si hay número, abrimos chat directo con el cliente
-                // Asumimos código Perú (51), puedes cambiarlo si usas otro país
-                url = `https://web.whatsapp.com/send?phone=51${telefono}&text=${mensajeTicketGlobal}`;
+                // Enviar directo al número (Asumimos Perú 51, cámbialo si necesitas)
+                url = `${baseUrl}?phone=51${telefono}&text=${mensajeTicketGlobal}`;
             } else {
-                // Si NO hay número, abrimos la lista de contactos para reenviar
-                url = `https://web.whatsapp.com/send?text=${mensajeTicketGlobal}`;
+                // Abrir lista de contactos para reenviar
+                url = `${baseUrl}?text=${mensajeTicketGlobal}`;
             }
             
-            // Usamos window.open para abrir en nueva pestaña
             window.open(url, '_blank');
         };
 
