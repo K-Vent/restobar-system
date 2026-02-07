@@ -8,9 +8,17 @@
         /* =========================================
            1. ESTILOS GENERALES
            ========================================= */
-        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
+        body { 
+            background: #0c0c0c; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
         
-        /* --- BARRA LATERAL --- */
+        /* BARRA LATERAL */
         .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; z-index: 500; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid #222; text-align: center; }
         .logo-img { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto 15px; object-fit: contain; }
@@ -27,7 +35,7 @@
         .logout-container { padding: 20px; border-top: 1px solid #222; }
         .btn-logout { width: 100%; padding: 12px; background: #222; color: #e74c3c; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; gap: 10px; transition: 0.2s; }
 
-        /* --- CONTENIDO --- */
+        /* CONTENIDO PRINCIPAL */
         .main-content { margin-left: 260px; padding: 30px; width: 100%; transition: margin-left 0.3s ease; }
         .top-bar { display: flex; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 24px; font-weight: bold; color: white; margin: 0; }
@@ -44,6 +52,7 @@
         .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .mesa-card { background: #181818; border-radius: 10px; padding: 20px; border: 1px solid #333; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .mesa-card:hover { transform: translateY(-5px); border-color: #555; }
+        
         .mesa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .mesa-titulo { font-size: 18px; font-weight: bold; }
         .mesa-subtitulo { font-size: 12px; color: #777; margin-top: 2px; }
@@ -77,36 +86,13 @@
         .btn-confirm { background: #27ae60; color: white; } 
         .btn-danger { background: #c0392b; color: white; }
         
-        /* Estilo especial botón WhatsApp */
-        .btn-whatsapp { 
-            background: #25D366; 
-            color: white; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px;
-        }
+        /* Botón WhatsApp */
+        .btn-whatsapp { background: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-whatsapp:hover { background: #128C7E; }
-
-        /* Estilo input WhatsApp */
-        .whatsapp-input-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            border-top: 1px dashed #444;
-            padding-top: 15px;
-        }
-        .input-telefono {
-            background: #222;
-            border: 1px solid #444;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            width: 100%;
-            text-align: center;
-            font-size: 16px;
-            outline: none;
-        }
+        
+        /* Input Teléfono */
+        .whatsapp-input-container { display: flex; gap: 10px; margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; }
+        .input-telefono { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; text-align: center; font-size: 16px; outline: none; }
         .input-telefono:focus { border-color: #25D366; }
 
         .modal-box.wide { max-width: 800px; }
@@ -134,13 +120,8 @@
     <div id="toast">✅ Acción realizada</div>
     
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <img src="/logo.png" class="logo-img" alt="La Esquina">
-            <div class="logo-sub">Panel de Control</div>
-        </div>
-        
+        <div class="sidebar-header"><img src="/logo.png" class="logo-img" alt="La Esquina"><div class="logo-sub">Panel de Control</div></div>
         <button class="btn-gasto" onclick="abrirModalGasto()">💸 Registrar Gasto</button>
-
         <div class="menu">
             <a href="#" class="menu-link active"><span class="menu-icon">🎱</span> Control de Mesas</a>
             <a href="/cocina.html" class="menu-link" target="_blank"><span class="menu-icon">👨‍🍳</span> Pantalla Cocina</a>
@@ -184,66 +165,12 @@
         </div>
     </div>
 
-    <div id="modal-gasto" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">📉 Registrar Salida</div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Descripción</label>
-                    <input type="text" id="gasto-desc" class="modal-input" placeholder="Ej. Hielo">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Monto (S/)</label>
-                    <input type="number" id="gasto-monto" class="modal-input" placeholder="0.00">
-                </div>
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-gasto')">Cancelar</button>
-                <button class="btn-modal btn-danger" onclick="ejecutarGasto()">REGISTRAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-productos" class="modal-overlay">
-        <div class="modal-box wide">
-            <div class="modal-title">🍺 Seleccionar Producto</div>
-            <div class="split-container">
-                <div id="cat-sidebar" class="split-sidebar"></div>
-                <div id="prod-content" class="split-content"></div>
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-productos')" style="width:100%">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-cambio" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">🔄 Mover Mesa</div>
-            <div class="modal-body">
-                <p style="color:#aaa; font-size:14px; margin-bottom:15px;">Destino:</p>
-                <select id="select-mesa-destino" class="modal-input"></select>
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cambio')">Cancelar</button>
-                <button class="btn-modal" style="background:#8e44ad;color:white;" onclick="ejecutarCambioMesa()">CONFIRMAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-cantidad" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="cant-titulo"></div>
-            <div class="modal-body">
-                <input type="number" id="input-cantidad" class="modal-input" value="1" style="text-align:center;font-size:30px;">
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cantidad')">Cancelar</button>
-                <button class="btn-modal btn-confirm" id="btn-cant-ok">AGREGAR</button>
-            </div>
-        </div>
-    </div>
-
+    <div id="modal-gasto" class="modal-overlay"><div class="modal-box"><div class="modal-title">📉 Registrar Salida</div><div class="modal-body"><div class="form-group"><label class="form-label">Descripción</label><input type="text" id="gasto-desc" class="modal-input" placeholder="Ej. Hielo"></div><div class="form-group"><label class="form-label">Monto (S/)</label><input type="number" id="gasto-monto" class="modal-input" placeholder="0.00"></div></div><div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-gasto')">Cancelar</button><button class="btn-modal btn-danger" onclick="ejecutarGasto()">REGISTRAR</button></div></div></div>
+    <div id="modal-productos" class="modal-overlay"><div class="modal-box wide"><div class="modal-title">🍺 Seleccionar Producto</div><div class="split-container"><div id="cat-sidebar" class="split-sidebar"></div><div id="prod-content" class="split-content"></div></div><div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-productos')" style="width:100%">Cancelar</button></div></div></div>
+    <div id="modal-cambio" class="modal-overlay"><div class="modal-box"><div class="modal-title">🔄 Mover Mesa</div><div class="modal-body"><p style="color:#aaa; font-size:14px; margin-bottom:15px;">Destino:</p><select id="select-mesa-destino" class="modal-input"></select></div><div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cambio')">Cancelar</button><button class="btn-modal" style="background:#8e44ad;color:white;" onclick="ejecutarCambioMesa()">CONFIRMAR</button></div></div></div>
+    <div id="modal-confirm" class="modal-overlay"><div class="modal-box"><div class="modal-title" id="confirm-titulo"></div><div class="modal-body"><p id="confirm-texto" style="color:#ddd;"></p></div><div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button><button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button></div></div></div>
+    <div id="modal-cantidad" class="modal-overlay"><div class="modal-box"><div class="modal-title" id="cant-titulo"></div><div class="modal-body"><input type="number" id="input-cantidad" class="modal-input" value="1" style="text-align:center;font-size:30px;"></div><div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cantidad')">Cancelar</button><button class="btn-modal btn-confirm" id="btn-cant-ok">AGREGAR</button></div></div></div>
+    
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">🧾 Resumen de Cuenta</div>
@@ -254,33 +181,24 @@
                 <button id="btn-whatsapp" class="btn-modal btn-whatsapp">📩 Enviar</button>
             </div>
 
+            <div style="padding: 20px; background: #222; border-top: 1px solid #333;">
+                <p style="color:#aaa; font-size:12px; margin-bottom:10px; font-weight:bold;">SELECCIONA MÉTODO DE PAGO:</p>
+                <div style="display:flex; gap:10px; flex-direction: column;">
+                    <button class="btn-modal" style="background:#27ae60; color:white; padding:15px;" onclick="ejecutarCobroFinal('EFECTIVO')">💵 EFECTIVO</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-modal" style="background:#8e44ad; color:white;" onclick="ejecutarCobroFinal('YAPE')">🟣 YAPE / PLIN</button>
+                        <button class="btn-modal" style="background:#2980b9; color:white;" onclick="ejecutarCobroFinal('TARJETA')">💳 TARJETA</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-btns">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button>
-                <button class="btn-modal btn-confirm" id="btn-cobrar-final">💰 COBRAR</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="confirm-titulo"></div>
-            <div class="modal-body"><p id="confirm-texto" style="color:#ddd;"></p></div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-confirm')">Cancelar</button>
-                <button class="btn-modal btn-confirm" id="btn-confirm-ok">Aceptar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-msg" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="msg-titulo"></div>
-            <div class="modal-body"><p id="msg-texto" style="color:#ddd;"></p></div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-confirm" onclick="cerrarModal('modal-msg')">ENTENDIDO</button>
-            </div>
-        </div>
-    </div>
+    <div id="modal-msg" class="modal-overlay"><div class="modal-box"><div class="modal-title" id="msg-titulo"></div><div class="modal-body"><p id="msg-texto" style="color:#ddd;"></p></div><div class="modal-btns"><button class="btn-modal btn-confirm" onclick="cerrarModal('modal-msg')">ENTENDIDO</button></div></div></div>
 
     <script>
         let intervaloCronometros = null;
@@ -288,7 +206,7 @@
         let prodAccionId = null;
         let mesaOrigenCambio = null;
         let productosCache = [];
-        let mensajeTicketGlobal = ""; // Variable para guardar el texto del ticket
+        let mensajeTicketGlobal = "";
 
         const audioAviso = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
         const audioFinal = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
@@ -300,16 +218,8 @@
             await actualizarCaja();
         }
 
-        async function solicitarPermisoNotificacion() {
-            if ("Notification" in window && Notification.permission !== "granted") { 
-                await Notification.requestPermission(); 
-            }
-        }
-        function enviarNotificacion(titulo, cuerpo) {
-            if (Notification.permission === "granted") { 
-                new Notification(titulo, { body: cuerpo, icon: '/logo.png' }); 
-            }
-        }
+        async function solicitarPermisoNotificacion() { if ("Notification" in window && Notification.permission !== "granted") { await Notification.requestPermission(); } }
+        function enviarNotificacion(titulo, cuerpo) { if (Notification.permission === "granted") { new Notification(titulo, { body: cuerpo, icon: '/logo.png' }); } }
 
         async function verificarRol() {
             try {
@@ -324,40 +234,14 @@
             } catch (e) { console.error(e); }
         }
 
-        function abrirModalGasto() {
-            document.getElementById('gasto-desc').value = '';
-            document.getElementById('gasto-monto').value = '';
-            document.getElementById('modal-gasto').style.display = 'flex';
-            document.getElementById('gasto-desc').focus();
-        }
-
+        function abrirModalGasto() { document.getElementById('gasto-desc').value = ''; document.getElementById('gasto-monto').value = ''; document.getElementById('modal-gasto').style.display = 'flex'; document.getElementById('gasto-desc').focus(); }
         async function ejecutarGasto() {
-            const desc = document.getElementById('gasto-desc').value;
-            const monto = document.getElementById('gasto-monto').value;
+            const desc = document.getElementById('gasto-desc').value; const monto = document.getElementById('gasto-monto').value;
             if (!desc || !monto) { alert("Datos incompletos"); return; }
-            
-            const res = await fetch('/api/gastos/nuevo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ descripcion: desc, monto: monto })
-            });
-            
-            if (res.ok) {
-                cerrarModal('modal-gasto');
-                mostrarToast("💸 Gasto registrado");
-                actualizarCaja();
-            } else { alert("Error"); }
+            const res = await fetch('/api/gastos/nuevo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descripcion: desc, monto: monto }) });
+            if (res.ok) { cerrarModal('modal-gasto'); mostrarToast("💸 Gasto registrado"); actualizarCaja(); } else { alert("Error"); }
         }
-
-        async function actualizarCaja() {
-            try {
-                const res = await fetch('/api/caja/actual');
-                const data = await res.json();
-                document.getElementById('total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas).toFixed(2);
-                document.getElementById('total-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos).toFixed(2);
-                document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.total_caja_real).toFixed(2);
-            } catch (e) { console.error(e); }
-        }
+        async function actualizarCaja() { try { const res = await fetch('/api/caja/actual'); const data = await res.json(); document.getElementById('total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas).toFixed(2); document.getElementById('total-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos).toFixed(2); document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.total_caja_real).toFixed(2); } catch (e) { console.error(e); } }
 
         async function cargarMesas() {
             try {
@@ -371,29 +255,15 @@
                     const esBillar = mesa.tipo === 'BILLAR';
                     const dataAttrs = `data-id="${mesa.id}" data-inicio="${mesa.hora_inicio}" data-precio="${mesa.precio_hora}" data-limite="${mesa.tiempo_limite || 0}" data-mesa="${mesa.numero_mesa}"`;
                     
-                    const htmlReloj = esBillar 
-                        ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`) 
-                        : `<div style="height:10px;"></div>`;
-                    
-                    // Lógica para abrir directo o con modal
-                    const clickIniciar = esBillar 
-                        ? `mostrarConfirmacion('abrir', ${mesa.id})` 
-                        : `abrirMesaDirecta(${mesa.id})`;
+                    const htmlReloj = esBillar ? (esOcupada ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>...</div>` : `<div class="info-tiempo" style="color:#444;">--:--</div>`) : `<div style="height:10px;"></div>`;
+                    const clickIniciar = esBillar ? `mostrarConfirmacion('abrir', ${mesa.id})` : `abrirMesaDirecta(${mesa.id})`;
 
                     cont.innerHTML += `
                         <div class="mesa-card">
-                            <div class="mesa-header">
-                                <div><div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div><div class="mesa-subtitulo">${mesa.tipo}</div></div>
-                                <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
-                            </div>
+                            <div class="mesa-header"><div><div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div><div class="mesa-subtitulo">${mesa.tipo}</div></div><span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span></div>
                             ${htmlReloj}
                             <div class="mesa-actions">
-                                ${!esOcupada ? 
-                                    `<button class="btn-mesa btn-abrir" onclick="${clickIniciar}">🟢 INICIAR</button>` : 
-                                    `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id})">🍺 PEDIDO</button>
-                                     <button class="btn-mesa btn-mover" onclick="abrirModalCambio(${mesa.id})">🔄 MOVER</button>
-                                     <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id}, '${mesa.numero_mesa}')">💰 COBRAR</button>`
-                                }
+                                ${!esOcupada ? `<button class="btn-mesa btn-abrir" onclick="${clickIniciar}">🟢 INICIAR</button>` : `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id})">🍺 PEDIDO</button><button class="btn-mesa btn-mover" onclick="abrirModalCambio(${mesa.id})">🔄 MOVER</button><button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id}, '${mesa.numero_mesa}')">💰 COBRAR</button>`}
                             </div>
                         </div>`;
                 });
@@ -401,23 +271,11 @@
             } catch (e) { console.error(e); }
         }
 
-        async function abrirMesaDirecta(id) {
-            mesaAccionId = id;
-            await ejecutarAbrirMesa(0);
-        }
-
-        function mostrarConfirmacion(tipo, id) {
-            mesaAccionId = id;
-            if (tipo === 'abrir') document.getElementById('modal-abrir-mesa').style.display = 'flex';
-        }
-
+        async function abrirMesaDirecta(id) { mesaAccionId = id; await ejecutarAbrirMesa(0); }
+        function mostrarConfirmacion(tipo, id) { mesaAccionId = id; if (tipo === 'abrir') document.getElementById('modal-abrir-mesa').style.display = 'flex'; }
         async function ejecutarAbrirMesa(minutos) {
             cerrarModal('modal-abrir-mesa');
-            await fetch(`/api/mesas/abrir/${mesaAccionId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ minutos: minutos })
-            });
+            await fetch(`/api/mesas/abrir/${mesaAccionId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ minutos: minutos }) });
             mostrarToast(minutos > 0 ? `⏳ Mesa abierta por ${minutos} min` : "✅ Mesa abierta");
             cargarTodo();
         }
@@ -436,17 +294,10 @@
                         if (limite > 0) {
                             const restMs = (limite * 60000) - diff;
                             const restMin = Math.floor(restMs / 60000);
-                            
                             if (restMin === 5 && t.dataset.aviso5 !== "true") { enviarNotificacion(`⚠️ Mesa ${numMesa}`, "Quedan 5 min"); audioAviso.play().catch(()=>{}); t.dataset.aviso5 = "true"; }
                             if (restMs <= 0 && t.dataset.avisoFin !== "true") { enviarNotificacion(`🚨 Mesa ${numMesa}`, "¡TIEMPO TERMINADO!"); audioFinal.play().catch(()=>{}); t.dataset.avisoFin = "true"; }
-
-                            if (restMs <= 0) {
-                                t.innerHTML = `<div style="color:#e74c3c;font-weight:bold;animation:parpadeo 1s infinite;">⛔ ¡TIEMPO! ⛔</div><div class="dinero-vivo">Extra: ${Math.abs(restMin)} min</div>`;
-                                t.parentElement.style.border = "2px solid #e74c3c";
-                            } else {
-                                const h = Math.floor(restMs / 3600000); const m = Math.floor((restMs % 3600000) / 60000); const s = Math.floor((restMs % 60000) / 1000);
-                                t.innerHTML = `<div style="color:#f1c40f;font-size:12px;">⏳ Quedan:</div><div style="font-size:24px;font-weight:bold;">${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}</div>`;
-                            }
+                            if (restMs <= 0) { t.innerHTML = `<div style="color:#e74c3c;font-weight:bold;animation:parpadeo 1s infinite;">⛔ ¡TIEMPO! ⛔</div><div class="dinero-vivo">Extra: ${Math.abs(restMin)} min</div>`; t.parentElement.style.border = "2px solid #e74c3c"; } 
+                            else { const h = Math.floor(restMs / 3600000); const m = Math.floor((restMs % 3600000) / 60000); const s = Math.floor((restMs % 60000) / 1000); t.innerHTML = `<div style="color:#f1c40f;font-size:12px;">⏳ Quedan:</div><div style="font-size:24px;font-weight:bold;">${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}</div>`; }
                         } else {
                             const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const costo = (diff / 60000 / 60) * precio;
                             t.innerHTML = `${h}:${m < 10 ? '0' + m : m} <div class="dinero-vivo">S/ ${costo.toFixed(2)}</div>`;
@@ -457,9 +308,7 @@
         }
 
         async function abrirModalProductos(id) {
-            mesaAccionId = id;
-            const res = await fetch('/api/productos');
-            productosCache = await res.json();
+            mesaAccionId = id; const res = await fetch('/api/productos'); productosCache = await res.json();
             const cats = ['Todos']; productosCache.forEach(p => { const c = p.categoria || 'General'; if (!cats.includes(c)) cats.push(c); });
             const sb = document.getElementById('cat-sidebar'); sb.innerHTML = '';
             cats.forEach(c => { let i = '📦'; if (c == 'Cervezas') i = '🍺'; if (c == 'Tragos' || c == 'Cócteles') i = '🍹'; if (c == 'Comida') i = '🍔'; sb.innerHTML += `<button class="cat-btn" onclick="filtrarProductos('${c}', this)">${i} ${c}</button>`; });
@@ -468,173 +317,63 @@
         }
 
         function filtrarProductos(cat, btn) {
-            // Manejo de botones de categoría
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            
-            const cont = document.getElementById('prod-content'); 
-            cont.innerHTML = '';
-            
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); if (btn) btn.classList.add('active');
+            const cont = document.getElementById('prod-content'); cont.innerHTML = '';
             const list = productosCache.filter(p => cat === 'Todos' ? true : (p.categoria || 'General') === cat);
-            
             list.forEach(p => { 
                 if (p.stock > 0) { 
-                    // [CORRECCIÓN IMPORTANTE] 
-                    // Si el nombre tiene comillas (ej: Mike's), las "escapamos" para no romper el código HTML
+                    // [CORRECCIÓN MIKE'S] Escapamos las comillas
                     const nombreSeguro = p.nombre.replace(/'/g, "\\'"); 
-                    
-                    cont.innerHTML += `
-                        <div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${nombreSeguro}')">
-                            <div class="prod-name">${p.nombre}</div>
-                            <span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                        </div>`; 
+                    cont.innerHTML += `<div class="prod-item" onclick="mostrarInputCantidad(${p.id}, '${nombreSeguro}')"><div class="prod-name">${p.nombre}</div><span class="prod-price">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>`; 
                 } 
             });
         }
 
-        function mostrarInputCantidad(pid, nom) {
-            prodAccionId = pid;
-            document.getElementById('cant-titulo').innerText = nom;
-            document.getElementById('input-cantidad').value = 1;
-            document.getElementById('modal-cantidad').style.display = 'flex';
-            document.getElementById('btn-cant-ok').onclick = ejecutarAgregarPedido;
-            setTimeout(() => document.getElementById('input-cantidad').focus(), 100);
-        }
-
+        function mostrarInputCantidad(pid, nom) { prodAccionId = pid; document.getElementById('cant-titulo').innerText = nom; document.getElementById('input-cantidad').value = 1; document.getElementById('modal-cantidad').style.display = 'flex'; document.getElementById('btn-cant-ok').onclick = ejecutarAgregarPedido; setTimeout(() => document.getElementById('input-cantidad').focus(), 100); }
         async function ejecutarAgregarPedido() {
             const cant = document.getElementById('input-cantidad').value;
             if (cant > 0) {
                 await fetch('/api/pedidos/agregar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: prodAccionId, cantidad: cant }) });
-                cerrarModal('modal-cantidad');
-                cerrarModal('modal-productos');
-                mostrarToast("✨ Producto Agregado");
-                actualizarCaja();
+                cerrarModal('modal-cantidad'); cerrarModal('modal-productos'); mostrarToast("✨ Producto Agregado"); actualizarCaja();
             }
         }
 
-        // --- COBRO CON WHATSAPP (LÓGICA NUEVA) ---
         async function prepararCobro(id, numMesa) {
-            mesaAccionId = id;
-            document.getElementById('cobro-contenido').innerHTML = 'Calculando...';
-            document.getElementById('modal-cobro').style.display = 'flex';
-            document.getElementById('input-telefono-cliente').value = ''; // Limpiar input
-            
+            mesaAccionId = id; document.getElementById('cobro-contenido').innerHTML = 'Calculando...'; document.getElementById('modal-cobro').style.display = 'flex'; document.getElementById('input-telefono-cliente').value = ''; 
             try {
-                const res = await fetch(`/api/mesas/detalle/${id}`);
-                const data = await res.json();
-                
-                let html = '';
-                // Construimos el mensaje de WhatsApp línea por línea
-                let texto = `🧾 *LA ESQUINA DEL BILLAR*%0A📅 Fecha: ${new Date().toLocaleDateString()}%0A🎱 *Mesa ${numMesa}*%0A------------------%0A`;
-
-                if (data.tipo === 'BILLAR') {
-                    const costoT = parseFloat(data.totalTiempo).toFixed(2);
-                    html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${costoT}</span></div>`;
-                    texto += `🎱 Tiempo (${data.minutos} min): S/ ${costoT}%0A`;
-                }
-                
-                if (data.listaProductos) {
-                    html += '<div style="border-top:1px dashed #444; margin:10px 0"></div>';
-                    data.listaProductos.forEach(p => {
-                        html += `
-                            <div class="detalle-row" style="align-items:center">
-                                <div style="display:flex; gap:10px">
-                                    <button onclick="eliminarPedido(${p.id}, '${p.nombre}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer">🗑️</button>
-                                    <span>${p.cantidad}x ${p.nombre}</span>
-                                </div>
-                                <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-                            </div>`;
-                        texto += `🍺 ${p.cantidad}x ${p.nombre}: S/ ${parseFloat(p.subtotal).toFixed(2)}%0A`;
-                    });
-                }
-                
-                const totalF = parseFloat(data.totalFinal).toFixed(2);
-                html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${totalF}</span></div>`;
-                texto += `------------------%0A💰 *TOTAL: S/ ${totalF}*%0A¡Gracias por tu visita!`;
-
-                // Guardamos el texto en variable global para usarlo en el botón
-                mensajeTicketGlobal = texto;
-                document.getElementById('cobro-contenido').innerHTML = html;
-
-                document.getElementById('btn-cobrar-final').onclick = async () => {
-                    await fetch(`/api/mesas/cerrar/${id}`, { method: 'POST' });
-                    cerrarModal('modal-cobro');
-                    cargarTodo();
-                };
+                const res = await fetch(`/api/mesas/detalle/${id}`); const data = await res.json();
+                let html = ''; let texto = `🧾 *LA ESQUINA DEL BILLAR*%0A📅 Fecha: ${new Date().toLocaleDateString()}%0A🎱 *Mesa ${numMesa}*%0A------------------%0A`;
+                if (data.tipo === 'BILLAR') { const costoT = parseFloat(data.totalTiempo).toFixed(2); html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${costoT}</span></div>`; texto += `🎱 Tiempo (${data.minutos} min): S/ ${costoT}%0A`; }
+                if (data.listaProductos) { html += '<div style="border-top:1px dashed #444; margin:10px 0"></div>'; data.listaProductos.forEach(p => { html += `<div class="detalle-row" style="align-items:center"><div style="display:flex; gap:10px"><button onclick="eliminarPedido(${p.id}, '${p.nombre}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer">🗑️</button><span>${p.cantidad}x ${p.nombre}</span></div><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`; texto += `🍺 ${p.cantidad}x ${p.nombre}: S/ ${parseFloat(p.subtotal).toFixed(2)}%0A`; }); }
+                const totalF = parseFloat(data.totalFinal).toFixed(2); html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${totalF}</span></div>`; texto += `------------------%0A💰 *TOTAL: S/ ${totalF}*%0A¡Gracias por tu visita!`;
+                mensajeTicketGlobal = texto; document.getElementById('cobro-contenido').innerHTML = html;
             } catch (e) { console.error(e); }
         }
 
-        // --- BOTÓN ENVIAR WHATSAPP (INTELIGENTE) ---
-        // --- BOTÓN ENVIAR WHATSAPP (CORREGIDO PARA CELULAR) ---
+        // --- WHATSAPP DETECTOR ---
         document.getElementById('btn-whatsapp').onclick = () => {
-            const telefono = document.getElementById('input-telefono-cliente').value.trim();
-            
-            // Detectamos si es un celular (Android o iPhone)
-            const esCelular = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            // Si es celular usa "api.whatsapp.com" (abre la App). 
-            // Si es PC usa "web.whatsapp.com" (abre WhatsApp Web directo).
-            const baseUrl = esCelular ? "https://api.whatsapp.com/send" : "https://web.whatsapp.com/send";
-            
-            let url = '';
-            
-            // Codificamos el texto para que símbolos como #, & o saltos de línea no rompan el enlace
-            // (Nota: mensajeTicketGlobal ya tiene %0A, así que lo enviamos directo)
-            
-            if (telefono && telefono.length >= 9) {
-                // Enviar directo al número (Asumimos Perú 51, cámbialo si necesitas)
-                url = `${baseUrl}?phone=51${telefono}&text=${mensajeTicketGlobal}`;
-            } else {
-                // Abrir lista de contactos para reenviar
-                url = `${baseUrl}?text=${mensajeTicketGlobal}`;
-            }
-            
+            const tel = document.getElementById('input-telefono-cliente').value.trim();
+            const esCel = /Android|iPhone|iPad/i.test(navigator.userAgent);
+            const base = esCel ? "https://api.whatsapp.com/send" : "https://web.whatsapp.com/send";
+            let url = (tel.length >= 9) ? `${base}?phone=51${tel}&text=${mensajeTicketGlobal}` : `${base}?text=${mensajeTicketGlobal}`;
             window.open(url, '_blank');
         };
 
-        async function eliminarPedido(pid, nom) {
-            if (confirm(`¿Eliminar "${nom}"?`)) {
-                await fetch(`/api/pedidos/eliminar/${pid}`, { method: 'DELETE' });
-                const numMesa = document.querySelector(`#timer-${mesaAccionId}`)?.getAttribute('data-mesa') || "?";
-                prepararCobro(mesaAccionId, numMesa);
-                actualizarCaja();
-            }
+        // --- COBRO FINAL ---
+        async function ejecutarCobroFinal(metodo) {
+            if(!confirm(`¿Cobrar con ${metodo}?`)) return;
+            await fetch(`/api/mesas/cerrar/${mesaAccionId}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ metodo: metodo }) });
+            cerrarModal('modal-cobro'); mostrarToast("✅ Cobrado"); cargarTodo();
         }
 
-        async function abrirModalCambio(id) {
-            mesaOrigenCambio = id;
-            const r = await fetch('/api/mesas');
-            const m = await r.json();
-            const l = m.filter(x => x.estado === 'LIBRE');
-            const s = document.getElementById('select-mesa-destino');
-            s.innerHTML = '';
-            if (l.length == 0) { alert("No hay mesas libres"); return; }
-            l.forEach(x => s.innerHTML += `<option value="${x.id}">Mesa ${x.numero_mesa}</option>`);
-            document.getElementById('modal-cambio').style.display = 'flex';
-        }
-
-        async function ejecutarCambioMesa() {
-            await fetch('/api/mesas/cambiar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idOrigen: mesaOrigenCambio, idDestino: document.getElementById('select-mesa-destino').value })
-            });
-            cerrarModal('modal-cambio');
-            cargarTodo();
-        }
-
+        async function eliminarPedido(pid, nom) { if (confirm(`¿Eliminar "${nom}"?`)) { await fetch(`/api/pedidos/eliminar/${pid}`, { method: 'DELETE' }); const num = document.querySelector(`#timer-${mesaAccionId}`)?.getAttribute('data-mesa') || "?"; prepararCobro(mesaAccionId, num); actualizarCaja(); } }
+        async function abrirModalCambio(id) { mesaOrigenCambio = id; const r = await fetch('/api/mesas'); const m = await r.json(); const l = m.filter(x => x.estado === 'LIBRE'); const s = document.getElementById('select-mesa-destino'); s.innerHTML = ''; if (l.length == 0) { alert("No hay mesas libres"); return; } l.forEach(x => s.innerHTML += `<option value="${x.id}">Mesa ${x.numero_mesa}</option>`); document.getElementById('modal-cambio').style.display = 'flex'; }
+        async function ejecutarCambioMesa() { await fetch('/api/mesas/cambiar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idOrigen: mesaOrigenCambio, idDestino: document.getElementById('select-mesa-destino').value }) }); cerrarModal('modal-cambio'); cargarTodo(); }
         function cerrarSesion() { if (confirm("¿Seguro que quieres salir?")) window.location.href = '/logout'; }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-        function mostrarToast(m) {
-            const t = document.getElementById("toast");
-            t.innerText = m;
-            t.className = "show";
-            setTimeout(() => t.className = t.className.replace("show", ""), 2500);
-        }
+        function mostrarToast(m) { const t = document.getElementById("toast"); t.innerText = m; t.className = "show"; setTimeout(() => t.className = t.className.replace("show", ""), 2500); }
 
-        cargarTodo();
-        setInterval(cargarMesas, 15000);
-
+        cargarTodo(); setInterval(cargarMesas, 15000);
     </script>
 </body>
 </html>
