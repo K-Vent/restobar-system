@@ -224,5 +224,23 @@ app.get('/api/estadisticas/semana', verificarSesion, soloAdmin, async (req, res)
 app.delete('/api/reportes/eliminar/:id', verificarSesion, soloAdmin, async (req, res) => { try { const t = await pool.query('SELECT fecha_cierre FROM cierres WHERE id = $1', [req.params.id]); if (t.rows.length === 0) return res.status(404).json({ error: 'Reporte no encontrado' }); const f = t.rows[0].fecha_cierre; const p = await pool.query('SELECT MAX(fecha_cierre) as fecha FROM cierres WHERE fecha_cierre < $1', [f]); const fa = p.rows[0].fecha || '2000-01-01'; await pool.query('DELETE FROM ventas WHERE fecha > $1 AND fecha <= $2', [fa, f]); await pool.query('DELETE FROM cierres WHERE id = $1', [req.params.id]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res) => { try { const r = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 30'); res.json(r.rows); } catch (e) { res.status(500).json({ error: e.message }); } });
 
+// ==========================================
+// RUTA NUEVA: CORRECCIÓN DE CAJA (ELIMINAR VENTA)
+// ==========================================
+app.delete('/api/ventas/eliminar/:id', verificarSesion, soloAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Eliminamos el registro de la tabla ventas
+        await pool.query('DELETE FROM ventas WHERE id = $1', [id]);
+        
+        // Nota: No devolvemos el stock aquí porque el stock se descuenta 
+        // cuando el mozo hace el pedido, no cuando se cobra. 
+        // Esto es puramente para cuadrar el dinero.
+        
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: e.message }); 
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🎱 Servidor Reparado (Zona Horaria) en puerto ${PORT}`));
