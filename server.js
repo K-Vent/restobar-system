@@ -17,7 +17,7 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false } 
 });
 
-// [IMPORTANTE] Forzar Hora Perú para los registros de base de datos
+// Forzar Hora Perú (UTC-5) para que NOW() sea correcto
 pool.on('connect', (client) => {
     client.query("SET TIME ZONE 'America/Lima'");
 });
@@ -25,17 +25,12 @@ pool.on('connect', (client) => {
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false })); 
 
-const loginLimiter = rateLimit({ 
-    windowMs: 15 * 60 * 1000, 
-    max: 10, 
-    message: { error: "⛔ Demasiados intentos." } 
-});
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
 app.use(session({
     store: new pgSession({ pool : pool, tableName : 'session', createTableIfMissing: true }),
     secret: 'secreto_super_seguro_billar_123',
-    resave: false, 
-    saveUninitialized: false,
+    resave: false, saveUninitialized: false,
     cookie: { secure: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'none' } 
 }));
 
@@ -50,12 +45,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const verificarSesion = (req, res, next) => {
     if (req.session.usuario) { next(); } 
-    else {
-        if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' });
-        res.redirect('/'); 
-    }
+    else { if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); res.redirect('/'); }
 };
-
 const soloAdmin = (req, res, next) => {
     if (req.session.usuario && req.session.usuario.rol === 'admin') { next(); } 
     else { res.status(403).json({ error: '⛔ Acceso Denegado.' }); }
@@ -68,14 +59,8 @@ const soloAdmin = (req, res, next) => {
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
 app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cocina.html')));
 app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cierre_caja.html')));
-app.get('/inventario.html', verificarSesion, (req, res) => {
-    if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html');
-    res.sendFile(path.join(__dirname, 'private', 'inventario.html'));
-});
-app.get('/reportes.html', verificarSesion, (req, res) => {
-    if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html');
-    res.sendFile(path.join(__dirname, 'private', 'reportes.html'));
-});
+app.get('/inventario.html', verificarSesion, (req, res) => { if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html'); res.sendFile(path.join(__dirname, 'private', 'inventario.html')); });
+app.get('/reportes.html', verificarSesion, (req, res) => { if(req.session.usuario.rol !== 'admin') return res.redirect('/dashboard.html'); res.sendFile(path.join(__dirname, 'private', 'reportes.html')); });
 
 // ==========================================
 // 4. LOGIN
@@ -85,28 +70,20 @@ app.post(['/login', '/api/login'], loginLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
         const result = await pool.query('SELECT * FROM usuarios WHERE username = $1 AND password = $2', [username, password]);
-        if (result.rows.length > 0) {
-            req.session.usuario = result.rows[0]; 
-            res.json({ success: true, rol: result.rows[0].rol });
-        } else { res.status(401).json({ success: false }); }
+        if (result.rows.length > 0) { req.session.usuario = result.rows[0]; res.json({ success: true, rol: result.rows[0].rol }); } 
+        else { res.status(401).json({ success: false }); }
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
 app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/')); });
-app.get('/api/usuario/actual', verificarSesion, (req, res) => { 
-    res.json({ username: req.session.usuario.username, rol: req.session.usuario.rol || 'mozo' }); 
-});
+app.get('/api/usuario/actual', verificarSesion, (req, res) => { res.json({ username: req.session.usuario.username, rol: req.session.usuario.rol || 'mozo' }); });
 
-// ==========================================
-// 5. MANTENIMIENTO DB
-// ==========================================
-
+// MANTENIMIENTO AUTOMÁTICO
 (async () => {
     try {
         await pool.query("CREATE TABLE IF NOT EXISTS gastos (id SERIAL PRIMARY KEY, descripcion TEXT, monto DECIMAL(10,2), fecha TIMESTAMP DEFAULT NOW())");
         await pool.query("CREATE TABLE IF NOT EXISTS config (clave VARCHAR(50) PRIMARY KEY, valor TEXT)");
         try { await pool.query("INSERT INTO config (clave, valor) VALUES ('precio_billar', '10') ON CONFLICT DO NOTHING"); } catch(e){}
-        
+        // Columnas
         try { await pool.query("ALTER TABLE productos ADD COLUMN categoria VARCHAR(50) DEFAULT 'General'"); } catch (e) {}
         try { await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) DEFAULT 'admin'"); } catch (e) {}
         try { await pool.query("ALTER TABLE cierres ADD COLUMN total_gastos DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
@@ -117,81 +94,35 @@ app.get('/api/usuario/actual', verificarSesion, (req, res) => {
     } catch (e) {}
 })();
 
-// ==========================================
-// 6. API: KDS COCINA
-// ==========================================
-
+// COCINA
 app.get('/api/kds/pendientes', verificarSesion, async (req, res) => {
     try {
-        const result = await pool.query(`
-            SELECT pm.id, m.numero_mesa, p.nombre, pm.cantidad, p.categoria, 
-                   to_char(COALESCE(pm.fecha_creacion, NOW()), 'HH24:MI') as hora
-            FROM pedidos_mesa pm
-            JOIN mesas m ON pm.mesa_id = m.id
-            JOIN productos p ON pm.producto_id = p.id
-            WHERE pm.pagado = FALSE AND (pm.entregado IS FALSE OR pm.entregado IS NULL) 
-            ORDER BY pm.fecha_creacion ASC
-        `);
+        const result = await pool.query(`SELECT pm.id, m.numero_mesa, p.nombre, pm.cantidad, p.categoria, to_char(COALESCE(pm.fecha_creacion, NOW()), 'HH24:MI') as hora FROM pedidos_mesa pm JOIN mesas m ON pm.mesa_id = m.id JOIN productos p ON pm.producto_id = p.id WHERE pm.pagado = FALSE AND (pm.entregado IS FALSE OR pm.entregado IS NULL) ORDER BY pm.fecha_creacion ASC`);
         res.json(result.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+app.post('/api/kds/entregar/:id', verificarSesion, async (req, res) => { try { await pool.query('UPDATE pedidos_mesa SET entregado = TRUE WHERE id = $1', [req.params.id]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
-app.post('/api/kds/entregar/:id', verificarSesion, async (req, res) => {
-    try { await pool.query('UPDATE pedidos_mesa SET entregado = TRUE WHERE id = $1', [req.params.id]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ==========================================
-// 7. API: CAJA Y GASTOS
-// ==========================================
-
-app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => {
-    try { await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [req.body.descripcion, req.body.monto]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
+// CAJA
+app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => { try { await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [req.body.descripcion, req.body.monto]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 app.get('/api/caja/actual', verificarSesion, async (req, res) => {
     try {
-        const ultimoCierre = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
-        const f = ultimoCierre.rows[0].fecha;
-
+        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha;
         const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [f]);
         const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [f]);
         const p = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [f]);
         const m = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [f]);
-        
-        const efectivo = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND metodo_pago = 'EFECTIVO'`, [f]);
-        const digital = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND (metodo_pago = 'YAPE' OR metodo_pago = 'TARJETA')`, [f]);
-        const lista = await pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]);
-
-        const totalVentas = parseFloat(v.rows[0].t || 0);
-        const totalGastos = parseFloat(g.rows[0].t || 0);
-        const totalEfectivo = parseFloat(efectivo.rows[0].t || 0);
-
-        res.json({ 
-            total_ventas: totalVentas, 
-            total_gastos: totalGastos, 
-            total_caja_real: totalVentas - totalGastos, 
-            dinero_en_cajon: totalEfectivo - totalGastos,
-            desglose: { efectivo: totalEfectivo, digital: parseFloat(digital.rows[0].t || 0) },
-            total_productos: parseFloat(p.rows[0].t || 0),
-            total_mesas: parseFloat(m.rows[0].t || 0),
-            lista: lista.rows
-        });
+        const ef = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND metodo_pago = 'EFECTIVO'`, [f]);
+        const dig = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND (metodo_pago = 'YAPE' OR metodo_pago = 'TARJETA')`, [f]);
+        const l = await pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]);
+        const tv=parseFloat(v.rows[0].t||0), tg=parseFloat(g.rows[0].t||0), te=parseFloat(ef.rows[0].t||0);
+        res.json({ total_ventas: tv, total_gastos: tg, total_caja_real: tv-tg, dinero_en_cajon: te-tg, desglose: { efectivo: te, digital: parseFloat(dig.rows[0].t||0) }, total_productos: parseFloat(p.rows[0].t||0), total_mesas: parseFloat(m.rows[0].t||0), lista: l.rows });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-app.post('/api/caja/cerrar', verificarSesion, async (req, res) => {
-    try {
-        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
-        const f = u.rows[0].fecha;
-        const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [f]);
-        const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [f]);
-        await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [v.rows[0].total||0, g.rows[0].total||0, v.rows[0].cantidad||0]);
-        res.json({ success: true, total: v.rows[0].total, gastos: g.rows[0].total });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
+app.post('/api/caja/cerrar', verificarSesion, async (req, res) => { try { const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha; const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [f]); const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [f]); await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [v.rows[0].total||0, g.rows[0].total||0, v.rows[0].cantidad||0]); res.json({ success: true, total: v.rows[0].total, gastos: g.rows[0].total }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
 // ==========================================
-// 8. API: MESAS (CORRECCIÓN HORA 5H)
+// 8. API: MESAS Y PEDIDOS (LÓGICA MATEMÁTICA CORREGIDA)
 // ==========================================
 
 app.get('/api/mesas', verificarSesion, async (req, res) => {
@@ -199,18 +130,12 @@ app.get('/api/mesas', verificarSesion, async (req, res) => {
         const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'");
         const precio = parseFloat(conf.rows[0]?.valor || 10);
         
-        // [CORREGIDO] Calculamos segundos transcurridos en DB para evitar error de zona horaria
+        // Calculamos segundos DIRECTAMENTE EN LA DB para evitar error de 5 horas
         const r = await pool.query(`
             SELECT *, EXTRACT(EPOCH FROM (NOW() - hora_inicio)) as segundos_transcurridos 
             FROM mesas ORDER BY numero_mesa ASC
         `);
-        
-        const mesas = r.rows.map(m => ({ 
-            ...m, 
-            precio_hora: precio,
-            // Enviamos los segundos exactos
-            segundos: m.estado === 'OCUPADA' ? parseFloat(m.segundos_transcurridos) : 0
-        }));
+        const mesas = r.rows.map(m => ({ ...m, precio_hora: precio, segundos: m.estado==='OCUPADA' ? parseFloat(m.segundos_transcurridos) : 0 }));
         res.json(mesas);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -219,6 +144,7 @@ app.post('/api/mesas/abrir/:id', verificarSesion, async (req, res) => {
     try { const l = req.body.minutos ? parseInt(req.body.minutos) : 0; await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NOW(), tiempo_limite = $2 WHERE id = $3', ['OCUPADA', l, req.params.id]); res.json({ success: true }); } catch(e){ res.status(500).json({ error: e.message }); }
 });
 
+// [CORREGIDO] DETALLE DE MESA - CÁLCULO EN DB
 app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
     try {
         const { id } = req.params;
@@ -227,12 +153,18 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
         const precioHora = parseFloat(conf.rows[0]?.valor || 10);
 
         let totalT = 0, minReal = 0;
+        
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
-            // Cálculo en DB
-            const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
+            // [CLAVE] Calculamos los minutos usando la DB directamente
+            // Evitamos sacar la fecha a Javascript para que no se sumen las 5 horas
+            const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]);
+            
             minReal = Math.ceil(resT.rows[0].min || 0);
+            
             let tiempoCalculo = minReal - 5; 
-            let bloques = Math.ceil(tiempoCalculo / 30); if (bloques < 1) bloques = 1; 
+            let bloques = Math.ceil(tiempoCalculo / 30); 
+            if (bloques < 1) bloques = 1; 
+            
             totalT = (bloques * 30 / 60) * precioHora;
         }
         
@@ -243,6 +175,7 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// [CORREGIDO] CERRAR MESA - CÁLCULO EN DB
 app.post('/api/mesas/cerrar/:id', verificarSesion, async (req, res) => {
     const { id } = req.params;
     const { metodo } = req.body;
@@ -255,9 +188,13 @@ app.post('/api/mesas/cerrar/:id', verificarSesion, async (req, res) => {
         
         let totalT = 0;
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) {
-            const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - $1))/60 AS min", [mesa.hora_inicio]);
+            // [CLAVE] Cálculo directo en DB igual que en /detalle
+            const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]);
             const minReal = Math.ceil(resT.rows[0].min || 0);
-            let tiempoCalculo = minReal - 5; let bloques = Math.ceil(tiempoCalculo / 30); if (bloques < 1) bloques = 1;
+            
+            let tiempoCalculo = minReal - 5; 
+            let bloques = Math.ceil(tiempoCalculo / 30); 
+            if (bloques < 1) bloques = 1;
             totalT = (bloques * 30 / 60) * precioHora;
         }
         
@@ -288,4 +225,4 @@ app.delete('/api/reportes/eliminar/:id', verificarSesion, soloAdmin, async (req,
 app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res) => { try { const r = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 30'); res.json(r.rows); } catch (e) { res.status(500).json({ error: e.message }); } });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🎱 Servidor Sync (Hora Exacta) en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🎱 Servidor Reparado (Zona Horaria) en puerto ${PORT}`));
