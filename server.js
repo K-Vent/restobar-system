@@ -1,7 +1,6 @@
 /* ============================================================
    SERVER.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
-   Arquitectura: Nivel Profesional / Ingeniería de Software
-   Seguridad: Control de Roles (Admin / Mozo)
+   Arquitectura: Stateless (JWT) / Ultra-Rápido
    ============================================================ */
 
 require('dotenv').config();
@@ -10,19 +9,24 @@ const http = require('http');
 const { Server } = require('socket.io'); 
 const path = require('path');
 const cors = require('cors'); 
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet'); 
 const rateLimit = require('express-rate-limit'); 
 const compression = require('compression'); 
 const bcrypt = require('bcrypt'); 
 const { z } = require('zod'); 
 
+// --- NUEVAS LIBRERÍAS DE ALTA VELOCIDAD ---
+const jwt = require('jsonwebtoken'); 
+const cookieParser = require('cookie-parser');
+
 const pool = require('./db.js'); 
 
 const app = express(); 
 const server = http.createServer(app); 
 const io = new Server(server); 
+
+// Llave maestra criptográfica
+const SECRET_KEY = process.env.JWT_SECRET || 'llave_maestra_billar_2026';
 
 // ==========================================
 // 1. ESQUEMAS DE VALIDACIÓN DE DATOS (ZOD)
@@ -41,7 +45,7 @@ const nuevoProductoSchema = z.object({ nombre: z.string().min(1), precio: z.coer
 const stockSchema = z.object({ id: z.coerce.number().int().positive(), cantidad: z.coerce.number().int().positive(), costo: z.coerce.number().nonnegative().optional(), nombre: z.string() });
 
 // ==========================================
-// 2. CONFIGURACIÓN DEL SERVIDOR Y SEGURIDAD
+// 2. CONFIGURACIÓN DEL SERVIDOR
 // ==========================================
 io.on('connection', (socket) => { console.log('📱 Dispositivo conectado:', socket.id); });
 
@@ -52,41 +56,46 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser()); // Activa la lectura de cookies de alta velocidad
 
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
-app.use(session({
-    store: new pgSession({ pool : pool, tableName : 'session', createTableIfMissing: true }),
-    secret: process.env.SESSION_SECRET, 
-    resave: false, 
-    saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 30 * 24 * 60 * 60 * 1000 } 
-}));
-
-// --- Middlewares de Autorización ---
+// ==========================================
+// 3. MIDDLEWARES DE SEGURIDAD (STATELESS JWT)
+// ==========================================
 const verificarSesion = (req, res, next) => { 
-    if (req.session.usuario) return next(); 
-    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); 
-    res.redirect('/'); 
+    const token = req.cookies.token; // Lee el token directamente (Sin ir a la BD)
+    if (!token) { 
+        if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); 
+        return res.redirect('/'); 
+    } 
+    try { 
+        const decoded = jwt.verify(token, SECRET_KEY); 
+        req.usuario = decoded; // Adjuntamos los datos descifrados a la petición
+        next(); 
+    } catch (e) { 
+        res.clearCookie('token');
+        if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Sesión expirada.' }); 
+        res.redirect('/'); 
+    } 
 };
 
 const soloAdmin = (req, res, next) => { 
-    if (req.session.usuario && req.session.usuario.rol === 'admin') return next(); 
+    if (req.usuario && req.usuario.rol === 'admin') return next(); 
     res.status(403).json({ error: '⛔ Acceso Denegado. Permisos insuficientes.' }); 
 };
 
 // ==========================================
-// 3. RUTAS DE VISTAS (FRONTEND PROTEGIDO)
+// 4. RUTAS DE VISTAS (FRONTEND PROTEGIDO)
 // ==========================================
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
 app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cocina.html')));
 app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cierre_caja.html')));
-// Solo Admin puede acceder a inventario y reportes directamente
 app.get('/inventario.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'inventario.html')));
 app.get('/reportes.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'reportes.html')));
 
 // ==========================================
-// 4. FUNCIONES AUXILIARES Y BASE DE DATOS
+// 5. INICIALIZACIÓN AUTOMÁTICA DE BD
 // ==========================================
 let configCache = { precio_billar: 10, ultimaActualizacion: 0 };
 async function getPrecioBillar() {
@@ -101,7 +110,6 @@ async function getPrecioBillar() {
     return configCache.precio_billar;
 }
 
-// Inicialización Automática de Base de Datos
 (async () => { 
     try { 
         await pool.query("CREATE TABLE IF NOT EXISTS gastos (id SERIAL PRIMARY KEY, descripcion TEXT, monto DECIMAL(10,2), fecha TIMESTAMP DEFAULT NOW())"); 
@@ -115,12 +123,13 @@ async function getPrecioBillar() {
         try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN entregado BOOLEAN DEFAULT FALSE"); } catch (e) {} 
         try { await pool.query("ALTER TABLE ventas ADD COLUMN metodo_pago VARCHAR(20) DEFAULT 'EFECTIVO'"); } catch (e) {} 
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_efectivo DECIMAL(10,2) DEFAULT 0"); } catch (e) {} 
-        try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_digital DECIMAL(10,2) DEFAULT 0"); } catch (e) {} 
+        try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_digital DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
+        try { await pool.query("DROP TABLE IF EXISTS session CASCADE"); } catch(e){} // Eliminamos la tabla obsoleta
     } catch (e) { console.error("Error en inicialización de BD:", e); } 
 })();
 
 // ==========================================
-// 5. RUTAS API: AUTENTICACIÓN
+// 6. RUTAS API: AUTENTICACIÓN (NUEVO JWT)
 // ==========================================
 app.post(['/login', '/api/login'], loginLimiter, async (req, res, next) => {
     try { 
@@ -142,19 +151,38 @@ app.post(['/login', '/api/login'], loginLimiter, async (req, res, next) => {
             } 
             
             if (passwordCorrecta) { 
-                req.session.usuario = { id: user.id, username: user.username, rol: user.rol }; 
+                // Creamos el Token firmado digitalmente (Válido por 12 horas)
+                const token = jwt.sign(
+                    { id: user.id, username: user.username, rol: user.rol }, 
+                    SECRET_KEY, 
+                    { expiresIn: '12h' }
+                );
+
+                // Lo inyectamos en una cookie de altísima seguridad
+                res.cookie('token', token, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production', 
+                    maxAge: 12 * 60 * 60 * 1000 
+                });
+
                 return res.json({ success: true, rol: user.rol }); 
             } 
         } 
-        res.status(401).json({ success: false }); 
+        res.status(401).json({ success: false, error: 'Credenciales incorrectas' }); 
     } catch (e) { next(e); } 
 });
 
-app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/')); });
-app.get('/api/usuario/actual', verificarSesion, (req, res) => { res.json({ username: req.session.usuario.username, rol: req.session.usuario.rol || 'mozo' }); });
+app.get('/logout', (req, res) => { 
+    res.clearCookie('token'); 
+    res.redirect('/'); 
+});
+
+app.get('/api/usuario/actual', verificarSesion, (req, res) => { 
+    res.json({ username: req.usuario.username, rol: req.usuario.rol || 'mozo' }); 
+});
 
 // ==========================================
-// 6. RUTAS API: COCINA Y KDS
+// 7. RUTAS API: COCINA Y KDS
 // ==========================================
 app.get('/api/kds/pendientes', verificarSesion, async (req, res, next) => { 
     try { 
@@ -172,7 +200,7 @@ app.post('/api/kds/entregar/:id', verificarSesion, async (req, res, next) => {
 });
 
 // ==========================================
-// 7. RUTAS API: OPERATIVA DE MESAS
+// 8. RUTAS API: OPERATIVA DE MESAS
 // ==========================================
 app.get('/api/mesas', verificarSesion, async (req, res, next) => { 
     try { 
@@ -182,7 +210,6 @@ app.get('/api/mesas', verificarSesion, async (req, res, next) => {
         const mesas = r.rows.map(m => ({ 
             ...m, 
             precio_hora: precio, 
-            // Corrección: Solo envía los segundos si la mesa es de BILLAR
             segundos: (m.estado === 'OCUPADA' && m.tipo === 'BILLAR') ? parseFloat(m.segundos_transcurridos) : 0 
         })); 
         res.json(mesas); 
@@ -207,7 +234,6 @@ app.get('/api/mesas/detalle/:id', verificarSesion, async (req, res, next) => {
         
         let totalT = 0, minReal = 0; 
         
-        // Corrección: Cálculo de tiempo exclusivo para mesas de BILLAR
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) { 
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]); 
             minReal = Math.ceil(resT.rows[0].min || 0); 
@@ -279,7 +305,7 @@ app.post('/api/mesas/cambiar', verificarSesion, async (req, res, next) => {
 });
 
 // ==========================================
-// 8. RUTAS API: PEDIDOS
+// 9. RUTAS API: PEDIDOS
 // ==========================================
 app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => { 
     try { 
@@ -307,7 +333,7 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
 });
 
 // ==========================================
-// 9. RUTAS API: ADMINISTRACIÓN Y REPORTES
+// 10. RUTAS API: ADMINISTRACIÓN Y REPORTES
 // ==========================================
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => { 
     try { 
@@ -427,7 +453,7 @@ app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res, 
 });
 
 // ==========================================
-// 10. GESTOR CENTRAL DE ERRORES
+// 11. GESTOR CENTRAL DE ERRORES
 // ==========================================
 app.use((err, req, res, next) => {
     console.error("🔥 Error del Servidor:", err.message || err);
