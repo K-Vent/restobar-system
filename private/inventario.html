@@ -65,18 +65,23 @@
                 <span class="form-label">Nombre del Producto</span>
                 <input type="text" id="newNombre" class="modal-input" placeholder="Ej. Pilsen Botella">
             </div>
-            <div class="form-group">
+            
+            <div class="form-group" id="caja-select-cat">
                 <span class="form-label">Categoría</span>
-                <select id="newCategoria" class="modal-input">
-                    <option value="Cervezas">🍺 Cervezas</option>
-                    <option value="Tragos">🍹 Cócteles</option>
-                    <option value="Comida">🍔 Comida</option>
-                    <option value="Otros">🍬 Otros</option>
+                <select id="newCategoria" class="modal-input" onchange="verificarCategoria(this)">
+                    <option value="Cargando...">Cargando...</option>
                 </select>
+            </div>
+            
+            <div class="form-group" id="caja-input-cat" style="display:none; position:relative;">
+                <span class="form-label" style="color: var(--gold);">✨ Nueva Categoría 
+                    <span style="float:right; cursor:pointer; color:var(--danger);" onclick="cancelarNuevaCategoria()">✖ Cancelar</span>
+                </span>
+                <input type="text" id="newCategoriaTexto" class="modal-input" placeholder="Ej. Vinos, Postres..." style="border-color: var(--gold); box-shadow: 0 0 0 4px rgba(241,196,15,0.1);">
             </div>
             <div class="form-group">
                 <span class="form-label">Precio Venta (S/)</span>
-                <input type="number" id="newPrecio" class="modal-input" placeholder="0.00">
+                <input type="number" id="newPrecio" class="modal-input" placeholder="0.00" step="0.50">
             </div>
             <div class="form-group">
                 <span class="form-label">Stock Inicial</span>
@@ -138,8 +143,51 @@
         async function cargarProductos() {
             const res = await fetch('/api/productos');
             listaProductos = await res.json();
+            
+            actualizarSelectCategorias(); // <--- Llama al constructor de categorías dinámico
             pintarTabla(listaProductos);
         }
+
+        // --- SISTEMA DINÁMICO DE CATEGORÍAS ---
+        function actualizarSelectCategorias() {
+            const selectCat = document.getElementById('newCategoria');
+            const catSet = new Set();
+            
+            // 1. Categorías base recomendadas
+            ['Cervezas', 'Tragos', 'Comida', 'Piqueos'].forEach(c => catSet.add(c));
+            
+            // 2. Extraer automáticamente las categorías que ya existen en la Base de Datos
+            listaProductos.forEach(p => {
+                if(p.categoria && p.categoria !== 'General') catSet.add(p.categoria);
+            });
+            
+            const categoriasUnicas = Array.from(catSet).sort();
+            
+            // 3. Reconstruir el HTML del selector
+            selectCat.innerHTML = '';
+            categoriasUnicas.forEach(cat => {
+                selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            
+            // 4. Inyectar el botón de "Nueva Categoría" al final
+            selectCat.innerHTML += `<option value="NUEVA" style="color:var(--gold); font-weight:900;">➕ Añadir nueva...</option>`;
+        }
+
+        function verificarCategoria(elemento) {
+            if (elemento.value === 'NUEVA') {
+                document.getElementById('caja-select-cat').style.display = 'none';
+                document.getElementById('caja-input-cat').style.display = 'block';
+                document.getElementById('newCategoriaTexto').focus();
+            }
+        }
+
+        function cancelarNuevaCategoria() {
+            document.getElementById('caja-input-cat').style.display = 'none';
+            document.getElementById('newCategoriaTexto').value = '';
+            document.getElementById('caja-select-cat').style.display = 'block';
+            document.getElementById('newCategoria').selectedIndex = 0; // Regresa al inicio
+        }
+        // --- FIN SISTEMA DE CATEGORÍAS ---
 
         function pintarTabla(datos) {
             const tbody = document.getElementById('tabla-productos');
@@ -149,7 +197,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td style="font-weight:800; color: white;">${p.nombre}</td>
-                        <td style="color: var(--text-muted);">${p.categoria || '-'}</td>
+                        <td style="color: var(--text-muted); font-weight:600;">${p.categoria || '-'}</td>
                         <td style="color:var(--success); font-weight: bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
                         <td><span class="stock-tag ${stockClass}">${p.stock} un.</span></td>
                         <td>
@@ -168,26 +216,43 @@
         }
 
         async function crearProducto() {
-            const n = document.getElementById('newNombre').value;
-            const c = document.getElementById('newCategoria').value;
+            const n = document.getElementById('newNombre').value.trim();
             const p = document.getElementById('newPrecio').value;
             const s = document.getElementById('newStock').value;
 
-            if(!n || !p) return alert("Falta nombre o precio");
+            // Lógica inteligente para capturar la categoría
+            let c = document.getElementById('newCategoria').value;
+            if (c === 'NUEVA') {
+                c = document.getElementById('newCategoriaTexto').value.trim();
+                if (!c) return mostrarToast("⚠️ Escribe el nombre de la nueva categoría");
+                // Normalizar: Primera letra mayúscula
+                c = c.charAt(0).toUpperCase() + c.slice(1).toLowerCase();
+            }
 
-            await fetch('/api/productos/nuevo', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ nombre:n, precio:p, stock:s||0, categoria:c })
-            });
-            
-            document.getElementById('newNombre').value = '';
-            document.getElementById('newPrecio').value = '';
-            document.getElementById('newStock').value = '';
-            mostrarToast("✨ Producto Creado");
-            cargarProductos();
+            if(!n || !p) return mostrarToast("⚠️ Falta el nombre o el precio");
+
+            try {
+                const res = await fetch('/api/productos/nuevo', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ nombre:n, precio:p, stock:s||0, categoria:c })
+                });
+
+                if (res.ok) {
+                    document.getElementById('newNombre').value = '';
+                    document.getElementById('newPrecio').value = '';
+                    document.getElementById('newStock').value = '';
+                    cancelarNuevaCategoria(); // Reinicia la vista visual del selector
+                    
+                    mostrarToast("✨ Producto Creado Exitosamente");
+                    cargarProductos(); // Esto recargará la tabla Y actualizará la lista de categorías
+                } else {
+                    mostrarToast("❌ Hubo un error al crear el producto");
+                }
+            } catch (e) { console.error(e); }
         }
 
+        // Lógica de Stock y Modales...
         function abrirModalStock(id, nombre) {
             prodSeleccionadoId = id;
             prodSeleccionadoNombre = nombre;
@@ -228,7 +293,7 @@
         }
 
         async function eliminarProducto(id) {
-            if(confirm("¿Seguro de eliminar? Esto borrará el historial de este producto.")) {
+            if(confirm("¿Seguro de eliminar este producto?")) {
                 await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
                 cargarProductos();
             }
