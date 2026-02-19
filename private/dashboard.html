@@ -2,37 +2,105 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>La Esquina - Panel Control</title>
+    <title>La Esquina - Panel de Control</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="/css/dashboard.css">
-    <script src="/js/dashboard.js"></script>
     <link rel="icon" href="/logo.png">
 </head>
 <body>
     <div id="toast">✅ Acción realizada</div>
     
     <nav class="sidebar">
-        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
-        <button class="btn-gasto" onclick="document.getElementById('modal-gasto').style.display='flex'">💸 Gasto</button>
+        <div class="sidebar-header">
+            <img src="/logo.png" class="logo-img" alt="La Esquina">
+        </div>
+        <button class="btn-gasto" onclick="document.getElementById('modal-gasto').style.display='flex'">💸 Registrar Gasto</button>
         <div class="menu">
-            <a href="#" class="menu-link active">🎱 Mesas</a>
-            <a href="/cocina.html" class="menu-link" target="_blank">👨‍🍳 Cocina</a>
-            <a href="/inventario.html" class="menu-link">📦 Stock</a>
-            <a href="/reportes.html" class="menu-link">📅 Reportes</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cierre</a>
+            <a href="#" class="menu-link active">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="menu-link" target="_blank">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
+            <a href="/reportes.html" class="menu-link">📅 Historial</a>
+            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
         </div>
     </nav>
 
     <main class="main-content">
         <div class="money-panel">
-            <div class="stat-card"><div class="stat-title">Ventas</div><div class="stat-value" id="total-ventas">S/ 0.00</div></div>
-            <div class="stat-card"><div class="stat-title">Gastos</div><div class="stat-value" id="total-gastos">S/ 0.00</div></div>
-            <div class="stat-card"><div class="stat-title">Caja</div><div class="stat-value" id="total-real">S/ 0.00</div></div>
+            <div class="stat-card">
+                <div class="stat-title">💰 VENTAS TOTALES</div>
+                <div class="stat-value" id="total-ventas">S/ 0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">📉 GASTOS (SALIDAS)</div>
+                <div class="stat-value" id="total-gastos">S/ 0.00</div>
+            </div>
+            <div class="stat-card card-real" style="border: 1px solid #f1c40f;">
+                <div class="stat-title">💵 EFECTIVO EN CAJA</div>
+                <div class="stat-value" id="total-real" style="color: #f1c40f;">S/ 0.00</div>
+            </div>
         </div>
-        <div id="grid-mesas" class="grid-mesas"></div>
+        
+        <h2 style="margin-bottom: 20px; color: white;">Mesas y Pedidos</h2>
+        <div id="grid-mesas" class="grid-mesas">
+            </div>
     </main>
 
+    <div id="modal-gasto" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">💸 Registrar Gasto de Caja</div>
+            <div class="modal-body">
+                <input type="text" id="gasto-desc" class="modal-input" placeholder="Descripción (ej: Compra de Limones)">
+                <input type="number" id="gasto-monto" class="modal-input" placeholder="Monto S/" style="margin-top:10px">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-gasto')">Cancelar</button>
+                <button class="btn-modal btn-confirm" onclick="ejecutarGasto()">Guardar Gasto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cobro" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">💰 Finalizar Cuenta</div>
+            <div id="cobro-contenido" class="modal-body">
+                </div>
+            <div style="padding: 20px; background: #1a1a1a; border-top: 1px solid #333;">
+                <div style="display:flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-modal" style="background:#27ae60; color:white; padding:15px;" onclick="ejecutarCobroReal('EFECTIVO')">💵 EFECTIVO</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-modal" style="background:#8e44ad; color:white; flex:1" onclick="ejecutarCobroReal('YAPE')">🟣 YAPE / PLIN</button>
+                        <button class="btn-modal" style="background:#2980b9; color:white; flex:1" onclick="ejecutarCobroReal('TARJETA')">💳 TARJETA</button>
+                    </div>
+                    <button class="btn-modal" style="background:#f39c12; color:black; font-weight:bold;" onclick="abrirCobroMixto()">⚖️ PAGO MIXTO</button>
+                    <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">VOLVER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-mixto" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">⚖️ Pago Fraccionado</div>
+            <div class="modal-body">
+                <p style="color:#aaa;">Total: <strong id="mixto-total" style="color:#2ecc71; font-size:20px;">S/ 0.00</strong></p>
+                <div style="margin-top:15px">
+                    <label style="font-size:12px; color:#888">💵 EFECTIVO</label>
+                    <input type="number" id="mixto-efectivo" class="modal-input" placeholder="0.00" oninput="calcularMixto()">
+                </div>
+                <div style="margin-top:10px">
+                    <label style="font-size:12px; color:#888">📱 DIGITAL (Yape/Otros)</label>
+                    <input type="number" id="mixto-digital" class="modal-input" style="background:#222; color:#f1c40f" readonly>
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-mixto'); document.getElementById('modal-cobro').style.display='flex'">Atrás</button>
+                <button class="btn-modal btn-confirm" onclick="ejecutarCobroReal('MIXTO')">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
+    
     <script src="/js/dashboard.js"></script>
 </body>
 </html>
