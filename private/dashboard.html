@@ -58,7 +58,19 @@
             </div>
         </div>
     </div>
-
+<div id="modal-pedidos" class="modal-overlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-title">🍺 Añadir Consumo</div>
+            <div class="modal-body" style="padding: 20px;">
+                <input type="text" id="buscador-productos" class="modal-input" placeholder="🔍 Buscar cerveza, trago, etc..." onkeyup="filtrarProductosMesa()" style="margin-bottom: 20px;">
+                <div id="lista-productos-mesa" style="max-height: 350px; overflow-y: auto; display: grid; gap: 12px; padding-right: 5px;">
+                    </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-pedidos')">Cerrar</button>
+            </div>
+        </div>
+    </div>
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">💰 Finalizar Cuenta</div>

@@ -128,9 +128,68 @@ async function abrirMesa(id) {
     } catch (e) { alert("Error de red."); }
 }
 
+// --- NUEVA LÓGICA DE PEDIDOS ---
+let productosDisponibles = [];
+
+// Esto debe ir dentro de tu document.addEventListener("DOMContentLoaded", async () => { ... })
+// Asegúrate de agregar esta línea ahí dentro: await cargarProductosMenu();
+
+async function cargarProductosMenu() {
+    try {
+        const res = await fetch('/api/productos');
+        productosDisponibles = await res.json();
+    } catch (e) { console.error("Error al cargar productos", e); }
+}
+
 function abrirOpciones(id) {
-    // Aquí puedes redirigir a una ventana de pedidos, o abrir un modal
-    alert("Función de Pedidos en construcción (Falta agregar modal de productos HTML)");
+    mesaAccionId = id;
+    if(productosDisponibles.length === 0) cargarProductosMenu(); // Por si acaso
+    renderizarProductosMesa(productosDisponibles);
+    document.getElementById('modal-pedidos').style.display = 'flex';
+    document.getElementById('buscador-productos').value = '';
+    document.getElementById('buscador-productos').focus();
+}
+
+function renderizarProductosMesa(productos) {
+    const container = document.getElementById('lista-productos-mesa');
+    container.innerHTML = '';
+    productos.forEach(p => {
+        const stockColor = p.stock > 0 ? 'var(--success)' : 'var(--danger)';
+        container.innerHTML += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:15px; border-radius:10px; border:1px solid var(--border);">
+                <div>
+                    <div style="font-weight:bold; color:white; font-size:16px; margin-bottom: 4px;">${p.nombre}</div>
+                    <div style="color:var(--text-muted); font-size:12px;">Stock: <span style="color:${stockColor}; font-weight:bold;">${p.stock}</span> | <span style="color:var(--gold);">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>
+                </div>
+                <button class="btn-mesa" style="background:var(--gold); color:#000; padding:10px 18px; font-size:13px;" onclick="agregarPedido(${p.id})" ${p.stock <= 0 ? 'disabled' : ''}>
+                    + AGREGAR
+                </button>
+            </div>
+        `;
+    });
+}
+
+function filtrarProductosMesa() {
+    const txt = document.getElementById('buscador-productos').value.toLowerCase();
+    const filtrados = productosDisponibles.filter(p => p.nombre.toLowerCase().includes(txt));
+    renderizarProductosMesa(filtrados);
+}
+
+async function agregarPedido(productoId) {
+    try {
+        const res = await fetch('/api/pedidos/agregar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: productoId, cantidad: 1 })
+        });
+        if (res.ok) {
+            mostrarToast("✅ Producto añadido a la mesa");
+            await cargarProductosMenu(); // Actualizar stock
+            abrirOpciones(mesaAccionId); // Refrescar modal para ver el nuevo stock
+        } else {
+            alert("Error al añadir producto");
+        }
+    } catch (e) { console.error(e); }
 }
 
 // 6. FLUJO DE COBRO Y PAGO MIXTO
