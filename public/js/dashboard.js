@@ -1,43 +1,91 @@
 /* ============================================================
    DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
-   Versión: Premium POS / Sincronizado con server.js
+   Versión: Premium POS / Alertas Dinámicas Personalizadas
    ============================================================ */
 
-const socket = io(); // Conexión en tiempo real
+const socket = io(); 
 let intervaloCronometros = null;
 let mesaAccionId = null; 
 let usuarioActual = null;
-let totalDeudaCobro = 0; // Memoria temporal para Pagos Mixtos
+let totalDeudaCobro = 0; 
+let productosDisponibles = [];
 
+// ==========================================
 // 1. INICIALIZACIÓN
+// ==========================================
 document.addEventListener("DOMContentLoaded", async () => {
     await verificarRol();
     await cargarMesas();
-    if(usuarioActual && usuarioActual.rol === 'admin') {
-        cargarCaja();
-    }
+    await cargarProductosMenu();
+    if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
 });
 
-// Sockets (Escuchan al servidor y actualizan la pantalla solos)
 socket.on('actualizar_mesas', () => cargarMesas());
 socket.on('actualizar_caja', () => { 
     if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); 
 });
 
-// 2. SEGURIDAD (Capa Visual)
+// ==========================================
+// 2. ALERTAS Y CONFIRMACIONES PREMIUM (DINÁMICAS)
+// ==========================================
+function mostrarAlerta(mensaje) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    overlay.style.zIndex = '9999'; 
+    
+    overlay.innerHTML = `
+        <div class="modal-box" style="max-width: 350px; animation: popIn 0.3s ease-out;">
+            <div class="modal-title" style="background: #111; color: var(--gold);">⚠️ Atención</div>
+            <div class="modal-body" style="text-align:center; padding: 30px 20px; font-size: 16px; color: white;">
+                ${mensaje}
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-confirm" style="width:100%;" onclick="this.closest('.modal-overlay').remove()">ENTENDIDO</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function mostrarConfirmacion(mensaje, callbackAccion) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    overlay.style.zIndex = '9999';
+    
+    overlay.innerHTML = `
+        <div class="modal-box" style="max-width: 400px; animation: popIn 0.3s ease-out;">
+            <div class="modal-title" style="background: #111; color: var(--danger);">❓ Confirmación</div>
+            <div class="modal-body" style="text-align:center; padding: 30px 20px; font-size: 16px; color: #ccc;">
+                ${mensaje}
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                <button class="btn-modal" id="btn-dyn-confirm" style="background: var(--danger); color: white;">CONFIRMAR</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Asignar el evento al botón de confirmar
+    document.getElementById('btn-dyn-confirm').onclick = () => {
+        overlay.remove();
+        callbackAccion(); // Ejecuta la función que le pasamos
+    };
+}
+
+// ==========================================
+// 3. SEGURIDAD Y CARGAS INICIALES
+// ==========================================
 async function verificarRol() {
     try {
         const res = await fetch('/api/usuario/actual');
         usuarioActual = await res.json();
-        
-        // Si no es admin, ocultamos módulos críticos
         if (usuarioActual.rol !== 'admin') {
-            console.log("🔒 Modo Operativo (Mozo) Activado");
             document.querySelectorAll('.menu-link').forEach(link => {
                 const txt = link.innerText.toLowerCase();
-                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja')) {
-                    link.style.display = 'none';
-                }
+                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja')) link.style.display = 'none';
             });
             const moneyPanel = document.querySelector('.money-panel');
             if (moneyPanel) moneyPanel.style.display = 'none';
@@ -47,7 +95,6 @@ async function verificarRol() {
     } catch (e) { console.error("Error en validación de seguridad:", e); }
 }
 
-// 3. CARGA DE CAJA SUPERIOR (Solo Admin)
 async function cargarCaja() {
     try {
         const res = await fetch('/api/caja/actual');
@@ -58,7 +105,16 @@ async function cargarCaja() {
     } catch (e) { console.log("Caja no disponible u oculta."); }
 }
 
-// 4. RENDERIZADO DE MESAS PREMIUM
+async function cargarProductosMenu() {
+    try {
+        const res = await fetch('/api/productos');
+        productosDisponibles = await res.json();
+    } catch (e) { console.error("Error al cargar productos", e); }
+}
+
+// ==========================================
+// 4. RENDERIZADO DE MESAS Y TIEMPO
+// ==========================================
 async function cargarMesas() {
     try {
         const res = await fetch('/api/mesas');
@@ -115,7 +171,9 @@ function renderizarMesas(mesas) {
     iniciarCronometros();
 }
 
-// 5. ACCIONES DE MESAS
+// ==========================================
+// 5. ACCIONES DE MESAS Y PEDIDOS
+// ==========================================
 async function abrirMesa(id) {
     try {
         const res = await fetch(`/api/mesas/abrir/${id}`, {
@@ -124,26 +182,13 @@ async function abrirMesa(id) {
             body: JSON.stringify({ minutos: 0 })
         });
         if (res.ok) mostrarToast("Mesa Iniciada");
-        else alert("No se pudo iniciar la mesa. Verifica la conexión.");
-    } catch (e) { alert("Error de red."); }
-}
-
-// --- NUEVA LÓGICA DE PEDIDOS ---
-let productosDisponibles = [];
-
-// Esto debe ir dentro de tu document.addEventListener("DOMContentLoaded", async () => { ... })
-// Asegúrate de agregar esta línea ahí dentro: await cargarProductosMenu();
-
-async function cargarProductosMenu() {
-    try {
-        const res = await fetch('/api/productos');
-        productosDisponibles = await res.json();
-    } catch (e) { console.error("Error al cargar productos", e); }
+        else mostrarAlerta("No se pudo iniciar la mesa. Verifica la conexión.");
+    } catch (e) { mostrarAlerta("Error de red al intentar abrir mesa."); }
 }
 
 function abrirOpciones(id) {
     mesaAccionId = id;
-    if(productosDisponibles.length === 0) cargarProductosMenu(); // Por si acaso
+    if(productosDisponibles.length === 0) cargarProductosMenu(); 
     renderizarProductosMesa(productosDisponibles);
     document.getElementById('modal-pedidos').style.display = 'flex';
     document.getElementById('buscador-productos').value = '';
@@ -183,11 +228,10 @@ function filtrarProductosMesa() {
 }
 
 async function agregarPedido(productoId) {
-    // Leemos la cantidad del input que acabamos de crear
     const cantInput = document.getElementById(`cant-${productoId}`);
     const cantidadSeleccionada = parseInt(cantInput.value) || 1;
 
-    if (cantidadSeleccionada <= 0) return alert("La cantidad debe ser mayor a 0");
+    if (cantidadSeleccionada <= 0) return mostrarAlerta("La cantidad debe ser mayor a 0");
 
     try {
         const res = await fetch('/api/pedidos/agregar', {
@@ -197,15 +241,30 @@ async function agregarPedido(productoId) {
         });
         if (res.ok) {
             mostrarToast(`✅ ${cantidadSeleccionada}x añadido(s)`);
-            await cargarProductosMenu(); // Actualizar stock local
-            abrirOpciones(mesaAccionId); // Refrescar modal
+            await cargarProductosMenu(); 
+            abrirOpciones(mesaAccionId); 
         } else {
-            alert("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
+            mostrarAlerta("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { mostrarAlerta("Error de red al añadir producto."); }
 }
 
-// 6. FLUJO DE COBRO Y PAGO MIXTO
+function eliminarPedido(idPedido, idMesa) {
+    // USAMOS LA NUEVA CONFIRMACIÓN PREMIUM 🚀
+    mostrarConfirmacion("⚠️ ¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario automáticamente.", async () => {
+        try {
+            const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
+            if (res.ok) {
+                mostrarToast("🗑️ Producto retirado de la cuenta");
+                abrirModalCobro(idMesa); 
+            }
+        } catch (e) { mostrarAlerta("Error al intentar eliminar el pedido."); }
+    });
+}
+
+// ==========================================
+// 6. COBRO Y PAGO MIXTO
+// ==========================================
 async function abrirModalCobro(id) {
     mesaAccionId = id;
     try {
@@ -214,7 +273,6 @@ async function abrirModalCobro(id) {
         
         totalDeudaCobro = parseFloat(data.totalFinal);
 
-        // 1. Construir la lista detallada de productos
         let listaHtml = '';
         if (data.listaProductos && data.listaProductos.length > 0) {
             data.listaProductos.forEach(p => {
@@ -235,7 +293,6 @@ async function abrirModalCobro(id) {
             listaHtml = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding: 15px 0;">No hay consumo registrado</div>';
         }
 
-        // 2. Construir la vista final del modal
         let html = `
             <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:15px; color:var(--text-muted); border-bottom:1px dashed #333; padding-bottom:15px;">
@@ -261,20 +318,6 @@ async function abrirModalCobro(id) {
     } catch (e) { console.error("Error al obtener cuenta:", e); }
 }
 
-// Nueva función para el botón de la papelera
-async function eliminarPedido(idPedido, idMesa) {
-    if (!confirm("⚠️ ¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario automáticamente.")) return;
-    
-    try {
-        const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
-        if (res.ok) {
-            mostrarToast("🗑️ Producto retirado de la cuenta");
-            // Recargamos el modal de cobro para que el total se actualice matemáticamente
-            abrirModalCobro(idMesa); 
-        }
-    } catch (e) { console.error(e); }
-}
-
 function abrirCobroMixto() {
     document.getElementById('modal-cobro').style.display = 'none';
     document.getElementById('mixto-total').innerText = 'S/ ' + totalDeudaCobro.toFixed(2);
@@ -298,7 +341,7 @@ async function ejecutarCobroReal(metodo) {
         ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
         dig = parseFloat(document.getElementById('mixto-digital').value) || 0;
         if ((ef + dig).toFixed(2) !== totalDeudaCobro.toFixed(2)) {
-            return alert("Los montos no cuadran con el total exacto.");
+            return mostrarAlerta("Los montos no cuadran con el total exacto.");
         }
     }
 
@@ -312,16 +355,20 @@ async function ejecutarCobroReal(metodo) {
         if (res.ok) {
             cerrarModal('modal-cobro');
             cerrarModal('modal-mixto');
-            mostrarToast("💳 Cobro Registrado");
+            mostrarToast("💳 Cobro Registrado y Finalizado");
+        } else {
+            mostrarAlerta("Error en el servidor al intentar cobrar.");
         }
-    } catch (e) { alert("Error al cobrar."); }
+    } catch (e) { mostrarAlerta("Error de conexión al cobrar."); }
 }
 
-// 7. GASTOS
+// ==========================================
+// 7. GASTOS Y UTILIDADES
+// ==========================================
 async function ejecutarGasto() {
     const desc = document.getElementById('gasto-desc').value;
     const monto = document.getElementById('gasto-monto').value;
-    if (!desc || !monto) return alert("Llena todos los campos");
+    if (!desc || !monto) return mostrarAlerta("Por favor, llena todos los campos del gasto.");
 
     await fetch('/api/gastos/nuevo', {
         method: 'POST',
@@ -332,10 +379,9 @@ async function ejecutarGasto() {
     cerrarModal('modal-gasto');
     document.getElementById('gasto-desc').value = '';
     document.getElementById('gasto-monto').value = '';
-    mostrarToast("💸 Gasto Registrado");
+    mostrarToast("💸 Gasto Registrado Correctamente");
 }
 
-// 8. UTILIDADES
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 function mostrarToast(msg) { 
     const t = document.getElementById("toast"); 
@@ -343,7 +389,6 @@ function mostrarToast(msg) {
     setTimeout(() => t.className = t.className.replace("show",""), 2500); 
 }
 
-// 9. MATEMÁTICAS DEL CRONÓMETRO
 function iniciarCronometros() {
     intervaloCronometros = setInterval(() => {
         document.querySelectorAll('.info-tiempo').forEach(el => {
