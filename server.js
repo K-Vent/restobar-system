@@ -1,40 +1,26 @@
+require('dotenv').config(); // [NUEVO] Carga secretos
 const express = require('express');
-const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors'); 
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet'); 
 const rateLimit = require('express-rate-limit'); 
-const compression = require('compression'); // [NUEVO] Compresión de red
+const compression = require('compression'); 
+const bcrypt = require('bcrypt'); // [NUEVO] Encriptador de contraseñas
+
+// [NUEVO] Importamos el pool de base de datos ya configurado desde db.js
+const pool = require('./db.js'); 
 
 const app = express(); 
 
 // ==========================================
-// 1. CONFIGURACIÓN Y POOL DE CONEXIONES (OPTIMIZADO)
-// ==========================================
-
-const pool = new Pool({
-    connectionString: 'postgresql://postgres.iqrhtvwddlqlrenfsaxa:Laesquinadelbillar@aws-1-sa-east-1.pooler.supabase.com:6543/postgres',
-    ssl: { rejectUnauthorized: false },
-    // [NUEVO] Defensa contra saturación de DB
-    max: 20,                      // Máximo 20 conexiones simultáneas
-    idleTimeoutMillis: 30000,     // Cierra conexiones inactivas después de 30s
-    connectionTimeoutMillis: 2000 // Da error rápido si la DB no responde en 2s (evita bloqueos)
-});
-
-// Forzar Hora Perú (UTC-5) para que NOW() sea correcto
-pool.on('connect', (client) => {
-    client.query("SET TIME ZONE 'America/Lima'");
-});
-
-// ==========================================
-// 2. MIDDLEWARES GLOBALES
+// 1. MIDDLEWARES GLOBALES (SEGURIDAD)
 // ==========================================
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false })); 
-app.use(compression()); // [NUEVO] Comprime las respuestas HTTP en un 70%
+app.use(compression()); 
 
 const loginLimiter = rateLimit({ 
     windowMs: 15 * 60 * 1000, 
@@ -44,10 +30,13 @@ const loginLimiter = rateLimit({
 
 app.use(session({
     store: new pgSession({ pool : pool, tableName : 'session', createTableIfMissing: true }),
-    secret: 'secreto_super_seguro_billar_123',
+    secret: process.env.SESSION_SECRET, 
     resave: false, 
     saveUninitialized: false,
-    cookie: { secure: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'none' } 
+    cookie: { 
+        secure: false, // <-- Cambiado para que funcione en tu PC y en la nube sin problemas
+        maxAge: 30 * 24 * 60 * 60 * 1000 
+    } 
 }));
 
 app.use(cors());
@@ -56,53 +45,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 3. SEGURIDAD Y CONTROL DE ACCESO
+// 2. SEGURIDAD Y CONTROL DE ACCESO
 // ==========================================
 
 const verificarSesion = (req, res, next) => {
-    if (req.session.usuario) { 
-        next(); 
-    } else { 
+    if (req.session.usuario) { next(); } 
+    else { 
         if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); 
         res.redirect('/'); 
     }
 };
 
 const soloAdmin = (req, res, next) => {
-    if (req.session.usuario && req.session.usuario.rol === 'admin') { 
-        next(); 
-    } else { 
-        res.status(403).json({ error: '⛔ Acceso Denegado.' }); 
-    }
+    if (req.session.usuario && req.session.usuario.rol === 'admin') { next(); } 
+    else { res.status(403).json({ error: '⛔ Acceso Denegado.' }); }
 };
 
 // ==========================================
-// 4. CACHÉ EN MEMORIA RAM (ALTO RENDIMIENTO)
-// ==========================================
-
-// Evita hacer consultas SQL innecesarias cada segundo
-let configCache = { 
-    precio_billar: 10, 
-    ultimaActualizacion: 0 
-};
-
-async function getPrecioBillar() {
-    const AHORA = Date.now();
-    // Revalida la caché solo si ha pasado más de 1 minuto
-    if (AHORA - configCache.ultimaActualizacion > 60000) {
-        try {
-            const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'");
-            configCache.precio_billar = parseFloat(conf.rows[0]?.valor || 10);
-            configCache.ultimaActualizacion = AHORA;
-        } catch (e) {
-            console.error("Error al leer caché:", e);
-        }
-    }
-    return configCache.precio_billar;
-}
-
-// ==========================================
-// 5. RUTAS HTML Y LOGIN
+// 3. RUTAS HTML
 // ==========================================
 
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
@@ -111,25 +71,65 @@ app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.jo
 app.get('/inventario.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'inventario.html')));
 app.get('/reportes.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'reportes.html')));
 
+// ==========================================
+// 4. LOGIN (CON MIGRACIÓN DE ENCRIPTACIÓN) 🔐
+// ==========================================
+
 app.post(['/login', '/api/login'], loginLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
-        const result = await pool.query('SELECT * FROM usuarios WHERE username = $1 AND password = $2', [username, password]);
+        
+        // 1. Buscamos al usuario solo por nombre (NO por contraseña)
+        const result = await pool.query('SELECT * FROM usuarios WHERE username = $1', [username]);
+        
         if (result.rows.length > 0) { 
-            req.session.usuario = result.rows[0]; 
-            res.json({ success: true, rol: result.rows[0].rol }); 
+            const user = result.rows[0];
+            let passwordCorrecta = false;
+
+            // 2. Verificamos si la contraseña ya está encriptada (bcrypt empieza con $2)
+            if (user.password.startsWith('$2')) {
+                passwordCorrecta = await bcrypt.compare(password, user.password);
+            } else {
+                // 3. Es una contraseña vieja en texto plano. Comparamos directo.
+                if (user.password === password) {
+                    passwordCorrecta = true;
+                    // MIGRACIÓN AUTOMÁTICA: La encriptamos y la guardamos para siempre
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    await pool.query('UPDATE usuarios SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
+                    console.log(`🔐 Contraseña de ${username} actualizada a formato seguro.`);
+                }
+            }
+
+            // 4. Iniciar sesión si es correcta
+            if (passwordCorrecta) {
+                req.session.usuario = { id: user.id, username: user.username, rol: user.rol }; // Guardamos info segura en sesión
+                res.json({ success: true, rol: user.rol }); 
+            } else {
+                res.status(401).json({ success: false }); 
+            }
+
         } else { 
             res.status(401).json({ success: false }); 
         }
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { 
+        // Evitamos enviar el error de DB al cliente (Anti-Hacking)
+        console.error("Error en login:", e.message);
+        res.status(500).json({ error: "Error interno del servidor" }); 
+    }
 });
 
 app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/')); });
 app.get('/api/usuario/actual', verificarSesion, (req, res) => { res.json({ username: req.session.usuario.username, rol: req.session.usuario.rol || 'mozo' }); });
 
 // ==========================================
-// 6. MANTENIMIENTO AUTOMÁTICO E ÍNDICES
+// 5. CACHÉ EN MEMORIA RAM
 // ==========================================
+// ... (MANTÉN EL RESTO DE TU CÓDIGO IGUAL A PARTIR DE AQUÍ) ...
+let configCache = { 
+    precio_billar: 10, 
+    ultimaActualizacion: 0 
+};
+
 
 (async () => {
     try {
