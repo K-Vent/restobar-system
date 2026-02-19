@@ -2,84 +2,217 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>📺 Monitor de Cocina</title>
+    <title>📺 Monitor de Barra/Cocina - La Esquina</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0c0c0c">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0c">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="La Esquina">
+    <meta name="apple-mobile-web-app-title" content="La Esquina KDS">
     <link rel="apple-touch-icon" href="/logo.png">
     <style>
-        body { background: #111; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
-        .titulo { text-align: center; color: #f1c40f; font-size: 28px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        :root {
+            --bg-main: #0a0a0c;
+            --bg-card: #1c1c1e;
+            --gold: #f1c40f;
+            --success: #2ed573;
+            --border: #2f3542;
+            --text-muted: #a4b0be;
+        }
+
+        body { 
+            background: var(--bg-main); 
+            color: white; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            padding: 30px; 
+            margin: 0; 
+            min-height: 100vh; 
+            box-sizing: border-box;
+        }
+
+        .header-cocina { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+
+        .titulo { 
+            color: var(--gold); 
+            font-size: 32px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-weight: 900; 
+            margin: 0; 
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+        }
+
+        .reloj { 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: var(--text-muted); 
+            font-family: 'Courier New', Courier, monospace; 
+            background: #151515;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
         
-        .grid-pedidos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .grid-pedidos { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+        }
         
-        .ticket { background: #1e1e1e; border: 1px solid #333; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; position: relative; }
-        .ticket:hover { transform: translateY(-5px); border-color: #555; }
+        .ticket { 
+            background: var(--bg-card); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: popIn 0.4s ease-out;
+        }
+
+        @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); } 
+            100% { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+
+        .ticket:active { transform: scale(0.96); }
         
-        /* Bordes de color por categoría */
-        .ticket.comida { border-top: 5px solid #e67e22; } /* Naranja */
-        .ticket.tragos { border-top: 5px solid #9b59b6; } /* Morado */
-        .ticket.cervezas { border-top: 5px solid #f1c40f; } /* Amarillo */
+        /* Efecto Neón por Categorías */
+        .ticket::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; }
+        .ticket.comida::before { background: #e67e22; box-shadow: 0 0 20px #e67e22; }
+        .ticket.tragos::before { background: #9b59b6; box-shadow: 0 0 20px #9b59b6; }
+        .ticket.cervezas::before { background: var(--gold); box-shadow: 0 0 20px var(--gold); }
+        .ticket.otros::before { background: #3498db; box-shadow: 0 0 20px #3498db; }
 
-        .ticket-header { background: #252525; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .mesa { font-size: 24px; font-weight: bold; color: white; }
-        .hora { font-size: 16px; color: #aaa; background: #111; padding: 4px 8px; border-radius: 4px; }
+        .ticket-header { 
+            background: #151515; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+        }
+        
+        .mesa { font-size: 26px; font-weight: 900; color: white; letter-spacing: -1px; }
+        .hora { 
+            font-size: 15px; 
+            color: var(--text-muted); 
+            background: #0a0a0c; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            border: 1px solid var(--border); 
+        }
 
-        .ticket-body { padding: 20px; flex-grow: 1; text-align: center; }
-        .cantidad { font-size: 32px; font-weight: bold; color: #2ecc71; display: block; margin-bottom: 5px; }
-        .producto { font-size: 20px; color: #eee; font-weight: 500; }
+        .ticket-body { padding: 35px 20px; flex-grow: 1; text-align: center; }
+        .cantidad { 
+            font-size: 55px; 
+            font-weight: 900; 
+            color: var(--success); 
+            display: block; 
+            line-height: 1; 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 25px rgba(46, 213, 115, 0.4); 
+        }
+        .producto { font-size: 24px; color: white; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
 
-        .btn-listo { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-        .btn-listo:hover { background: #219150; }
+        .btn-listo { 
+            width: 100%; 
+            padding: 22px; 
+            background: rgba(46, 213, 115, 0.05); 
+            color: var(--success); 
+            border: none; 
+            border-top: 1px solid rgba(46, 213, 115, 0.3); 
+            font-weight: 900; 
+            font-size: 22px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+        }
+        
+        .btn-listo:hover, .btn-listo:active { 
+            background: var(--success); 
+            color: #000; 
+            box-shadow: 0 0 30px rgba(46, 213, 115, 0.5); 
+        }
 
-        .vacio { grid-column: 1 / -1; text-align: center; padding: 50px; color: #555; font-size: 20px; border: 2px dashed #333; border-radius: 10px; }
+        .vacio { 
+            grid-column: 1 / -1; 
+            text-align: center; 
+            padding: 100px 20px; 
+            color: var(--text-muted); 
+            font-size: 28px; 
+            border: 2px dashed var(--border); 
+            border-radius: 20px; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 600px) {
+            .header-cocina { flex-direction: column; gap: 15px; text-align: center; }
+            .grid-pedidos { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="titulo">👨‍🍳 Pedidos Pendientes</div>
+    <div class="header-cocina">
+        <div class="titulo">👨‍🍳 Monitor de Barra y Cocina</div>
+        <div class="reloj" id="reloj-vivo">00:00:00</div>
+    </div>
+    
     <div id="grid" class="grid-pedidos">
         <div class="vacio">Cargando sistema...</div>
     </div>
-<script src="/socket.io/socket.io.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Reloj en vivo
+        function actualizarReloj() {
+            const ahora = new Date();
+            document.getElementById('reloj-vivo').innerText = ahora.toLocaleTimeString('es-PE', { hour12: true });
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
         const socket = io();
-// Sonido de campana (puedes cambiar la URL por cualquier .mp3 o .ogg que te guste)
-const campana = new Audio('https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg');
+        const campana = new Audio('https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg');
 
-socket.on('campana_cocina', () => {
-    cargarPendientes(); // Recarga la lista de pedidos
-    
-    // Reproduce el sonido 
-    campana.play().catch(e => console.log("Auto-play bloqueado por el navegador, se requiere 1 clic previo en la pantalla"));
-    
-    // Opcional: hacer un efecto visual
-    document.body.style.backgroundColor = "#4a0000"; // Se pone rojo un segundo
-    setTimeout(() => document.body.style.backgroundColor = "#0c0c0c", 500);
-});
+        socket.on('campana_cocina', () => {
+            cargarPendientes(); 
+            campana.play().catch(e => console.log("Clic previo requerido para audio"));
+            
+            // Alerta visual de nuevo pedido
+            document.body.style.backgroundColor = "#3a0000"; 
+            setTimeout(() => document.body.style.backgroundColor = "#0a0a0c", 400);
+        });
 
-socket.on('actualizar_cocina', () => {
-    cargarPendientes();
-});
+        socket.on('actualizar_cocina', () => { cargarPendientes(); });
     
-        cargarPedidos();
+        cargarPendientes();
 
-        async function cargarPedidos() {
+        async function cargarPendientes() {
             try {
                 const res = await fetch('/api/kds/pendientes');
                 const pedidos = await res.json();
                 const grid = document.getElementById('grid');
                 
                 if(pedidos.length === 0) {
-                    grid.innerHTML = '<div class="vacio">✅ Todo limpio. No hay pedidos pendientes.</div>';
+                    grid.innerHTML = '<div class="vacio">✨ Todo entregado. Barra limpia.</div>';
                     return;
                 }
 
-                // Guardamos los IDs actuales para no redibujar todo si no cambia (opcional, aquí redibujamos simple)
                 grid.innerHTML = ''; 
 
                 pedidos.forEach(p => {
@@ -92,32 +225,29 @@ socket.on('actualizar_cocina', () => {
                         <div class="ticket ${tipo}">
                             <div class="ticket-header">
                                 <span class="mesa">Mesa ${p.numero_mesa}</span>
-                                <span class="hora">${p.hora}</span>
+                                <span class="hora">⏳ ${p.hora}</span>
                             </div>
                             <div class="ticket-body">
                                 <span class="cantidad">${p.cantidad}</span>
                                 <span class="producto">${p.nombre}</span>
                             </div>
-                            <button class="btn-listo" onclick="marcarListo(${p.id})">✅ LISTO</button>
+                            <button class="btn-listo" onclick="marcarListo(${p.id}, this)">✔️ LISTO</button>
                         </div>
                     `;
                 });
             } catch(e) { console.error("Error conexión KDS", e); }
         }
 
-        async function marcarListo(id) {
+        async function marcarListo(id, btnElement) {
             try {
-                // Efecto visual inmediato
-                const btn = event.target;
-                btn.parentElement.style.opacity = '0';
-                btn.parentElement.style.transform = 'scale(0.9)';
+                // Animación de salida al entregar
+                const ticket = btnElement.parentElement;
+                ticket.style.transform = 'scale(0.8) translateY(50px)';
+                ticket.style.opacity = '0';
                 
-                // Petición al servidor
                 await fetch(`/api/kds/entregar/${id}`, { method: 'POST' });
-                
-                // Recargar rápido
-                setTimeout(cargarPedidos, 300);
-            } catch(e) { alert("Error al completar"); }
+                setTimeout(cargarPendientes, 250);
+            } catch(e) { alert("Error al despachar"); }
         }
     </script>
 </body>
