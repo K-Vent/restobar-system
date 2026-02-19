@@ -21,6 +21,10 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    // Hace una petición ligera invisible para que Render y Supabase se conecten
+    fetch('/api/config').catch(e => console.log('Despertando servidor...'));
+});
         async function login() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
