@@ -180,7 +180,17 @@ app.get('/logout', (req, res) => {
 app.get('/api/usuario/actual', verificarSesion, (req, res) => { 
     res.json({ username: req.usuario.username, rol: req.usuario.rol || 'mozo' }); 
 });
-
+// ==========================================
+// RUTAS PÚBLICAS (MENÚ QR PARA CLIENTES)
+// ==========================================
+app.get('/api/menu/publico', async (req, res, next) => { 
+    try { 
+        // Solo enviamos nombre, precio y categoría de los productos con stock > 0.
+        // Ocultamos el ID, el stock real y cualquier otro dato administrativo.
+        const r = await pool.query('SELECT nombre, precio_venta, categoria FROM productos WHERE stock > 0 ORDER BY categoria, nombre ASC'); 
+        res.json(r.rows); 
+    } catch (e) { next(e); } 
+});
 // ==========================================
 // 7. RUTAS API: COCINA Y KDS
 // ==========================================

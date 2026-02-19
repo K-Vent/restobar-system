@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>La Esquina - Carta Digital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0c">
+    <link rel="icon" href="/logo.png" type="image/png">
+    
+    <style>
+        :root {
+            --bg-main: #0a0a0c;
+            --bg-card: rgba(28, 28, 30, 0.7);
+            --gold: #f1c40f;
+            --text-main: #ffffff;
+            --text-muted: #a4b0be;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            background: radial-gradient(circle at top, #1a1a1d 0%, var(--bg-main) 100%);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 25px 20px;
+            background: rgba(10, 10, 12, 0.85);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo { 
+            width: 140px; 
+            filter: drop-shadow(0 5px 15px rgba(241,196,15,0.2)); 
+        }
+
+        .container { 
+            padding: 20px; 
+            max-width: 500px; 
+            margin: 0 auto; 
+        }
+
+        .categoria-titulo {
+            color: var(--gold);
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 35px 0 15px 0;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 0 15px rgba(241,196,15,0.3);
+        }
+
+        .producto-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: slideIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .producto-nombre { 
+            font-size: 16px; 
+            font-weight: 700; 
+            color: white; 
+            letter-spacing: 0.5px;
+        }
+
+        .producto-precio { 
+            font-size: 18px; 
+            font-weight: 900; 
+            color: var(--success); 
+        }
+
+        .loading-box { 
+            text-align: center; 
+            color: var(--text-muted); 
+            margin-top: 60px; 
+            font-size: 16px; 
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="/logo.png" alt="La Esquina" class="logo">
+    </div>
+
+    <div class="container" id="menu-container">
+        <div class="loading-box">Preparando la carta... 🎱</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/menu/publico');
+                const productos = await res.json();
+                
+                const container = document.getElementById('menu-container');
+
+                if(productos.length === 0) {
+                    container.innerHTML = '<div class="loading-box">Aún no hay productos en stock. Vuelve pronto.</div>';
+                    return;
+                }
+
+                // Agrupamos los productos usando Lógica de Diccionario (Hash Map)
+                const categorias = {};
+                productos.forEach(p => {
+                    const cat = p.categoria || 'Otros';
+                    if(!categorias[cat]) categorias[cat] = [];
+                    categorias[cat].push(p);
+                });
+
+                // Asignación visual de íconos para la elegancia de la carta
+                const iconos = { 
+                    'Cervezas': '🍺', 
+                    'Tragos': '🍹', 
+                    'Cócteles': '🍸', 
+                    'Comida': '🍔', 
+                    'Piqueos': '🍟',
+                    'Otros': '✨' 
+                };
+
+                let html = '';
+                let delay = 0; // Para el efecto de cascada al cargar
+
+                for (const [cat, prods] of Object.entries(categorias)) {
+                    const icono = iconos[cat] || iconos['Otros'];
+                    html += `<div class="categoria-titulo">${icono} ${cat}</div>`;
+                    
+                    prods.forEach(p => {
+                        html += `
+                            <div class="producto-card" style="animation-delay: ${delay}s">
+                                <div class="producto-nombre">${p.nombre}</div>
+                                <div class="producto-precio">S/ ${parseFloat(p.precio_venta).toFixed(2)}</div>
+                            </div>
+                        `;
+                        delay += 0.05;
+                    });
+                }
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                document.getElementById('menu-container').innerHTML = 
+                    '<div class="loading-box" style="color:#ff4757;">Error al cargar el menú. Por favor, avise al personal.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
