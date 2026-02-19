@@ -240,9 +240,33 @@
                         <button class="btn-modal" style="background:#8e44ad; color:white;" onclick="pedirConfirmacionCobro('YAPE')">🟣 YAPE / PLIN</button>
                         <button class="btn-modal" style="background:#2980b9; color:white;" onclick="pedirConfirmacionCobro('TARJETA')">💳 TARJETA</button>
                     </div>
+                    <div style="border-top:1px dashed #444; margin-top:10px; padding-top:10px;">
+                        <button class="btn-modal" style="background:#f39c12; color:black; width:100%; font-weight:bold; padding:12px;" onclick="abrirCobroMixto()">⚖️ PAGO MIXTO (Dividir)</button>
+                    </div>
                 </div>
             </div>
             <div class="modal-btns"><button class="btn-modal btn-cancel" onclick="cerrarModal('modal-cobro')">Volver</button></div>
+        </div>
+    </div>
+
+    <div id="modal-mixto" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">⚖️ Pago Fraccionado</div>
+            <div class="modal-body">
+                <p style="color:#aaa; margin-bottom:15px; font-size:16px;">Total a cobrar: <strong id="mixto-total" style="color:#2ecc71; font-size:24px;">S/ 0.00</strong></p>
+                <div class="form-group">
+                    <label class="form-label">💵 Monto en Efectivo (S/)</label>
+                    <input type="number" id="mixto-efectivo" class="modal-input" style="font-size:20px; text-align:center;" placeholder="0.00" oninput="calcularMixto()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📱 Monto Digital (Yape/Tarjeta) (S/)</label>
+                    <input type="number" id="mixto-digital" class="modal-input" style="font-size:20px; text-align:center; background:#2a2a2a; color:#f1c40f;" placeholder="0.00" readonly>
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-mixto'); document.getElementById('modal-cobro').style.display = 'flex';">Atrás</button>
+                <button class="btn-modal btn-confirm" onclick="ejecutarCobroReal('MIXTO')">CONFIRMAR PAGO</button>
+            </div>
         </div>
     </div>
 
@@ -256,6 +280,7 @@
         let productosCache = [];
         let mensajeTicketGlobal = "";
         let lastMesasJSON = ""; // Memoria para comparar cambios en mesas
+        let totalCobroActual = 0;
         
         const socket = io(); // Conecta el WebSocket
 
@@ -463,6 +488,7 @@ socket.on('actualizar_caja', () => {
                 
                 mensajeTicketGlobal = texto; 
                 document.getElementById('cobro-contenido').innerHTML = html;
+                totalCobroActual = data.totalFinal;
             } catch (e) { console.error(e); }
         }
 
@@ -484,10 +510,46 @@ socket.on('actualizar_caja', () => {
             document.getElementById('modal-confirm').style.display = 'flex';
         }
 
+        // --- LÓGICA DE PAGO MIXTO ---
+        function abrirCobroMixto() {
+            cerrarModal('modal-cobro');
+            document.getElementById('mixto-total').innerText = 'S/ ' + parseFloat(totalCobroActual).toFixed(2);
+            document.getElementById('mixto-efectivo').value = '';
+            document.getElementById('mixto-digital').value = parseFloat(totalCobroActual).toFixed(2);
+            document.getElementById('modal-mixto').style.display = 'flex';
+            setTimeout(() => document.getElementById('mixto-efectivo').focus(), 100);
+        }
+
+        function calcularMixto() {
+            let ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
+            // Evitamos que ponga más efectivo que el total de la cuenta
+            if (ef > totalCobroActual) { 
+                ef = totalCobroActual; 
+                document.getElementById('mixto-efectivo').value = ef; 
+            }
+            let dig = (totalCobroActual - ef).toFixed(2);
+            document.getElementById('mixto-digital').value = dig;
+        }
+
         async function ejecutarCobroReal(metodo) {
-            cerrarModal('modal-confirm'); // Cerramos confirmación
-            await fetch(`/api/mesas/cerrar/${mesaAccionId}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ metodo: metodo }) });
-            cerrarModal('modal-cobro'); // Cerramos modal de cobro
+            let payload = { metodo: metodo };
+            
+            // Si eligió pago dividido, empaquetamos las fracciones
+            if (metodo === 'MIXTO') {
+                payload.pago_efectivo = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
+                payload.pago_digital = parseFloat(document.getElementById('mixto-digital').value) || 0;
+                cerrarModal('modal-mixto');
+            } else {
+                cerrarModal('modal-confirm');
+                cerrarModal('modal-cobro');
+            }
+
+            await fetch(`/api/mesas/cerrar/${mesaAccionId}`, { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            
             mostrarToast(`✅ Cobrado con ${metodo}`);
             cargarTodo();
         }
