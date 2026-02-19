@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/logo.png">
     <meta charset="UTF-8">
     <title>Login - La Esquina del Billar</title>
     <style>
@@ -39,6 +42,14 @@
             } else {
                 alert("Usuario o clave incorrectos");
             }
+        }
+        // --- REGISTRO DEL SERVICE WORKER (PWA) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ Modo Resiliencia Activado', reg.scope))
+                .catch(err => console.error('❌ Error en Service Worker', err));
+            });
         }
     </script>
 </body>
