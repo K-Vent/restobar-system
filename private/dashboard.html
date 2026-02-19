@@ -247,7 +247,7 @@
     </div>
 
     <div id="modal-msg" class="modal-overlay"><div class="modal-box"><div class="modal-title" id="msg-titulo"></div><div class="modal-body"><p id="msg-texto" style="color:#ddd;"></p></div><div class="modal-btns"><button class="btn-modal btn-confirm" onclick="cerrarModal('modal-msg')">ENTENDIDO</button></div></div></div>
-
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         let intervaloCronometros = null;
         let mesaAccionId = null;
@@ -256,7 +256,17 @@
         let productosCache = [];
         let mensajeTicketGlobal = "";
         let lastMesasJSON = ""; // Memoria para comparar cambios en mesas
+        
+        const socket = io(); // Conecta el WebSocket
 
+// Escuchamos las instrucciones del servidor
+socket.on('actualizar_mesas', () => {
+    cargarMesas(); // Se actualiza solo si alguien cambia algo
+});
+
+socket.on('actualizar_caja', () => {
+    actualizarCaja(); 
+});
         const audioAviso = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
         const audioFinal = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
 
@@ -474,7 +484,7 @@
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
         function mostrarToast(m) { const t = document.getElementById("toast"); t.innerText = m; t.className = "show"; setTimeout(() => t.className = t.className.replace("show", ""), 2500); }
 
-        cargarTodo(); setInterval(cargarMesas, 15000);
+        cargarTodo(); 
     </script>
 </body>
 </html>
