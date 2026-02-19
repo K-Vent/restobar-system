@@ -157,13 +157,20 @@ function renderizarProductosMesa(productos) {
         const stockColor = p.stock > 0 ? 'var(--success)' : 'var(--danger)';
         container.innerHTML += `
             <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:15px; border-radius:10px; border:1px solid var(--border);">
-                <div>
+                <div style="flex-grow: 1;">
                     <div style="font-weight:bold; color:white; font-size:16px; margin-bottom: 4px;">${p.nombre}</div>
                     <div style="color:var(--text-muted); font-size:12px;">Stock: <span style="color:${stockColor}; font-weight:bold;">${p.stock}</span> | <span style="color:var(--gold);">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span></div>
                 </div>
-                <button class="btn-mesa" style="background:var(--gold); color:#000; padding:10px 18px; font-size:13px;" onclick="agregarPedido(${p.id})" ${p.stock <= 0 ? 'disabled' : ''}>
-                    + AGREGAR
-                </button>
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    <input type="number" id="cant-${p.id}" value="1" min="1" max="${p.stock}" 
+                           style="width: 50px; background: #222; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; text-align: center; font-weight: bold; font-size: 16px;" 
+                           ${p.stock <= 0 ? 'disabled' : ''}>
+                    
+                    <button class="btn-mesa" style="background:var(--gold); color:#000; padding:10px 18px; font-size:13px;" 
+                            onclick="agregarPedido(${p.id})" ${p.stock <= 0 ? 'disabled' : ''}>
+                        + AÑADIR
+                    </button>
+                </div>
             </div>
         `;
     });
@@ -176,18 +183,24 @@ function filtrarProductosMesa() {
 }
 
 async function agregarPedido(productoId) {
+    // Leemos la cantidad del input que acabamos de crear
+    const cantInput = document.getElementById(`cant-${productoId}`);
+    const cantidadSeleccionada = parseInt(cantInput.value) || 1;
+
+    if (cantidadSeleccionada <= 0) return alert("La cantidad debe ser mayor a 0");
+
     try {
         const res = await fetch('/api/pedidos/agregar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: productoId, cantidad: 1 })
+            body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: productoId, cantidad: cantidadSeleccionada })
         });
         if (res.ok) {
-            mostrarToast("✅ Producto añadido a la mesa");
-            await cargarProductosMenu(); // Actualizar stock
-            abrirOpciones(mesaAccionId); // Refrescar modal para ver el nuevo stock
+            mostrarToast(`✅ ${cantidadSeleccionada}x añadido(s)`);
+            await cargarProductosMenu(); // Actualizar stock local
+            abrirOpciones(mesaAccionId); // Refrescar modal
         } else {
-            alert("Error al añadir producto");
+            alert("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
         }
     } catch (e) { console.error(e); }
 }
@@ -201,24 +214,65 @@ async function abrirModalCobro(id) {
         
         totalDeudaCobro = parseFloat(data.totalFinal);
 
+        // 1. Construir la lista detallada de productos
+        let listaHtml = '';
+        if (data.listaProductos && data.listaProductos.length > 0) {
+            data.listaProductos.forEach(p => {
+                listaHtml += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; padding: 10px 0; font-size: 14px;">
+                        <div style="color: white; font-weight: 500;">
+                            <span style="color:var(--gold); margin-right:5px;">${p.cantidad}x</span> ${p.nombre}
+                        </div>
+                        <div style="display:flex; gap: 12px; align-items:center;">
+                            <span style="color:var(--success); font-weight:bold;">S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
+                            <button style="background:var(--danger-dim); color:var(--danger); border:1px solid rgba(255, 71, 87, 0.3); border-radius:6px; padding:6px 10px; cursor:pointer; transition:0.2s;" 
+                                    onclick="eliminarPedido(${p.id}, ${id})" title="Quitar de la cuenta">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            listaHtml = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding: 15px 0;">No hay consumo registrado</div>';
+        }
+
+        // 2. Construir la vista final del modal
         let html = `
-            <div style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:var(--text-muted);">
-                    <span>⏳ Tiempo (${data.minutos} min):</span>
-                    <span style="color:var(--gold); font-weight:bold;">S/ ${data.totalTiempo.toFixed(2)}</span>
+            <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; color:var(--text-muted); border-bottom:1px dashed #333; padding-bottom:15px;">
+                    <span style="font-weight:600;">⏳ Tiempo Jugado (${data.minutos} min):</span>
+                    <span style="color:var(--gold); font-weight:800; font-size:16px;">S/ ${data.totalTiempo.toFixed(2)}</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
-                    <span>🍺 Consumo:</span>
-                    <span style="color:var(--success); font-weight:bold;">S/ ${data.totalProductos.toFixed(2)}</span>
+                
+                <div style="margin-bottom:10px; color:var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight:bold; letter-spacing:1px;">
+                    🍺 Detalle de Consumo:
+                </div>
+                
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px;">
+                    ${listaHtml}
                 </div>
             </div>
-            <div style="font-size: 28px; text-align:center; font-weight:900; color:white; margin-bottom: 20px;">
-                TOTAL: <span style="color:var(--gold);">S/ ${totalDeudaCobro.toFixed(2)}</span>
+            
+            <div style="font-size: 32px; text-align:center; font-weight:900; color:white; margin-bottom: 25px;">
+                TOTAL: <span style="color:var(--gold); text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
         `;
         document.getElementById('cobro-contenido').innerHTML = html;
         document.getElementById('modal-cobro').style.display = 'flex';
     } catch (e) { console.error("Error al obtener cuenta:", e); }
+}
+
+// Nueva función para el botón de la papelera
+async function eliminarPedido(idPedido, idMesa) {
+    if (!confirm("⚠️ ¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario automáticamente.")) return;
+    
+    try {
+        const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
+        if (res.ok) {
+            mostrarToast("🗑️ Producto retirado de la cuenta");
+            // Recargamos el modal de cobro para que el total se actualice matemáticamente
+            abrirModalCobro(idMesa); 
+        }
+    } catch (e) { console.error(e); }
 }
 
 function abrirCobroMixto() {
