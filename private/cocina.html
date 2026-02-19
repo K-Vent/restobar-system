@@ -45,10 +45,27 @@
     <div id="grid" class="grid-pedidos">
         <div class="vacio">Cargando sistema...</div>
     </div>
-
+<script src="/socket.io/socket.io.js"></script>
     <script>
-        // Cargar cada 5 segundos
-        setInterval(cargarPedidos, 5000);
+        const socket = io();
+// Sonido de campana (puedes cambiar la URL por cualquier .mp3 o .ogg que te guste)
+const campana = new Audio('https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg');
+
+socket.on('campana_cocina', () => {
+    cargarPendientes(); // Recarga la lista de pedidos
+    
+    // Reproduce el sonido 
+    campana.play().catch(e => console.log("Auto-play bloqueado por el navegador, se requiere 1 clic previo en la pantalla"));
+    
+    // Opcional: hacer un efecto visual
+    document.body.style.backgroundColor = "#4a0000"; // Se pone rojo un segundo
+    setTimeout(() => document.body.style.backgroundColor = "#0c0c0c", 500);
+});
+
+socket.on('actualizar_cocina', () => {
+    cargarPendientes();
+});
+    
         cargarPedidos();
 
         async function cargarPedidos() {
