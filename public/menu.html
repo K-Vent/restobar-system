@@ -10,7 +10,7 @@
     <style>
         :root {
             --bg-main: #0a0a0c;
-            --bg-card: rgba(28, 28, 30, 0.7);
+            --bg-card: rgba(28, 28, 30, 0.6);
             --gold: #f1c40f;
             --text-main: #ffffff;
             --text-muted: #a4b0be;
@@ -18,59 +18,88 @@
         }
         
         body {
-            background: radial-gradient(circle at top, #1a1a1d 0%, var(--bg-main) 100%);
+            background: radial-gradient(circle at top, #151518 0%, var(--bg-main) 100%);
             color: var(--text-main);
             font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
             padding: 0;
             padding-bottom: 60px;
             min-height: 100vh;
+            background-attachment: fixed;
         }
 
-        .header {
-            text-align: center;
-            padding: 25px 20px;
-            background: rgba(10, 10, 12, 0.85);
-            border-bottom: 1px solid var(--border);
+        /* --- HEADER Y NAVEGACIÓN --- */
+        .header-container {
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: rgba(10, 10, 12, 0.90);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .logo-wrapper {
+            text-align: center;
+            padding: 20px 0 10px 0;
         }
 
         .logo { 
-            width: 140px; 
+            width: 130px; 
             filter: drop-shadow(0 5px 15px rgba(241,196,15,0.2)); 
         }
 
-        .container { 
-            padding: 20px; 
-            max-width: 500px; 
-            margin: 0 auto; 
+        /* Barra de Pestañas Deslizable */
+        .category-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 15px 20px;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none; /* IE y Edge */
+            scrollbar-width: none; /* Firefox */
         }
+        .category-tabs::-webkit-scrollbar { display: none; /* Chrome, Safari */ }
 
-        .categoria-titulo {
-            color: var(--gold);
-            font-size: 20px;
-            font-weight: 900;
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 30px;
+            white-space: nowrap;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 35px 0 15px 0;
-            border-bottom: 1px dashed var(--border);
-            padding-bottom: 10px;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            text-shadow: 0 0 15px rgba(241,196,15,0.3);
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* --- CONTENEDOR DE PRODUCTOS --- */
+        .container { 
+            padding: 20px; 
+            max-width: 600px; 
+            margin: 0 auto; 
         }
 
         .producto-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 18px 20px;
+            padding: 20px;
             margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
@@ -78,26 +107,45 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            animation: slideIn 0.4s ease-out forwards;
-            opacity: 0;
-            transform: translateY(15px);
+            animation: fadeIn 0.4s ease-out;
+            transition: transform 0.2s;
         }
 
-        @keyframes slideIn {
+        .producto-card:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .producto-info { flex-grow: 1; }
+        
         .producto-nombre { 
-            font-size: 16px; 
-            font-weight: 700; 
+            font-size: 17px; 
+            font-weight: 800; 
             color: white; 
             letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .producto-cat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
         .producto-precio { 
-            font-size: 18px; 
+            font-size: 20px; 
             font-weight: 900; 
             color: var(--success); 
+            background: rgba(46, 213, 115, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(46, 213, 115, 0.2);
         }
 
         .loading-box { 
@@ -106,20 +154,17 @@
             margin-top: 60px; 
             font-size: 16px; 
             font-weight: bold;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <img src="/logo.png" alt="La Esquina" class="logo">
+    <div class="header-container">
+        <div class="logo-wrapper">
+            <img src="/logo.png" alt="La Esquina" class="logo">
+        </div>
+        <div class="category-tabs" id="tabs-container">
+            </div>
     </div>
 
     <div class="container" id="menu-container">
@@ -127,61 +172,99 @@
     </div>
 
     <script>
+        let todosLosProductos = [];
+        let categoriasUnicas = [];
+
+        // Íconos visuales para las pestañas
+        const iconosCat = { 
+            'Cervezas': '🍺', 
+            'Tragos': '🍹', 
+            'Cócteles': '🍸', 
+            'Comida': '🍔', 
+            'Piqueos': '🍟',
+            'General': '✨',
+            'Otros': '✨' 
+        };
+
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch('/api/menu/publico');
-                const productos = await res.json();
+                todosLosProductos = await res.json();
                 
                 const container = document.getElementById('menu-container');
 
-                if(productos.length === 0) {
+                if(todosLosProductos.length === 0) {
                     container.innerHTML = '<div class="loading-box">Aún no hay productos en stock. Vuelve pronto.</div>';
                     return;
                 }
 
-                // Agrupamos los productos usando Lógica de Diccionario (Hash Map)
-                const categorias = {};
-                productos.forEach(p => {
-                    const cat = p.categoria || 'Otros';
-                    if(!categorias[cat]) categorias[cat] = [];
-                    categorias[cat].push(p);
-                });
+                // 1. Extraer categorías únicas
+                const catSet = new Set();
+                todosLosProductos.forEach(p => catSet.add(p.categoria || 'General'));
+                categoriasUnicas = Array.from(catSet).sort();
 
-                // Asignación visual de íconos para la elegancia de la carta
-                const iconos = { 
-                    'Cervezas': '🍺', 
-                    'Tragos': '🍹', 
-                    'Cócteles': '🍸', 
-                    'Comida': '🍔', 
-                    'Piqueos': '🍟',
-                    'Otros': '✨' 
-                };
+                // Asegurar que "Todas" sea la primera opción
+                categoriasUnicas.unshift('Todas');
 
-                let html = '';
-                let delay = 0; // Para el efecto de cascada al cargar
+                // 2. Dibujar las pestañas
+                dibujarTabs();
 
-                for (const [cat, prods] of Object.entries(categorias)) {
-                    const icono = iconos[cat] || iconos['Otros'];
-                    html += `<div class="categoria-titulo">${icono} ${cat}</div>`;
-                    
-                    prods.forEach(p => {
-                        html += `
-                            <div class="producto-card" style="animation-delay: ${delay}s">
-                                <div class="producto-nombre">${p.nombre}</div>
-                                <div class="producto-precio">S/ ${parseFloat(p.precio_venta).toFixed(2)}</div>
-                            </div>
-                        `;
-                        delay += 0.05;
-                    });
-                }
-
-                container.innerHTML = html;
+                // 3. Mostrar todos los productos por defecto
+                filtrarPorCategoria('Todas');
 
             } catch (e) {
                 document.getElementById('menu-container').innerHTML = 
                     '<div class="loading-box" style="color:#ff4757;">Error al cargar el menú. Por favor, avise al personal.</div>';
             }
         });
+
+        function dibujarTabs() {
+            const tabsContainer = document.getElementById('tabs-container');
+            tabsContainer.innerHTML = '';
+
+            categoriasUnicas.forEach((cat, index) => {
+                const icono = cat === 'Todas' ? '📜' : (iconosCat[cat] || '✨');
+                const activeClass = index === 0 ? 'active' : '';
+                
+                tabsContainer.innerHTML += `
+                    <button class="tab-btn ${activeClass}" onclick="filtrarPorCategoria('${cat}', this)">
+                        ${icono} ${cat}
+                    </button>
+                `;
+            });
+        }
+
+        function filtrarPorCategoria(categoriaSeleccionada, botonHTML = null) {
+            // Actualizar estilo visual de los botones
+            if (botonHTML) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                botonHTML.classList.add('active');
+                
+                // Centrar el botón presionado en dispositivos móviles
+                botonHTML.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            // Filtrar el arreglo de productos
+            const productosFiltrados = categoriaSeleccionada === 'Todas' 
+                ? todosLosProductos 
+                : todosLosProductos.filter(p => (p.categoria || 'General') === categoriaSeleccionada);
+
+            // Dibujar los productos
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            productosFiltrados.forEach((p, index) => {
+                container.innerHTML += `
+                    <div class="producto-card" style="animation-delay: ${index * 0.05}s">
+                        <div class="producto-info">
+                            <div class="producto-nombre">${p.nombre}</div>
+                            <div class="producto-cat-label">${p.categoria || 'General'}</div>
+                        </div>
+                        <div class="producto-precio">S/ ${parseFloat(p.precio_venta).toFixed(2)}</div>
+                    </div>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
