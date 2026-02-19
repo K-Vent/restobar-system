@@ -4,80 +4,52 @@
     <meta charset="UTF-8">
     <title>Inventario - La Esquina</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0c0c0c">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="La Esquina">
-    <link rel="apple-touch-icon" href="/logo.png">
+    <meta name="theme-color" content="#0a0a0c">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="icon" href="/logo.png" type="image/png">
     <style>
-        body { background: #0c0c0c; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: #111; border-right: 1px solid #333; display: flex; flex-direction: column; position: fixed; height: 100%; top: 0; left: 0; }
-        .sidebar-header { padding: 25px; text-align: center; border-bottom: 1px solid #222; }
-        .logo-img { width: 180px; }
-        .menu { padding: 20px 0; flex-grow: 1; }
-        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: #aaa; text-decoration: none; transition: 0.2s; border-left: 3px solid transparent; }
-        .menu-link:hover { background: #1a1a1a; color: white; }
-        .menu-link.active { background: #1a1a1a; color: #f1c40f; border-left-color: #f1c40f; font-weight: bold; }
-        .btn-logout { width: 90%; margin: 0 auto 20px; padding: 12px; background: #222; color: #e74c3c; border: 1px solid #333; border-radius: 6px; cursor: pointer; font-weight: bold; display: block; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .page-title { font-size: 32px; font-weight: 800; color: white; margin: 0; letter-spacing: -1px; }
+        .search-bar { padding: 14px 20px; width: 100%; max-width: 350px; background: #111; border: 2px solid var(--border); color: white; border-radius: 10px; font-size: 15px; outline: none; transition: 0.3s; }
+        .search-bar:focus { border-color: var(--gold); box-shadow: 0 0 0 4px var(--gold-dim); }
 
-        .main-content { margin-left: 260px; padding: 40px; width: 100%; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 28px; font-weight: bold; color: white; }
+        .card-nuevo { background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .form-group { flex: 1; min-width: 180px; }
+        .form-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-crear { padding: 16px 25px; background: var(--success); color: #000; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; height: 52px; transition: 0.2s; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3); text-transform: uppercase; }
+        .btn-crear:hover { background: #26b963; transform: translateY(-2px); }
 
-        /* BUSCADOR */
-        .search-bar { padding: 12px; width: 300px; background: #181818; border: 1px solid #333; color: white; border-radius: 6px; outline: none; }
-        .search-bar:focus { border-color: #f1c40f; }
-
-        /* FORMULARIO NUEVO PRODUCTO */
-        .card-nuevo { background: #181818; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
-        .form-group { flex: 1; min-width: 150px; }
-        .form-label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
-        .input-dark { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .btn-crear { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; height: 38px; }
-        
-        /* TABLA */
-        .tabla-container { background: #181818; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .tabla-container { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
-        th { background: #222; color: #f1c40f; font-size: 12px; text-transform: uppercase; }
-        tr:hover { background: #1f1f1f; }
+        th, td { padding: 16px 25px; text-align: left; border-bottom: 1px solid #1f222b; font-size: 15px; }
+        th { background: #151515; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        tr:hover { background: var(--bg-card-hover); }
         
-        .stock-tag { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .stock-ok { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
-        .stock-low { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+        .stock-tag { padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; }
+        .stock-ok { background: var(--success-dim); color: var(--success); border: 1px solid rgba(46, 213, 115, 0.3); }
+        .stock-low { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); animation: pulseBorder 2s infinite; }
 
-        .acciones { display: flex; gap: 5px; }
-        .btn-icon { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .btn-add { background: #3498db; color: white; }
-        .btn-del { background: #c0392b; color: white; }
+        .btn-icon { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; margin-right: 5px; }
+        .btn-add { background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .btn-add:hover { background: #3498db; color: white; }
+        .btn-del { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); }
+        .btn-del:hover { background: var(--danger); color: white; }
 
-        /* MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-box { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 400px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-title { font-size: 20px; color: #f1c40f; font-weight: bold; margin-bottom: 20px; text-align: center; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-modal { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-
-        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+        .btn-logout { margin: 20px; padding: 14px; background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-logout:hover { background: var(--danger); color: white; }
     </style>
 </head>
 <body>
-
     <div id="toast">✅ Acción realizada</div>
 
     <nav class="sidebar">
         <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
         <div class="menu">
-            <a href="/dashboard.html" class="menu-link"><span class="menu-icon">🎱</span> Control de Mesas</a>
-            <a href="#" class="menu-link active"><span class="menu-icon">📦</span> Inventario</a>
-            <a href="/reportes.html" class="menu-link"><span class="menu-icon">📅</span> Historial</a>
-            <a href="/cierre_caja.html" class="menu-link"><span class="menu-icon">🔒</span> Cerrar Caja</a>
+            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
+            <a href="#" class="menu-link active">📦 Inventario</a>
+            <a href="/reportes.html" class="menu-link">📅 Historial</a>
+            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
         </div>
         <button onclick="location.href='/logout'" class="btn-logout">🚪 SALIR</button>
     </nav>
@@ -91,11 +63,11 @@
         <div class="card-nuevo">
             <div class="form-group">
                 <span class="form-label">Nombre del Producto</span>
-                <input type="text" id="newNombre" class="input-dark" placeholder="Ej. Pilsen Botella">
+                <input type="text" id="newNombre" class="modal-input" placeholder="Ej. Pilsen Botella">
             </div>
             <div class="form-group">
                 <span class="form-label">Categoría</span>
-                <select id="newCategoria" class="input-dark">
+                <select id="newCategoria" class="modal-input">
                     <option value="Cervezas">🍺 Cervezas</option>
                     <option value="Tragos">🍹 Cócteles</option>
                     <option value="Comida">🍔 Comida</option>
@@ -104,11 +76,11 @@
             </div>
             <div class="form-group">
                 <span class="form-label">Precio Venta (S/)</span>
-                <input type="number" id="newPrecio" class="input-dark" placeholder="0.00">
+                <input type="number" id="newPrecio" class="modal-input" placeholder="0.00">
             </div>
             <div class="form-group">
                 <span class="form-label">Stock Inicial</span>
-                <input type="number" id="newStock" class="input-dark" placeholder="0">
+                <input type="number" id="newStock" class="modal-input" placeholder="0">
             </div>
             <button class="btn-crear" onclick="crearProducto()">+ AGREGAR</button>
         </div>
@@ -132,26 +104,28 @@
     <div id="modal-stock" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">📥 Reponer Stock</div>
-            <p id="stock-prod-name" style="text-align:center; color:#ccc; margin-bottom:20px;"></p>
-            
-            <div class="form-group">
-                <span class="form-label">Cantidad a agregar (Unidades/Cajas)</span>
-                <input type="number" id="stock-cantidad" class="input-dark" placeholder="Ej. 24" oninput="calcularUnitario()">
-            </div>
-            
-            <div class="form-group" style="margin-top:15px;">
-                <span class="form-label">💰 Costo Total de la Compra (S/)</span>
-                <input type="number" id="stock-costo" class="input-dark" placeholder="Ej. 120.00 (Opcional)" oninput="calcularUnitario()">
-                <small style="color:#888; font-size:11px; display:block; margin-top:5px;">
-                    Si pones un monto, se registrará como <b>GASTO</b> automáticamente.
-                </small>
-            </div>
+            <div class="modal-body">
+                <p id="stock-prod-name" style="text-align:center; color:white; font-size: 18px; font-weight: bold; margin-bottom:20px;"></p>
+                
+                <div class="form-group">
+                    <span class="form-label">Cantidad a agregar</span>
+                    <input type="number" id="stock-cantidad" class="modal-input" placeholder="Ej. 24" oninput="calcularUnitario()">
+                </div>
+                
+                <div class="form-group" style="margin-top:20px;">
+                    <span class="form-label">💰 Costo Total de Compra (S/)</span>
+                    <input type="number" id="stock-costo" class="modal-input" placeholder="Ej. 120.00 (Opcional)" oninput="calcularUnitario()">
+                    <small style="color:var(--text-muted); font-size:12px; display:block; margin-top:8px;">
+                        Si ingresas un monto, se registrará como <b>GASTO</b> en la caja actual.
+                    </small>
+                </div>
 
-            <div id="info-unitario" style="text-align:center; color:#f1c40f; font-size:13px; margin-top:10px; font-weight:bold;"></div>
+                <div id="info-unitario" style="text-align:center; color:var(--gold); font-size:15px; margin-top:15px; font-weight:800;"></div>
+            </div>
 
             <div class="modal-btns">
-                <button class="btn-modal" style="background:#444; color:white;" onclick="cerrarModal()">Cancelar</button>
-                <button class="btn-modal" style="background:#3498db; color:white;" onclick="ejecutarAgregarStock()">CONFIRMAR</button>
+                <button class="btn-modal btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-modal btn-confirm" onclick="ejecutarAgregarStock()" style="background: #3498db; color: white;">CONFIRMAR</button>
             </div>
         </div>
     </div>
@@ -174,15 +148,13 @@
                 const stockClass = p.stock < 10 ? 'stock-low' : 'stock-ok';
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-weight:bold;">${p.nombre}</td>
-                        <td>${p.categoria || '-'}</td>
-                        <td style="color:#2ecc71;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
+                        <td style="font-weight:800; color: white;">${p.nombre}</td>
+                        <td style="color: var(--text-muted);">${p.categoria || '-'}</td>
+                        <td style="color:var(--success); font-weight: bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
                         <td><span class="stock-tag ${stockClass}">${p.stock} un.</span></td>
                         <td>
-                            <div class="acciones">
-                                <button class="btn-icon btn-add" onclick="abrirModalStock(${p.id}, '${p.nombre}')" title="Reponer Stock">➕</button>
-                                <button class="btn-icon btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar">🗑️</button>
-                            </div>
+                            <button class="btn-icon btn-add" onclick="abrirModalStock(${p.id}, '${p.nombre}')" title="Reponer Stock">➕</button>
+                            <button class="btn-icon btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -216,7 +188,6 @@
             cargarProductos();
         }
 
-        // --- LÓGICA DE STOCK INTELIGENTE ---
         function abrirModalStock(id, nombre) {
             prodSeleccionadoId = id;
             prodSeleccionadoNombre = nombre;
@@ -245,16 +216,10 @@
 
             if(!cant || cant <= 0) return alert("Ingresa una cantidad válida");
 
-            // Enviamos stock Y costo al servidor
             await fetch('/api/productos/agregar-stock', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ 
-                    id: prodSeleccionadoId, 
-                    cantidad: cant, 
-                    costo: costo, // Si está vacío, el servidor lo ignora como gasto
-                    nombre: prodSeleccionadoNombre 
-                })
+                body: JSON.stringify({ id: prodSeleccionadoId, cantidad: cant, costo: costo, nombre: prodSeleccionadoNombre })
             });
 
             cerrarModal();
