@@ -55,6 +55,7 @@ app.use(session({
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Esto asegura que Render encuentre la carpeta 'public' sin importar dónde se ejecute
 app.use(express.static(path.join(__dirname, 'public')));
 
 const verificarSesion = (req, res, next) => { if (req.session.usuario) { next(); } else { if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); res.redirect('/'); } };
