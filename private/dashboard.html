@@ -421,15 +421,48 @@ socket.on('actualizar_caja', () => {
         }
 
         // --- PREPARAR COBRO ---
+        // --- PREPARAR COBRO ---
         async function prepararCobro(id, numMesa) {
-            mesaAccionId = id; document.getElementById('cobro-contenido').innerHTML = 'Calculando...'; document.getElementById('modal-cobro').style.display = 'flex'; document.getElementById('input-telefono-cliente').value = ''; 
+            mesaAccionId = id; 
+            document.getElementById('cobro-contenido').innerHTML = 'Calculando...'; 
+            document.getElementById('modal-cobro').style.display = 'flex'; 
+            document.getElementById('input-telefono-cliente').value = ''; 
+            
             try {
-                const res = await fetch(`/api/mesas/detalle/${id}`); const data = await res.json();
-                let html = ''; let texto = `🧾 *LA ESQUINA DEL BILLAR*%0A📅 Fecha: ${new Date().toLocaleDateString()}%0A🎱 *Mesa ${numMesa}*%0A------------------%0A`;
-                if (data.tipo === 'BILLAR') { const costoT = parseFloat(data.totalTiempo).toFixed(2); html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${costoT}</span></div>`; texto += `🎱 Tiempo (${data.minutos} min): S/ ${costoT}%0A`; }
-                if (data.listaProductos) { html += '<div style="border-top:1px dashed #444; margin:10px 0"></div>'; data.listaProductos.forEach(p => { html += `<div class="detalle-row" style="align-items:center"><div style="display:flex; gap:10px"><button onclick="pedirConfirmacionBorrar(${p.id}, '${p.nombre}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer">🗑️</button><span>${p.cantidad}x ${p.nombre}</span></div><span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span></div>`; texto += `🍺 ${p.cantidad}x ${p.nombre}: S/ ${parseFloat(p.subtotal).toFixed(2)}%0A`; }); }
-                const totalF = parseFloat(data.totalFinal).toFixed(2); html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${totalF}</span></div>`; texto += `------------------%0A💰 *TOTAL: S/ ${totalF}*%0A¡Gracias por tu visita!`;
-                mensajeTicketGlobal = texto; document.getElementById('cobro-contenido').innerHTML = html;
+                const res = await fetch(`/api/mesas/detalle/${id}`); 
+                const data = await res.json();
+                let html = ''; 
+                let texto = `🧾 *LA ESQUINA DEL BILLAR*%0A📅 Fecha: ${new Date().toLocaleDateString()}%0A🎱 *Mesa ${numMesa}*%0A------------------%0A`;
+                
+                if (data.tipo === 'BILLAR') { 
+                    const costoT = parseFloat(data.totalTiempo).toFixed(2); 
+                    html += `<div class="detalle-row"><span style="color:#f1c40f">🎱 Tiempo (${data.minutos} min)</span><span>S/ ${costoT}</span></div>`; 
+                    texto += `🎱 Tiempo (${data.minutos} min): S/ ${costoT}%0A`; 
+                }
+                
+                if (data.listaProductos) { 
+                    html += '<div style="border-top:1px dashed #444; margin:10px 0"></div>'; 
+                    data.listaProductos.forEach(p => { 
+                        // [SOLUCIÓN BUG MIKE'S]: Escapamos las comillas simples del nombre para que no rompan el HTML
+                        const nombreSeguroHTML = p.nombre.replace(/'/g, "\\'"); 
+                        
+                        html += `<div class="detalle-row" style="align-items:center">
+                                    <div style="display:flex; gap:10px">
+                                        <button onclick="pedirConfirmacionBorrar(${p.id}, '${nombreSeguroHTML}')" style="background:#c0392b; border:none; color:white; border-radius:4px; cursor:pointer">🗑️</button>
+                                        <span>${p.cantidad}x ${p.nombre}</span>
+                                    </div>
+                                    <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
+                                 </div>`; 
+                        texto += `🍺 ${p.cantidad}x ${p.nombre}: S/ ${parseFloat(p.subtotal).toFixed(2)}%0A`; 
+                    }); 
+                }
+                
+                const totalF = parseFloat(data.totalFinal).toFixed(2); 
+                html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${totalF}</span></div>`; 
+                texto += `------------------%0A💰 *TOTAL: S/ ${totalF}*%0A¡Gracias por tu visita!`;
+                
+                mensajeTicketGlobal = texto; 
+                document.getElementById('cobro-contenido').innerHTML = html;
             } catch (e) { console.error(e); }
         }
 
