@@ -1,211 +1,258 @@
-/* =========================================
-   DASHBOARD JS - LA ESQUINA DEL BILLAR
-   Lógica Profesional en Tiempo Real
-   ========================================= */
+/* ============================================================
+   DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
+   Versión: Premium POS / Sincronizado con server.js
+   ============================================================ */
 
-const socket = io();
+const socket = io(); // Conexión en tiempo real
 let intervaloCronometros = null;
-let mesaAccionId = null;
-let prodAccionId = null;
-let mesaOrigenCambio = null;
-let productosCache = [];
-let mensajeTicketGlobal = "";
-let lastMesasJSON = ""; 
-let totalCobroActual = 0;
+let mesaAccionId = null; 
+let usuarioActual = null;
+let totalDeudaCobro = 0; // Memoria temporal para Pagos Mixtos
 
-// Sonidos de alerta
-const audioAviso = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-const audioFinal = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
-
-// --- EVENTOS EN TIEMPO REAL (SOCKET.IO) ---
-socket.on('actualizar_mesas', () => cargarMesas());
-socket.on('actualizar_caja', () => actualizarCaja());
-
-// --- INICIO DEL SISTEMA ---
-async function cargarTodo() {
+// 1. INICIALIZACIÓN
+document.addEventListener("DOMContentLoaded", async () => {
     await verificarRol();
     await cargarMesas();
-    await actualizarCaja();
-}
+    if(usuarioActual && usuarioActual.rol === 'admin') {
+        cargarCaja();
+    }
+});
 
+// Sockets (Escuchan al servidor y actualizan la pantalla solos)
+socket.on('actualizar_mesas', () => cargarMesas());
+socket.on('actualizar_caja', () => { 
+    if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); 
+});
+
+// 2. SEGURIDAD (Capa Visual)
 async function verificarRol() {
     try {
         const res = await fetch('/api/usuario/actual');
-        const user = await res.json();
-        if (user.rol !== 'admin') {
+        usuarioActual = await res.json();
+        
+        // Si no es admin, ocultamos módulos críticos
+        if (usuarioActual.rol !== 'admin') {
+            console.log("🔒 Modo Operativo (Mozo) Activado");
             document.querySelectorAll('.menu-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && (href.includes('inventario') || href.includes('reportes'))) {
+                const txt = link.innerText.toLowerCase();
+                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja')) {
                     link.style.display = 'none';
                 }
             });
+            const moneyPanel = document.querySelector('.money-panel');
+            if (moneyPanel) moneyPanel.style.display = 'none';
+            const btnGasto = document.querySelector('.btn-gasto');
+            if (btnGasto) btnGasto.style.display = 'none';
         }
-    } catch (e) { console.error("Error verificando rol:", e); }
+    } catch (e) { console.error("Error en validación de seguridad:", e); }
 }
 
-// --- GESTIÓN DE CAJA ---
-async function actualizarCaja() {
+// 3. CARGA DE CAJA SUPERIOR (Solo Admin)
+async function cargarCaja() {
     try {
         const res = await fetch('/api/caja/actual');
         const data = await res.json();
         document.getElementById('total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas).toFixed(2);
         document.getElementById('total-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos).toFixed(2);
-        document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.total_caja_real).toFixed(2);
-    } catch (e) { console.error("Error actualizando caja:", e); }
+        document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.dinero_en_cajon).toFixed(2);
+    } catch (e) { console.log("Caja no disponible u oculta."); }
 }
 
-async function ejecutarGasto() {
-    const desc = document.getElementById('gasto-desc').value;
-    const monto = document.getElementById('gasto-monto').value;
-    if (!desc || !monto) return;
-    const res = await fetch('/api/gastos/nuevo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ descripcion: desc, monto: monto })
-    });
-    if (res.ok) {
-        cerrarModal('modal-gasto');
-        mostrarToast("💸 Gasto registrado");
-    }
-}
-
-// --- GESTIÓN DE MESAS ---
+// 4. RENDERIZADO DE MESAS PREMIUM
 async function cargarMesas() {
     try {
         const res = await fetch('/api/mesas');
         const mesas = await res.json();
-        
-        const currentJSON = JSON.stringify(mesas);
-        if (currentJSON === lastMesasJSON) return;
-        lastMesasJSON = currentJSON;
-
-        const cont = document.getElementById('grid-mesas');
-        cont.innerHTML = '';
-        
-        mesas.forEach(mesa => {
-            const esOcupada = mesa.estado === 'OCUPADA';
-            const esBillar = mesa.tipo === 'BILLAR';
-            let fechaInicioJS = esOcupada && mesa.segundos > 0 
-                ? new Date(Date.now() - (mesa.segundos * 1000)).toISOString() 
-                : "";
-
-            const dataAttrs = `data-id="${mesa.id}" data-inicio="${fechaInicioJS}" data-precio="${mesa.precio_hora}" data-limite="${mesa.tiempo_limite || 0}" data-mesa="${mesa.numero_mesa}"`;
-            
-            cont.innerHTML += `
-                <div class="mesa-card">
-                    <div class="mesa-header">
-                        <div>
-                            <div class="mesa-titulo">Mesa ${mesa.numero_mesa}</div>
-                            <div class="mesa-subtitulo">${mesa.tipo}</div>
-                        </div>
-                        <span class="mesa-estado ${esOcupada ? 'ocupada' : 'libre'}">${esOcupada ? 'OCUPADA' : 'LIBRE'}</span>
-                    </div>
-                    ${esBillar ? `<div class="info-tiempo" id="timer-${mesa.id}" ${dataAttrs}>${esOcupada ? '...' : '--:--'}</div>` : '<div style="height:10px;"></div>'}
-                    <div class="mesa-actions">
-                        ${!esOcupada 
-                            ? `<button class="btn-mesa btn-abrir" onclick="mostrarModalAbrir(${mesa.id})">🟢 INICIAR</button>` 
-                            : `<button class="btn-mesa btn-producto" onclick="abrirModalProductos(${mesa.id})">🍺 PEDIDO</button>
-                               <button class="btn-mesa btn-mover" onclick="abrirModalCambio(${mesa.id})">🔄 MOVER</button>
-                               <button class="btn-mesa btn-cerrar" onclick="prepararCobro(${mesa.id}, '${mesa.numero_mesa}')">💰 COBRAR</button>`}
-                    </div>
-                </div>`;
-        });
-        iniciarCronometros();
-    } catch (e) { console.error("Error cargando mesas:", e); }
+        renderizarMesas(mesas);
+    } catch (error) { console.error("Error al cargar mesas:", error); }
 }
 
-function iniciarCronometros() {
-    if (intervaloCronometros) clearInterval(intervaloCronometros);
-    intervaloCronometros = setInterval(() => {
-        document.querySelectorAll('.info-tiempo').forEach(t => {
-            const inicio = t.getAttribute('data-inicio');
-            if (!inicio || inicio === "") return;
+function renderizarMesas(mesas) {
+    const grid = document.getElementById('grid-mesas');
+    grid.innerHTML = '';
+    clearInterval(intervaloCronometros);
 
-            const precio = parseFloat(t.getAttribute('data-precio') || 10);
-            const limite = parseInt(t.getAttribute('data-limite') || 0);
-            const diff = new Date() - new Date(inicio);
+    mesas.forEach(mesa => {
+        const isOcupada = mesa.estado === 'OCUPADA';
+        const estadoClass = isOcupada ? 'ocupada' : 'libre';
+        const estadoTexto = isOcupada ? 'OCUPADA' : 'LIBRE';
+        const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
+        
+        let html = `
+            <div class="mesa-card">
+                <div class="mesa-header">
+                    <div class="mesa-titulo">${icono} MESA ${mesa.numero_mesa}</div>
+                    <div class="mesa-estado ${estadoClass}">${estadoTexto}</div>
+                </div>
+        `;
 
-            if (limite > 0) {
-                const restMs = (limite * 60000) - diff;
-                if (restMs <= 0) {
-                    t.innerHTML = `<div style="color:#e74c3c; font-weight:bold; animation:parpadeo 1s infinite;">⛔ ¡TIEMPO!</div>`;
-                } else {
-                    const m = Math.floor(restMs / 60000);
-                    const s = Math.floor((restMs % 60000) / 1000);
-                    t.innerHTML = `⏳ ${m}:${s < 10 ? '0' + s : s}`;
-                }
-            } else {
-                const m = Math.floor(diff / 60000);
-                const costo = (diff / 3600000) * precio;
-                t.innerHTML = `${Math.floor(m/60)}:${(m%60) < 10 ? '0'+(m%60) : (m%60)} <div class="dinero-vivo">S/ ${costo.toFixed(2)}</div>`;
-            }
-        });
-    }, 1000);
+        if (isOcupada) {
+            html += `
+                <div class="info-tiempo" id="tiempo-${mesa.id}" data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}">
+                    ${mesa.tipo === 'BILLAR' ? '00:00:00' : 'MESA CONSUMO'}
+                </div>
+                <div style="text-align:center; margin-bottom:15px;">
+                    <span class="dinero-vivo" id="dinero-${mesa.id}">S/ 0.00</span>
+                </div>
+                <div class="acciones-grid">
+                    <button class="btn-mesa btn-producto" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button>
+                    <button class="btn-mesa btn-cerrar" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button>
+                </div>
+            `;
+        } else {
+            html += `
+                <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding: 30px 0;">
+                    <span style="color:var(--text-muted); font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Mesa Disponible</span>
+                </div>
+                <button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">▶ INICIAR MESA</button>
+            `;
+        }
+
+        html += `</div>`;
+        grid.innerHTML += html;
+    });
+
+    iniciarCronometros();
 }
 
-// --- COBRO Y PAGO MIXTO ---
-async function prepararCobro(id, numMesa) {
+// 5. ACCIONES DE MESAS
+async function abrirMesa(id) {
+    try {
+        const res = await fetch(`/api/mesas/abrir/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ minutos: 0 })
+        });
+        if (res.ok) mostrarToast("Mesa Iniciada");
+        else alert("No se pudo iniciar la mesa. Verifica la conexión.");
+    } catch (e) { alert("Error de red."); }
+}
+
+function abrirOpciones(id) {
+    // Aquí puedes redirigir a una ventana de pedidos, o abrir un modal
+    alert("Función de Pedidos en construcción (Falta agregar modal de productos HTML)");
+}
+
+// 6. FLUJO DE COBRO Y PAGO MIXTO
+async function abrirModalCobro(id) {
     mesaAccionId = id;
-    document.getElementById('modal-cobro').style.display = 'flex';
     try {
         const res = await fetch(`/api/mesas/detalle/${id}`);
         const data = await res.json();
-        totalCobroActual = data.totalFinal;
         
-        let html = '';
-        if (data.tipo === 'BILLAR') {
-            html += `<div class="detalle-row"><span>🎱 Tiempo</span><span>S/ ${parseFloat(data.totalTiempo).toFixed(2)}</span></div>`;
-        }
-        data.listaProductos.forEach(p => {
-            const nomSafe = p.nombre.replace(/'/g, "\\'");
-            html += `<div class="detalle-row">
-                <span>${p.cantidad}x ${p.nombre}</span>
-                <span>S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-            </div>`;
-        });
-        html += `<div class="detalle-row total-row"><span>TOTAL</span><span>S/ ${parseFloat(totalCobroActual).toFixed(2)}</span></div>`;
+        totalDeudaCobro = parseFloat(data.totalFinal);
+
+        let html = `
+            <div style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:var(--text-muted);">
+                    <span>⏳ Tiempo (${data.minutos} min):</span>
+                    <span style="color:var(--gold); font-weight:bold;">S/ ${data.totalTiempo.toFixed(2)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                    <span>🍺 Consumo:</span>
+                    <span style="color:var(--success); font-weight:bold;">S/ ${data.totalProductos.toFixed(2)}</span>
+                </div>
+            </div>
+            <div style="font-size: 28px; text-align:center; font-weight:900; color:white; margin-bottom: 20px;">
+                TOTAL: <span style="color:var(--gold);">S/ ${totalDeudaCobro.toFixed(2)}</span>
+            </div>
+        `;
         document.getElementById('cobro-contenido').innerHTML = html;
-    } catch (e) { console.error(e); }
+        document.getElementById('modal-cobro').style.display = 'flex';
+    } catch (e) { console.error("Error al obtener cuenta:", e); }
 }
 
 function abrirCobroMixto() {
-    cerrarModal('modal-cobro');
-    document.getElementById('mixto-total').innerText = 'S/ ' + parseFloat(totalCobroActual).toFixed(2);
+    document.getElementById('modal-cobro').style.display = 'none';
+    document.getElementById('mixto-total').innerText = 'S/ ' + totalDeudaCobro.toFixed(2);
     document.getElementById('mixto-efectivo').value = '';
-    document.getElementById('mixto-digital').value = parseFloat(totalCobroActual).toFixed(2);
+    document.getElementById('mixto-digital').value = '';
     document.getElementById('modal-mixto').style.display = 'flex';
+    document.getElementById('mixto-efectivo').focus();
 }
 
 function calcularMixto() {
     let ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
-    if (ef > totalCobroActual) ef = totalCobroActual;
-    document.getElementById('mixto-digital').value = (totalCobroActual - ef).toFixed(2);
+    let dig = totalDeudaCobro - ef;
+    if (dig < 0) dig = 0;
+    document.getElementById('mixto-digital').value = dig.toFixed(2);
 }
 
 async function ejecutarCobroReal(metodo) {
-    let payload = { metodo: metodo };
+    let ef = 0; let dig = 0;
+    
     if (metodo === 'MIXTO') {
-        payload.pago_efectivo = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
-        payload.pago_digital = parseFloat(document.getElementById('mixto-digital').value) || 0;
-        cerrarModal('modal-mixto');
-    } else {
-        cerrarModal('modal-cobro');
+        ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
+        dig = parseFloat(document.getElementById('mixto-digital').value) || 0;
+        if ((ef + dig).toFixed(2) !== totalDeudaCobro.toFixed(2)) {
+            return alert("Los montos no cuadran con el total exacto.");
+        }
     }
 
-    const res = await fetch(`/api/mesas/cerrar/${mesaAccionId}`, {
+    try {
+        const res = await fetch(`/api/mesas/cerrar/${mesaAccionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ metodo: metodo, pago_efectivo: ef, pago_digital: dig })
+        });
+        
+        if (res.ok) {
+            cerrarModal('modal-cobro');
+            cerrarModal('modal-mixto');
+            mostrarToast("💳 Cobro Registrado");
+        }
+    } catch (e) { alert("Error al cobrar."); }
+}
+
+// 7. GASTOS
+async function ejecutarGasto() {
+    const desc = document.getElementById('gasto-desc').value;
+    const monto = document.getElementById('gasto-monto').value;
+    if (!desc || !monto) return alert("Llena todos los campos");
+
+    await fetch('/api/gastos/nuevo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ descripcion: desc, monto: parseFloat(monto) })
     });
-    if (res.ok) mostrarToast(`✅ Cobro exitoso: ${metodo}`);
+    
+    cerrarModal('modal-gasto');
+    document.getElementById('gasto-desc').value = '';
+    document.getElementById('gasto-monto').value = '';
+    mostrarToast("💸 Gasto Registrado");
 }
 
-// --- FUNCIONES DE UTILIDAD ---
+// 8. UTILIDADES
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-function mostrarToast(m) { 
+function mostrarToast(msg) { 
     const t = document.getElementById("toast"); 
-    t.innerText = m; t.classList.add("show"); 
-    setTimeout(() => t.classList.remove("show"), 2500); 
+    t.innerText = msg; t.className = "show"; 
+    setTimeout(() => t.className = t.className.replace("show",""), 2500); 
 }
 
-window.onload = cargarTodo;
+// 9. MATEMÁTICAS DEL CRONÓMETRO
+function iniciarCronometros() {
+    intervaloCronometros = setInterval(() => {
+        document.querySelectorAll('.info-tiempo').forEach(el => {
+            if (el.dataset.tipo !== 'BILLAR') return;
+            
+            let seg = parseInt(el.dataset.segundos);
+            seg++;
+            el.dataset.segundos = seg;
+
+            let h = Math.floor(seg / 3600);
+            let m = Math.floor((seg % 3600) / 60);
+            let s = seg % 60;
+            el.innerText = [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
+
+            let precioHora = parseFloat(el.dataset.precio || 10);
+            let minCalculo = Math.ceil(seg / 60) - 5; 
+            let bloques = Math.ceil(minCalculo / 30);
+            if (bloques < 1) bloques = 1;
+            let costoT = (bloques * 30 / 60) * precioHora;
+
+            const lblDinero = document.getElementById('dinero-' + el.id.split('-')[1]);
+            if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
+        });
+    }, 1000);
+}
