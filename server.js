@@ -91,6 +91,12 @@ app.get('/api/usuario/actual', verificarSesion, (req, res) => { res.json({ usern
         try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN fecha_creacion TIMESTAMP DEFAULT NOW()"); } catch (e) {}
         try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN entregado BOOLEAN DEFAULT FALSE"); } catch (e) {}
         try { await pool.query("ALTER TABLE ventas ADD COLUMN metodo_pago VARCHAR(20) DEFAULT 'EFECTIVO'"); } catch (e) {}
+        // [OPTIMIZACIÓN] ÍNDICES DE VELOCIDAD
+        // Esto hace que los reportes y el cierre de caja vuelen 🚀
+        try { await pool.query("CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON ventas(fecha)"); } catch (e) {}
+        try { await pool.query("CREATE INDEX IF NOT EXISTS idx_pedidos_mesa_estado ON pedidos_mesa(mesa_id, pagado)"); } catch (e) {}
+        try { await pool.query("CREATE INDEX IF NOT EXISTS idx_pedidos_kds ON pedidos_mesa(pagado, entregado)"); } catch (e) {}
+        console.log("✅ Índices de rendimiento aplicados.");
     } catch (e) {}
 })();
 
@@ -105,18 +111,49 @@ app.post('/api/kds/entregar/:id', verificarSesion, async (req, res) => { try { a
 
 // CAJA
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res) => { try { await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [req.body.descripcion, req.body.monto]); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
+// [OPTIMIZADO] Caja con Promise.all (Paralelo)
 app.get('/api/caja/actual', verificarSesion, async (req, res) => {
     try {
-        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha;
-        const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [f]);
-        const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [f]);
-        const p = await pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [f]);
-        const m = await pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [f]);
-        const ef = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND metodo_pago = 'EFECTIVO'`, [f]);
-        const dig = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND (metodo_pago = 'YAPE' OR metodo_pago = 'TARJETA')`, [f]);
-        const l = await pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]);
-        const tv=parseFloat(v.rows[0].t||0), tg=parseFloat(g.rows[0].t||0), te=parseFloat(ef.rows[0].t||0);
-        res.json({ total_ventas: tv, total_gastos: tg, total_caja_real: tv-tg, dinero_en_cajon: te-tg, desglose: { efectivo: te, digital: parseFloat(dig.rows[0].t||0) }, total_productos: parseFloat(p.rows[0].t||0), total_mesas: parseFloat(m.rows[0].t||0), lista: l.rows });
+        // 1. Obtenemos fecha de corte
+        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres");
+        const f = u.rows[0].fecha;
+
+        // 2. Preparamos todas las consultas para lanzarlas a la vez (Array de Promesas)
+        const queries = [
+            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [f]), // 0: Ventas
+            pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [f]),      // 1: Gastos
+            pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [f]), // 2: Productos
+            pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [f]),    // 3: Tiempo
+            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND metodo_pago = 'EFECTIVO'`, [f]), // 4: Efectivo
+            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND (metodo_pago = 'YAPE' OR metodo_pago = 'PLIN')`, [f]), // 5: Digital
+            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1 AND metodo_pago = 'TARJETA'`, [f]), // 6: Tarjeta
+            pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]) // 7: Lista
+        ];
+
+        // 3. ¡DISPARO SIMULTÁNEO! 🔫
+        const results = await Promise.all(queries);
+
+        // 4. Procesamos resultados
+        const totalVentas = parseFloat(results[0].rows[0].t || 0);
+        const totalGastos = parseFloat(results[1].rows[0].t || 0);
+        const totalEfectivo = parseFloat(results[4].rows[0].t || 0);
+        const totalDigital = parseFloat(results[5].rows[0].t || 0);
+        const totalTarjeta = parseFloat(results[6].rows[0].t || 0);
+
+        res.json({ 
+            total_ventas: totalVentas, 
+            total_gastos: totalGastos, 
+            total_caja_real: totalVentas - totalGastos, 
+            dinero_en_cajon: totalEfectivo - totalGastos,
+            desglose: {
+                efectivo: totalEfectivo,
+                digital: totalDigital + totalTarjeta, // Agrupamos Yape/Plin + Tarjeta como "Digital/Banco"
+                tarjeta: totalTarjeta
+            },
+            total_productos: parseFloat(results[2].rows[0].t || 0),
+            total_mesas: parseFloat(results[3].rows[0].t || 0),
+            lista: results[7].rows
+        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/caja/cerrar', verificarSesion, async (req, res) => { try { const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha; const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [f]); const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [f]); await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [v.rows[0].total||0, g.rows[0].total||0, v.rows[0].cantidad||0]); res.json({ success: true, total: v.rows[0].total, gastos: g.rows[0].total }); } catch (e) { res.status(500).json({ error: e.message }); } });

@@ -247,6 +247,7 @@
         let mesaOrigenCambio = null;
         let productosCache = [];
         let mensajeTicketGlobal = "";
+        let lastMesasJSON = ""; // Memoria para comparar cambios en mesas
 
         const audioAviso = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
         const audioFinal = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
@@ -288,6 +289,18 @@
             try {
                 const res = await fetch('/api/mesas');
                 const mesas = await res.json();
+                
+                // [OPTIMIZACIÓN] Comparamos si algo cambió
+                // Convertimos los datos a texto para comparar rápido
+                const currentJSON = JSON.stringify(mesas);
+                if (currentJSON === lastMesasJSON) {
+                    // Si nada cambió, solo actualizamos los cronómetros visuales y salimos.
+                    // No redibujamos el HTML pesado.
+                    return; 
+                }
+                
+                // Si algo cambió, guardamos el nuevo estado y dibujamos
+                lastMesasJSON = currentJSON;
                 const cont = document.getElementById('grid-mesas');
                 cont.innerHTML = '';
                 
@@ -317,6 +330,7 @@
                             </div>
                         </div>`;
                 });
+                // Reiniciamos los cronómetros para enganchar los nuevos elementos
                 iniciarCronometros();
             } catch (e) { console.error(e); }
         }
