@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="/css/dashboard.css?v=2">
     <link rel="icon" href="/logo.png" type="image/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         .page-title { font-size: 32px; font-weight: 800; color: white; margin: 0; letter-spacing: -1px; }
@@ -57,9 +58,14 @@
 
     <main class="main-content">
         <div class="page-header">
-            <h2 class="page-title">📦 Gestión de Inventario</h2>
-            <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()">
-        </div>
+         <h2 class="page-title">📦 Gestión de Inventario</h2>
+         <div style="display: flex; gap: 15px; width: 100%; max-width: 500px;">
+             <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()" style="flex: 1;">
+             <button class="btn-save" style="background: var(--success-dim); color: var(--success); border-color: rgba(46, 213, 115, 0.3); white-space: nowrap;" onclick="exportarInventarioExcel()">
+                 EXPORTAR
+             </button>
+         </div>
+     </div>
 
         <div class="card-nuevo">
             <div class="form-group">
@@ -306,6 +312,30 @@
         function cerrarModal() { document.getElementById('modal-stock').style.display = 'none'; }
         function mostrarToast(msg) { const t=document.getElementById("toast"); t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
 
+    // --- EXPORTACIÓN DE INVENTARIO (EXCEL) ---
+     function exportarInventarioExcel() {
+         if (listaProductos.length === 0) return mostrarAlerta("El inventario está vacío", "warning");
+
+         // Traducir los datos técnicos a un formato de auditoría
+         const datosContables = listaProductos.map(p => ({
+             "Código ID": p.id,
+             "Producto": p.nombre,
+             "Categoría": p.categoria || "General",
+             "Precio Venta (S/)": parseFloat(p.precio_venta),
+             "Stock Actual (Unidades)": parseInt(p.stock),
+             "Valorización Total (S/)": parseFloat(p.precio_venta) * parseInt(p.stock)
+         }));
+
+         const hoja = XLSX.utils.json_to_sheet(datosContables);
+         const libro = XLSX.utils.book_new();
+         XLSX.utils.book_append_sheet(libro, hoja, "Inventario Actual");
+
+         // Dar formato al ancho de las columnas
+         hoja['!cols'] = [{wch: 10}, {wch: 30}, {wch: 15}, {wch: 18}, {wch: 22}, {wch: 25}];
+
+         XLSX.writeFile(libro, `Inventario_LaEsquina_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`);
+         mostrarAlerta("✅ Inventario exportado correctamente", "success");
+     }
         cargarProductos();
     </script>
 </body>
