@@ -89,6 +89,8 @@
         </div>
     </main>
 
+    <script src="/js/alertas.js"></script>
+
     <script>
         // Set Chart.js Defaults for Dark Theme
         Chart.defaults.color = '#a4b0be';
@@ -105,15 +107,16 @@
         }
 
         async function guardarConfig() {
-            const precio = document.getElementById('conf-precio').value;
-            if(confirm(`¿Cambiar precio del billar a S/ ${precio}?`)) {
-                await fetch('/api/config', {
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ precio_billar: precio })
-                });
-                alert("✅ Configuración guardada.");
-            }
-        }
+    const precio = document.getElementById('conf-precio').value;
+    const confirmado = await mostrarConfirmacion("⚙️ Cambio de Tarifa", `¿Estás seguro de cambiar el precio del billar a S/ ${precio} por hora?`);
+    if(confirmado) {
+        await fetch('/api/config', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ precio_billar: precio })
+        });
+        mostrarAlerta("Configuración guardada correctamente.", "success");
+    }
+}
 
         // --- ESTADÍSTICAS (GRÁFICOS) ---
         async function cargarEstadisticas() {
@@ -187,12 +190,17 @@
             });
         }
 
-        async function borrarReporte(id) {
-            if(confirm("⚠️ ¿Borrar este reporte? Se perderá el historial de ese día.")) {
-                await fetch(`/api/reportes/eliminar/${id}`, { method: 'DELETE' });
-                cargarHistorial();
-            }
-        }
+        async function guardarConfig() {
+    const precio = document.getElementById('conf-precio').value;
+    const confirmado = await mostrarConfirmacion("⚙️ Cambio de Tarifa", `¿Estás seguro de cambiar el precio del billar a S/ ${precio} por hora?`);
+    if(confirmado) {
+        await fetch('/api/config', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ precio_billar: precio })
+        });
+        mostrarAlerta("Configuración guardada correctamente.", "success");
+    }
+}
 
         cargarConfig();
         cargarEstadisticas();

@@ -26,54 +26,7 @@ socket.on('actualizar_caja', () => {
     if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); 
 });
 
-// ==========================================
-// 2. ALERTAS Y CONFIRMACIONES PREMIUM
-// ==========================================
-function mostrarAlerta(mensaje) {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.style.display = 'flex';
-    overlay.style.zIndex = '9999'; 
-    
-    overlay.innerHTML = `
-        <div class="modal-box" style="max-width: 350px; animation: popIn 0.3s ease-out;">
-            <div class="modal-title" style="background: #111; color: var(--gold);">⚠️ Atención</div>
-            <div class="modal-body" style="text-align:center; padding: 30px 20px; font-size: 16px; color: white;">
-                ${mensaje}
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-confirm" style="width:100%;" onclick="this.closest('.modal-overlay').remove()">ENTENDIDO</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-}
 
-function mostrarConfirmacion(mensaje, callbackAccion) {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.style.display = 'flex';
-    overlay.style.zIndex = '9999';
-    
-    overlay.innerHTML = `
-        <div class="modal-box" style="max-width: 400px; animation: popIn 0.3s ease-out;">
-            <div class="modal-title" style="background: #111; color: var(--danger);">❓ Confirmación</div>
-            <div class="modal-body" style="text-align:center; padding: 30px 20px; font-size: 16px; color: #ccc;">
-                ${mensaje}
-            </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-                <button class="btn-modal" id="btn-dyn-confirm" style="background: var(--danger); color: white;">CONFIRMAR</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    document.getElementById('btn-dyn-confirm').onclick = () => {
-        overlay.remove();
-        callbackAccion(); 
-    };
-}
 
 // ==========================================
 // 3. SEGURIDAD Y CARGAS INICIALES
@@ -299,16 +252,17 @@ async function agregarPedido(productoId) {
     } catch (e) { mostrarAlerta("Error de red al añadir producto."); }
 }
 
-function eliminarPedido(idPedido, idMesa) {
-    mostrarConfirmacion("⚠️ ¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario automáticamente.", async () => {
+async function eliminarPedido(idPedido, idMesa) {
+    const confirmado = await mostrarConfirmacion("⚠️ Acción Peligrosa", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
+    if (confirmado) {
         try {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
             if (res.ok) {
                 mostrarToast("🗑️ Producto retirado de la cuenta");
                 abrirModalCobro(idMesa); 
             }
-        } catch (e) { mostrarAlerta("Error al intentar eliminar el pedido."); }
-    });
+        } catch (e) { mostrarAlerta("Error al intentar eliminar el pedido.", "error"); }
+    }
 }
 
 // ==========================================

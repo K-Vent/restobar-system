@@ -136,6 +136,8 @@
         </div>
     </div>
 
+    <script src="/js/alertas.js"></script>
+
     <script>
         let prodSeleccionadoId = null;
         let prodSeleccionadoNombre = "";
@@ -280,7 +282,7 @@
             const cant = document.getElementById('stock-cantidad').value;
             const costo = document.getElementById('stock-costo').value;
 
-            if(!cant || cant <= 0) return alert("Ingresa una cantidad válida");
+            if(!cant || cant <= 0) return mostrarAlerta("Ingresa una cantidad válida", "error");
 
             await fetch('/api/productos/agregar-stock', {
                 method: 'POST',
@@ -294,11 +296,12 @@
         }
 
         async function eliminarProducto(id) {
-            if(confirm("¿Seguro de eliminar este producto?")) {
-                await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
-                cargarProductos();
-            }
-        }
+    const confirmado = await mostrarConfirmacion("⚠️ Acción Irreversible", "¿Seguro de eliminar este producto del inventario?");
+    if(confirmado) {
+        await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
+        cargarProductos();
+    }
+}
 
         function cerrarModal() { document.getElementById('modal-stock').style.display = 'none'; }
         function mostrarToast(msg) { const t=document.getElementById("toast"); t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }

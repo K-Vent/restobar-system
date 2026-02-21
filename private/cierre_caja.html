@@ -98,6 +98,8 @@
         </div>
     </div>
 
+    <script src="/js/alertas.js"></script>
+
     <script>
         // Tu lógica Javascript original se mantiene intacta
         let accionPendiente = null; 
@@ -159,8 +161,8 @@
             try {
                 const res = await fetch(`/api/ventas/eliminar/${id}`, { method: 'DELETE' });
                 if(res.ok) cargarDatos();
-                else alert("Error: Solo el administrador puede borrar ventas.");
-            } catch (e) { alert("Error de conexión"); }
+                else mostrarAlerta("Error: Solo el administrador puede borrar ventas.", "error");
+            } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
         }
 
         function pedirCierre() {
@@ -180,10 +182,11 @@
                 const res = await fetch('/api/caja/cerrar', { method: 'POST' });
                 const data = await res.json();
                 if(data.success) {
-                    alert("✅ CAJA CERRADA CORRECTAMENTE");
-                    window.location.href = '/reportes.html';
+                mostrarAlerta("✅ CAJA CERRADA CORRECTAMENTE", "success");
+                setTimeout(() => { window.location.href = '/reportes.html'; }, 1500); // Espera 1.5s antes de redirigir
                 }
-            } catch (e) { alert("Error de conexión"); }
+                else mostrarAlerta("Error al cerrar caja.", "error");
+            } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
         }
 
         cargarDatos();
