@@ -354,6 +354,30 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
     } catch (e) { next(e); } 
 });
 
+/* ============================================================
+   API AUDITORÍA FORENSE (ISO 27001)
+   ============================================================ */
+app.get('/api/auditoria', verificarSesion, soloAdmin, async (req, res, next) => {
+    try {
+        // Traemos los últimos 100 movimientos sospechosos, ordenados por el más reciente
+        const result = await pool.query(`
+            SELECT 
+                id, 
+                nombre_tabla, 
+                operacion, 
+                registro_id, 
+                datos_anteriores, 
+                TO_CHAR(fecha_alteracion AT TIME ZONE 'America/Lima', 'DD/MM/YYYY HH12:MI:SS AM') as fecha_formateada 
+            FROM auditoria_logs 
+            ORDER BY fecha_alteracion DESC 
+            LIMIT 100
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+});
+
 app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
     try { 
         const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha; 

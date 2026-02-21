@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auditoría Forense | La Esquina</title>
+    <link rel="stylesheet" href="/css/dashboard.css?v=5">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="/logo.png" alt="La Esquina" class="logo-img">
+        </div>
+        <div class="menu">
+            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="menu-link">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
+            <a href="/reportes.html" class="menu-link">📅 Historial</a>
+            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="menu-link active" style="color: var(--danger); border-left-color: var(--danger);">🕵️‍♂️ Auditoría</a>
+        </div>
+        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
+    </nav>
+    <button onclick="location.href='/logout'" class="btn-logout-mobile">🚪</button>
+
+    <main class="main-content">
+        <div class="page-title" style="color: var(--danger); text-transform: uppercase; letter-spacing: 2px;">
+            🕵️‍♂️ Bóveda de Auditoría Forense
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 14px;">
+            Registro inmutable de alteraciones y eliminaciones críticas en la base de datos.
+        </p>
+
+        <div class="tabla-container">
+            <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #111; color: var(--gold); border-bottom: 2px solid var(--border);">
+                        <th style="padding: 15px;">Fecha y Hora</th>
+                        <th style="padding: 15px;">Tabla</th>
+                        <th style="padding: 15px;">Acción</th>
+                        <th style="padding: 15px;">ID</th>
+                        <th style="padding: 15px;">Evidencia (Datos Borrados)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-auditoria">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/js/auditoria.js"></script>
+</body>
+</html>
