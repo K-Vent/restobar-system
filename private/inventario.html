@@ -58,14 +58,20 @@
 
     <main class="main-content">
         <div class="page-header">
-         <h2 class="page-title">📦 Gestión de Inventario</h2>
-         <div style="display: flex; gap: 15px; width: 100%; max-width: 500px;">
-             <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()" style="flex: 1;">
-             <button class="btn-save" style="background: var(--success-dim); color: var(--success); border-color: rgba(46, 213, 115, 0.3); white-space: nowrap;" onclick="exportarInventarioExcel()">
-                 EXPORTAR
-             </button>
-         </div>
-     </div>
+            <h2 class="page-title">📦 Gestión de Inventario</h2>
+            <div style="display: flex; gap: 10px; width: 100%; max-width: 650px; flex-wrap: wrap;">
+                
+                <select id="filtro-categoria" class="search-bar" style="width: auto; cursor: pointer; padding-right: 30px;" onchange="filtrarTabla()">
+                    <option value="TODAS">Todas las categorías</option>
+                </select>
+                
+                <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()" style="flex: 1; min-width: 150px;">
+                
+                <button class="btn-save" style="background: var(--success-dim); color: var(--success); border-color: rgba(46, 213, 115, 0.3); white-space: nowrap;" onclick="exportarInventarioExcel()">
+                    📊 EXPORTAR
+                </button>
+            </div>
+        </div>
 
         <div class="card-nuevo">
             <div class="form-group">
@@ -160,26 +166,38 @@
         // --- SISTEMA DINÁMICO DE CATEGORÍAS ---
         function actualizarSelectCategorias() {
             const selectCat = document.getElementById('newCategoria');
+            const filtroCat = document.getElementById('filtro-categoria'); // Conectamos el nuevo filtro
             const catSet = new Set();
             
             // 1. Categorías base recomendadas
             ['Cervezas', 'Tragos', 'Comida', 'Piqueos'].forEach(c => catSet.add(c));
             
-            // 2. Extraer automáticamente las categorías que ya existen en la Base de Datos
+            // 2. Extraer automáticamente las categorías que ya existen en la BD
             listaProductos.forEach(p => {
                 if(p.categoria && p.categoria !== 'General') catSet.add(p.categoria);
             });
             
             const categoriasUnicas = Array.from(catSet).sort();
             
-            // 3. Reconstruir el HTML del selector
+            // 3. Reconstruir el HTML del selector de CREAR PRODUCTO
             selectCat.innerHTML = '';
             categoriasUnicas.forEach(cat => {
                 selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
-            
-            // 4. Inyectar el botón de "Nueva Categoría" al final
             selectCat.innerHTML += `<option value="NUEVA" style="color:var(--gold); font-weight:900;">➕ Añadir nueva...</option>`;
+
+            // 4. Llenar el nuevo FILTRO SUPERIOR
+            if(filtroCat) {
+                const seleccionActual = filtroCat.value; // Guardamos lo que estaba seleccionado
+                filtroCat.innerHTML = `<option value="TODAS">Todas las categorías</option>`;
+                categoriasUnicas.forEach(cat => {
+                    filtroCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+                });
+                // Restauramos la selección si la categoría aún existe
+                if(categoriasUnicas.includes(seleccionActual) || seleccionActual === 'TODAS') {
+                    filtroCat.value = seleccionActual;
+                }
+            }
         }
 
         function verificarCategoria(elemento) {
@@ -220,7 +238,20 @@
 
         function filtrarTabla() {
             const txt = document.getElementById('buscador').value.toLowerCase();
-            const filtrados = listaProductos.filter(p => p.nombre.toLowerCase().includes(txt));
+            const catFiltro = document.getElementById('filtro-categoria').value; // Leemos qué categoría quiere ver
+
+            const filtrados = listaProductos.filter(p => {
+                // 1. ¿Coincide con el texto?
+                const coincideTexto = p.nombre.toLowerCase().includes(txt);
+                
+                // 2. ¿Coincide con la categoría?
+                const categoriaDelProducto = p.categoria || "General";
+                const coincideCat = (catFiltro === "TODAS") || (categoriaDelProducto === catFiltro);
+                
+                // Solo mostramos si cumple ambas condiciones
+                return coincideTexto && coincideCat;
+            });
+            
             pintarTabla(filtrados);
         }
 
