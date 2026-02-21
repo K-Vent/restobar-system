@@ -43,7 +43,11 @@ const pedidoSchema = z.object({ mesa_id: z.coerce.number().int().positive(), pro
 const cambiarMesaSchema = z.object({ idOrigen: z.coerce.number().int().positive(), idDestino: z.coerce.number().int().positive() });
 const nuevoProductoSchema = z.object({ nombre: z.string().min(1), precio: z.coerce.number().positive(), stock: z.coerce.number().int().nonnegative().default(0), categoria: z.string().default('General') });
 const stockSchema = z.object({ id: z.coerce.number().int().positive(), cantidad: z.coerce.number().int().positive(), costo: z.coerce.number().nonnegative().optional(), nombre: z.string() });
-
+const usuarioSchema = z.object({ 
+    username: z.string().min(3, "El usuario debe tener al menos 3 letras"), 
+    password: z.string().min(4, "La contraseña debe tener al menos 4 caracteres"), 
+    rol: z.enum(['admin', 'mozo', 'cocina']).default('mozo') 
+});
 // ==========================================
 // 2. CONFIGURACIÓN DEL SERVIDOR
 // ==========================================
@@ -96,6 +100,7 @@ app.get('/reportes.html', verificarSesion, soloAdmin, (req, res) => res.sendFile
 app.get('/auditoria.html', verificarSesion, soloAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'private', 'auditoria.html'));
 });
+app.get('/empleados.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'empleados.html')));
 // ==========================================
 // 5. INICIALIZACIÓN AUTOMÁTICA DE BD
 // ==========================================
@@ -521,6 +526,47 @@ app.delete('/api/reportes/eliminar/:id', verificarSesion, soloAdmin, async (req,
 app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { const r = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 30'); res.json(r.rows); } catch (e) { next(e); } 
 });
+
+// ==========================================
+// 10.5. RUTAS API: GESTIÓN DE EMPLEADOS
+// ==========================================
+app.get('/api/usuarios', verificarSesion, soloAdmin, async (req, res, next) => { 
+    try { 
+        // No enviamos las contraseñas al frontend por seguridad
+        const r = await pool.query('SELECT id, username, rol FROM usuarios ORDER BY id ASC'); 
+        res.json(r.rows); 
+    } catch (e) { next(e); } 
+});
+
+app.post('/api/usuarios/nuevo', verificarSesion, soloAdmin, async (req, res, next) => { 
+    try { 
+        const { username, password, rol } = usuarioSchema.parse(req.body); 
+        
+        // 1. Verificar si el usuario ya existe
+        const existe = await pool.query('SELECT id FROM usuarios WHERE username = $1', [username]);
+        if (existe.rows.length > 0) return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+
+        // 2. Encriptar la contraseña (Bcrypt)
+        const hash = await bcrypt.hash(password, 10); 
+        
+        // 3. Guardar en BD
+        await pool.query('INSERT INTO usuarios (username, password, rol) VALUES ($1, $2, $3)', [username, hash, rol]); 
+        res.json({ success: true }); 
+    } catch (e) { next(e); } 
+});
+
+app.delete('/api/usuarios/eliminar/:id', verificarSesion, soloAdmin, async (req, res, next) => { 
+    try { 
+        const id = z.coerce.number().int().parse(req.params.id); 
+        
+        // Evitar que el administrador se borre a sí mismo por accidente
+        if (id === req.usuario.id) return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta actual' });
+        
+        await pool.query('DELETE FROM usuarios WHERE id = $1', [id]); 
+        res.json({ success: true }); 
+    } catch (e) { next(e); } 
+});
+
 
 // ==========================================
 // 11. GESTOR CENTRAL DE ERRORES

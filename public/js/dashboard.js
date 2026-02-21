@@ -38,7 +38,7 @@ async function verificarRol() {
         if (usuarioActual.rol !== 'admin') {
             document.querySelectorAll('.menu-link').forEach(link => {
                 const txt = link.innerText.toLowerCase();
-                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja')) link.style.display = 'none';
+                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja') || txt.includes('empleados')) link.style.display = 'none';
             });
             const moneyPanel = document.querySelector('.money-panel');
             if (moneyPanel) moneyPanel.style.display = 'none';

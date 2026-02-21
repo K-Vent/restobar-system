@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Empleados - La Esquina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/css/dashboard.css?v=2">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
+        <div class="menu">
+            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
+            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
+            <a href="/reportes.html" class="menu-link">📅 Historial</a>
+            <a href="#" class="menu-link active">👥 Empleados</a>
+            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="menu-link" style="color: var(--danger);">🕵️‍♂️ Auditoría</a>
+        </div>
+        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-title">👥 Gestión del Personal</div>
+
+        <div style="background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="flex: 1; min-width: 150px;">
+                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Usuario (Login)</span>
+                <input type="text" id="newUsername" class="modal-input" placeholder="Ej. mozo_juan">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Contraseña</span>
+                <input type="password" id="newPassword" class="modal-input" placeholder="Mínimo 4 caracteres">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Rol del Sistema</span>
+                <select id="newRol" class="modal-input">
+                    <option value="mozo">Mozo (Solo Mesas y Pedidos)</option>
+                    <option value="cocina">Cocina (Solo Pantalla Cocina)</option>
+                    <option value="admin" style="color: var(--danger); font-weight: bold;">Administrador (Acceso Total)</option>
+                </select>
+            </div>
+            <button class="btn-mesa btn-abrir" style="padding: 16px 25px; height: 52px;" onclick="crearUsuario()">+ CREAR USUARIO</button>
+        </div>
+
+        <div style="background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr>
+                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">ID</th>
+                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Usuario</th>
+                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Nivel de Acceso</th>
+                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-usuarios"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/js/alertas.js"></script>
+    <script>
+        async function cargarUsuarios() {
+            try {
+                const res = await fetch('/api/usuarios');
+                const usuarios = await res.json();
+                const tbody = document.getElementById('tabla-usuarios');
+                tbody.innerHTML = '';
+
+                usuarios.forEach(u => {
+                    let rolColor = u.rol === 'admin' ? 'var(--danger)' : (u.rol === 'cocina' ? 'var(--gold)' : '#3498db');
+                    let rolEtiqueta = u.rol.toUpperCase();
+
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #1f222b;">
+                            <td style="padding: 16px 25px; color: var(--text-muted);">#${u.id}</td>
+                            <td style="padding: 16px 25px; font-weight: 800; color: white; font-size: 16px;">${u.username}</td>
+                            <td style="padding: 16px 25px;"><span style="background: rgba(255,255,255,0.05); color: ${rolColor}; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; border: 1px solid ${rolColor}40;">${rolEtiqueta}</span></td>
+                            <td style="padding: 16px 25px;">
+                                <button style="background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="eliminarUsuario(${u.id}, '${u.username}')" title="Revocar Acceso">🗑️ Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) { console.error("Error cargando usuarios", error); }
+        }
+
+        async function crearUsuario() {
+            const user = document.getElementById('newUsername').value.trim();
+            const pass = document.getElementById('newPassword').value.trim();
+            const rol = document.getElementById('newRol').value;
+
+            if (!user || !pass) return mostrarAlerta("Debes ingresar usuario y contraseña", "warning");
+
+            try {
+                const res = await fetch('/api/usuarios/nuevo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass, rol: rol })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    mostrarAlerta(`Usuario ${user} creado con éxito.`, "success");
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    cargarUsuarios();
+                } else {
+                    mostrarAlerta(data.error || "Error al crear usuario", "error");
+                }
+            } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+        }
+
+        async function eliminarUsuario(id, nombre) {
+            const confirmado = await mostrarConfirmacion("⚠️ Revocar Acceso", `¿Estás seguro de eliminar permanentemente al empleado "${nombre}"? Ya no podrá ingresar al sistema.`);
+            if (confirmado) {
+                try {
+                    const res = await fetch(`/api/usuarios/eliminar/${id}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (res.ok) {
+                        mostrarAlerta("Usuario eliminado del sistema.", "success");
+                        cargarUsuarios();
+                    } else {
+                        mostrarAlerta(data.error || "No se pudo eliminar el usuario", "error");
+                    }
+                } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+            }
+        }
+
+        cargarUsuarios();
+    </script>
+</body>
+</html>
