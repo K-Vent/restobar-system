@@ -431,91 +431,111 @@ body {
     100% { opacity: 1; bottom: 40px; transform: translateX(-50%) scale(1); } 
 }
 
-/* --- RESPONSIVE TABLETS/MOVILES (ESTILO APP NATIVA) --- */
+/* =========================================
+   RESPONSIVE TABLETS/MOVILES (ESTILO APP NATIVA)
+   ========================================= */
 @media (max-width: 900px) {
     /* 1. Menú Inferior Fijo (Bottom Navigation) */
     .sidebar { 
         width: 100%; 
-        height: 70px; 
+        height: 65px; 
         flex-direction: row; 
         bottom: 0; 
         top: auto; 
+        left: 0;
         border-right: none; 
         border-top: 1px solid var(--border); 
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
         z-index: 1000;
+        padding: 0;
     }
-    .sidebar-header { display: none; } /* Ocultamos el logo gigante en móvil */
+    .sidebar-header { display: none; }
     
     .menu { 
+        display: flex;
         flex-direction: row; 
         width: 100%; 
         justify-content: space-around; 
         align-items: center; 
         padding: 0; 
         height: 100%;
+        margin: 0;
     }
     
     .menu-link { 
         flex-direction: column; 
-        padding: 10px 0; 
-        gap: 6px; 
-        border-left: none; 
-        border-bottom: 3px solid transparent; 
-        font-size: 11px;
+        padding: 6px 0; 
+        gap: 4px; 
+        border-left: none !important; 
+        border-top: 3px solid transparent; 
+        font-size: 10px;
         justify-content: center;
         flex: 1;
         text-align: center;
+        white-space: nowrap;
+        color: var(--text-muted);
     }
     
     .menu-link.active { 
-        border-left: none; 
-        border-bottom: 3px solid var(--gold); 
-        box-shadow: none; 
-        background: radial-gradient(circle at bottom, var(--gold-dim) 0%, transparent 70%);
+        border-top: 3px solid var(--gold); 
+        background: radial-gradient(circle at top, rgba(241,196,15,0.1) 0%, transparent 70%);
+        color: var(--gold);
     }
-    
-    .menu-link span { display: block; font-size: 10px; } /* Muestra el texto pequeñito bajo el icono */
 
-    /* 2. Liberar Pantalla Principal */
+    /* 2. Botones de Acción Flotantes (Arriba) */
+    .btn-gasto {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        width: auto;
+        margin: 0;
+        padding: 8px 14px;
+        font-size: 11px;
+        border-radius: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        z-index: 1100;
+    }
+
+    .btn-logout {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        width: auto;
+        margin: 0;
+        padding: 8px 14px;
+        font-size: 11px;
+        border-radius: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        z-index: 1100;
+    }
+
+    /* 3. Liberar Pantalla Principal */
     .main-content { 
         margin-left: 0; 
         width: 100%; 
         padding: 15px; 
-        padding-bottom: 90px; /* Deja espacio para que el menú inferior no tape las mesas */
+        padding-top: 65px; /* Espacio para que no choque con los botones flotantes */
+        padding-bottom: 90px; /* Espacio para que el menú inferior no tape mesas */
     }
 
-    /* 3. Botón de Gasto Compacto y Flotante arriba */
-    .btn-gasto { 
-        position: absolute; 
-        top: 15px; 
-        right: 15px; 
-        margin: 0; 
-        padding: 10px 15px; 
-        font-size: 11px; 
-        border-radius: 20px;
-        z-index: 100;
-        background: #2f3542;
-    }
+    .page-title { font-size: 22px; text-align: center; margin-top: 10px; }
 
-    /* 4. Paneles de Dinero en Cuadrícula 2x2 */
+    /* 4. Paneles de Dinero en Cuadrícula Compacta */
     .money-panel { 
         display: grid; 
-        grid-template-columns: 1fr 1fr; /* Dos columnas para ahorrar espacio vertical */
+        grid-template-columns: 1fr 1fr; /* 2 columnas en vez de 1 gigante */
         gap: 10px; 
-        margin-top: 45px; /* Evita chocar con el botón de gasto flotante */
-        margin-bottom: 25px;
+        margin-top: 10px; 
+        margin-bottom: 20px;
     }
     
-    .stat-card { padding: 15px 10px; }
+    .stat-card { padding: 12px 10px; }
     .stat-title { font-size: 9px; margin-bottom: 5px; }
-    .stat-value { font-size: 18px; }
+    .stat-value { font-size: 16px; }
 
     /* 5. Ajustar ancho de las mesas */
     .grid-mesas { 
         grid-template-columns: 1fr; 
         gap: 15px; 
     }
-    
-    .page-title { font-size: 24px; margin-top: 10px; }
 }
