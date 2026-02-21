@@ -378,10 +378,44 @@ app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) 
     try { 
         const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); 
         const f = u.rows[0].fecha; 
+        
         const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [f]); 
         const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [f]); 
-        await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [v.rows[0].total||0, g.rows[0].total||0, v.rows[0].cantidad||0]); 
-        res.json({ success: true, total: v.rows[0].total, gastos: g.rows[0].total }); 
+        
+        const totalVentas = parseFloat(v.rows[0].total || 0);
+        const totalGastos = parseFloat(g.rows[0].total || 0);
+        const cantidadMesas = parseInt(v.rows[0].cantidad || 0);
+        const gananciaNeta = totalVentas - totalGastos;
+
+        // 1. Guardar en Base de Datos (Supabase)
+        await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [totalVentas, totalGastos, cantidadMesas]); 
+        
+        // 2. DISPARADOR AUTOMÁTICO HACIA n8n (Webhook) 🚀
+        try {
+            // Aquí pondrás la URL secreta que te dará n8n más adelante
+            const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://tu-servidor-n8n.com/webhook/cierre-caja';
+            
+            // Usamos fetch sin "await" para que trabaje en segundo plano sin frenar el sistema
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    evento: 'CIERRE_CAJA_BILLAR',
+                    local: 'La Esquina del Billar',
+                    fecha: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+                    ventas_totales: totalVentas,
+                    gastos_totales: totalGastos,
+                    ganancia_neta: gananciaNeta,
+                    mesas_atendidas: cantidadMesas
+                })
+            }).catch(err => console.log("Aviso: El webhook no detiene el sistema, pero falló el envío:", err.message));
+            
+        } catch (error) {
+            console.log("Error interno al intentar disparar webhook:", error);
+        }
+
+        // 3. Responder al cajero instantáneamente
+        res.json({ success: true, total: totalVentas, gastos: totalGastos }); 
     } catch (e) { next(e); } 
 });
 
