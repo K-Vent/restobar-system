@@ -58,6 +58,20 @@
             </div>
         </div>
     </div>
+    <div id="modal-mover" class="modal-overlay">
+        <div class="modal-box" style="max-width: 400px;">
+            <div class="modal-title" style="color: var(--gold);">🔄 Mudanza de Mesa</div>
+            <div class="modal-body" style="padding: 20px; text-align: center;">
+                <p style="color: var(--text-muted); margin-bottom: 15px; font-weight: 600;">Selecciona la mesa libre de destino:</p>
+                <select id="select-mesa-destino" class="modal-input" style="margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold;">
+                    </select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-mover')">Cancelar</button>
+                <button class="btn-modal btn-confirm" onclick="ejecutarMoverMesa()" style="background: var(--gold); color: #000;">TRASLADAR</button>
+            </div>
+        </div>
+    </div>
 <div id="modal-pedidos" class="modal-overlay">
         <div class="modal-box" style="max-width: 500px;">
             <div class="modal-title">🍺 Añadir Consumo</div>

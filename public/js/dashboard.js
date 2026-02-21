@@ -1,11 +1,12 @@
 /* ============================================================
    DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
-   Versión: Premium POS / Alertas Dinámicas Personalizadas
+   Versión: Premium POS / Alertas Dinámicas / Mudanzas
    ============================================================ */
 
 const socket = io(); 
 let intervaloCronometros = null;
 let mesaAccionId = null; 
+let mesaOrigenMoveId = null; // Variable para mudanzas
 let usuarioActual = null;
 let totalDeudaCobro = 0; 
 let productosDisponibles = [];
@@ -26,7 +27,7 @@ socket.on('actualizar_caja', () => {
 });
 
 // ==========================================
-// 2. ALERTAS Y CONFIRMACIONES PREMIUM (DINÁMICAS)
+// 2. ALERTAS Y CONFIRMACIONES PREMIUM
 // ==========================================
 function mostrarAlerta(mensaje) {
     const overlay = document.createElement('div');
@@ -68,10 +69,9 @@ function mostrarConfirmacion(mensaje, callbackAccion) {
     `;
     document.body.appendChild(overlay);
     
-    // Asignar el evento al botón de confirmar
     document.getElementById('btn-dyn-confirm').onclick = () => {
         overlay.remove();
-        callbackAccion(); // Ejecuta la función que le pasamos
+        callbackAccion(); 
     };
 }
 
@@ -150,9 +150,10 @@ function renderizarMesas(mesas) {
                 <div style="text-align:center; margin-bottom:15px;">
                     <span class="dinero-vivo" id="dinero-${mesa.id}">S/ 0.00</span>
                 </div>
-                <div class="acciones-grid">
+                <div class="acciones-grid" style="grid-template-columns: 1fr 1fr;">
                     <button class="btn-mesa btn-producto" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button>
                     <button class="btn-mesa btn-cerrar" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button>
+                    <button class="btn-mesa" style="grid-column: span 2; background: #1a1a1d; color: var(--text-muted); border: 1px dashed #3a404d; font-size: 13px; padding: 12px; margin-top: 5px;" onclick="abrirModalMover(${mesa.id})">🔄 MUDANZA DE MESA</button>
                 </div>
             `;
         } else {
@@ -172,7 +173,56 @@ function renderizarMesas(mesas) {
 }
 
 // ==========================================
-// 5. ACCIONES DE MESAS Y PEDIDOS
+// 5. ACCIONES DE MUDANZA (NUEVO)
+// ==========================================
+async function abrirModalMover(idOrigen) {
+    mesaOrigenMoveId = idOrigen;
+    try {
+        const res = await fetch('/api/mesas');
+        const mesas = await res.json();
+        const libres = mesas.filter(m => m.estado === 'LIBRE');
+        
+        if (libres.length === 0) {
+            return mostrarAlerta("No hay ninguna mesa libre disponible para realizar el traslado.");
+        }
+
+        const select = document.getElementById('select-mesa-destino');
+        select.innerHTML = '';
+        libres.forEach(m => {
+            select.innerHTML += `<option value="${m.id}">${m.tipo === 'BILLAR' ? '🎱' : '🛒'} Mesa ${m.numero_mesa}</option>`;
+        });
+
+        document.getElementById('modal-mover').style.display = 'flex';
+    } catch (e) {
+        mostrarAlerta("Error al buscar las mesas libres disponibles.");
+    }
+}
+
+async function ejecutarMoverMesa() {
+    const idDestino = document.getElementById('select-mesa-destino').value;
+    if (!idDestino) return;
+
+    try {
+        const res = await fetch('/api/mesas/cambiar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idOrigen: mesaOrigenMoveId, idDestino: parseInt(idDestino) })
+        });
+
+        if (res.ok) {
+            cerrarModal('modal-mover');
+            mostrarToast("🔄 Mudanza realizada con éxito");
+            cargarMesas(); 
+        } else {
+            mostrarAlerta("Error en el servidor al intentar mover la mesa.");
+        }
+    } catch (e) {
+        mostrarAlerta("Error de conexión al procesar la mudanza.");
+    }
+}
+
+// ==========================================
+// 6. ACCIONES DE MESAS Y PEDIDOS
 // ==========================================
 async function abrirMesa(id) {
     try {
@@ -250,7 +300,6 @@ async function agregarPedido(productoId) {
 }
 
 function eliminarPedido(idPedido, idMesa) {
-    // USAMOS LA NUEVA CONFIRMACIÓN PREMIUM 🚀
     mostrarConfirmacion("⚠️ ¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario automáticamente.", async () => {
         try {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
@@ -263,7 +312,7 @@ function eliminarPedido(idPedido, idMesa) {
 }
 
 // ==========================================
-// 6. COBRO Y PAGO MIXTO
+// 7. COBRO Y PAGO MIXTO
 // ==========================================
 async function abrirModalCobro(id) {
     mesaAccionId = id;
@@ -363,7 +412,7 @@ async function ejecutarCobroReal(metodo) {
 }
 
 // ==========================================
-// 7. GASTOS Y UTILIDADES
+// 8. GASTOS Y UTILIDADES
 // ==========================================
 async function ejecutarGasto() {
     const desc = document.getElementById('gasto-desc').value;
