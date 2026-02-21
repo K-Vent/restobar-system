@@ -502,15 +502,17 @@ body {
     /* Ocultar el enlace de texto de PC en móvil */
     .link-logout-pc { display: none !important; }
 
-    /* 2. Botones de Acción Flotantes (Circulares y Elegantes) */
-    .btn-gasto, .btn-logout-mobile {
+    /* 2. Botones de Acción Flotantes (Separados por forma) */
+    
+    /* Botón Salir: Círculo perfecto a la izquierda */
+    .btn-logout-mobile {
         display: flex !important;
         position: fixed !important;
         top: 15px !important;
-        bottom: auto !important;
+        left: 15px !important;
         width: 42px !important; 
         height: 42px !important; 
-        border-radius: 50% !important; 
+        border-radius: 50% !important; /* Forma circular */
         justify-content: center !important;
         align-items: center !important;
         padding: 0 !important;
@@ -519,22 +521,30 @@ body {
         z-index: 9999 !important;
         background: rgba(20, 22, 28, 0.95) !important;
         backdrop-filter: blur(10px) !important;
-        border: 1px solid var(--border) !important;
+        border: 1px solid rgba(255, 71, 87, 0.3) !important;
+        color: var(--danger) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
     }
 
+    /* Botón Gasto: Píldora extendida a la derecha */
     .btn-gasto {
+        display: flex !important;
+        position: fixed !important;
+        top: 15px !important;
         right: 15px !important;
-        left: auto !important;
+        width: auto !important; /* Se adapta al texto */
+        height: auto !important;
+        border-radius: 20px !important; /* Forma de píldora */
+        padding: 10px 16px !important; /* Espacio para respirar */
+        font-size: 11px !important; 
+        font-weight: bold !important;
+        margin: 0 !important;
+        z-index: 9999 !important;
+        background: rgba(20, 22, 28, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid var(--gold-dim) !important;
         color: var(--gold) !important; 
-        border-color: var(--gold-dim) !important;
-    }
-
-    .btn-logout-mobile {
-        left: 15px !important;
-        right: auto !important;
-        color: var(--danger) !important; 
-        border-color: rgba(255, 71, 87, 0.3) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
     }
 
     /* 3. Pantalla Principal (Márgenes) */
