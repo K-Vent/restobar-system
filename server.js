@@ -93,7 +93,9 @@ app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__
 app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cierre_caja.html')));
 app.get('/inventario.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'inventario.html')));
 app.get('/reportes.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'reportes.html')));
-
+app.get('/auditoria.html', verificarSesion, soloAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'private', 'auditoria.html'));
+});
 // ==========================================
 // 5. INICIALIZACIÓN AUTOMÁTICA DE BD
 // ==========================================
