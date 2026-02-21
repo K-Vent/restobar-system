@@ -445,9 +445,12 @@ body {
         left: 0;
         border-right: none; 
         border-top: 1px solid var(--border); 
-        box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
         z-index: 1000;
         padding: 0;
+        background: rgba(10, 10, 12, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     .sidebar-header { display: none; }
     
@@ -478,52 +481,44 @@ body {
     
     .menu-link.active { 
         border-top: 3px solid var(--gold); 
-        background: radial-gradient(circle at top, rgba(241,196,15,0.1) 0%, transparent 70%);
+        background: radial-gradient(circle at top, rgba(241,196,15,0.15) 0%, transparent 70%);
         color: var(--gold);
     }
 
     /* 2. Botones de Acción Flotantes (Arriba) */
-    .btn-gasto {
+    .btn-gasto, .btn-logout {
         position: fixed;
         top: 15px;
-        right: 15px;
         width: auto;
         margin: 0;
-        padding: 8px 14px;
+        padding: 10px 16px;
         font-size: 11px;
         border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         z-index: 1100;
+        background: #1a1c23; /* Fondo sólido para que el texto no se traslape al hacer scroll */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
-    .btn-logout {
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        width: auto;
-        margin: 0;
-        padding: 8px 14px;
-        font-size: 11px;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        z-index: 1100;
-    }
+    .btn-gasto { right: 15px; }
+    .btn-logout { left: 15px; }
 
-    /* 3. Liberar Pantalla Principal */
+    /* 3. Liberar Pantalla Principal (CORRECCIÓN DE OVERLAP) */
     .main-content { 
         margin-left: 0; 
         width: 100%; 
         padding: 15px; 
-        padding-top: 65px; /* Espacio para que no choque con los botones flotantes */
-        padding-bottom: 90px; /* Espacio para que el menú inferior no tape mesas */
+        padding-top: 85px !important; /* Empuja todo hacia abajo para que los botones flotantes no tapen nada */
+        padding-bottom: 90px; 
     }
 
-    .page-title { font-size: 22px; text-align: center; margin-top: 10px; }
+    .page-title { font-size: 22px; text-align: center; margin-top: 10px; margin-bottom: 25px; }
 
     /* 4. Paneles de Dinero en Cuadrícula Compacta */
     .money-panel { 
         display: grid; 
-        grid-template-columns: 1fr 1fr; /* 2 columnas en vez de 1 gigante */
+        grid-template-columns: 1fr 1fr; 
         gap: 10px; 
         margin-top: 10px; 
         margin-bottom: 20px;
@@ -537,5 +532,19 @@ body {
     .grid-mesas { 
         grid-template-columns: 1fr; 
         gap: 15px; 
+    }
+
+    /* 6. CORRECCIÓN DE TABLAS (Scroll Horizontal Táctil) */
+    .tabla-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Efecto de inercia fluida en iPhone */
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .tabla-container table {
+        min-width: 650px; /* Obliga a la tabla a no comprimirse más allá de este límite */
+        white-space: nowrap; /* Impide que los textos salten a una segunda línea */
     }
 }
