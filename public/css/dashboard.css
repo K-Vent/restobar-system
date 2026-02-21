@@ -435,116 +435,94 @@ body {
    RESPONSIVE TABLETS/MOVILES (ESTILO APP NATIVA)
    ========================================= */
 @media (max-width: 900px) {
-    /* 1. Menú Inferior Fijo (Bottom Navigation) */
+    /* 1. Menú Inferior Fijo */
     .sidebar { 
-        width: 100%; 
-        height: 65px; 
-        flex-direction: row; 
-        bottom: 0; 
-        top: auto; 
-        left: 0;
-        border-right: none; 
-        border-top: 1px solid var(--border); 
-        box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
-        z-index: 1000;
-        padding: 0;
-        background: rgba(10, 10, 12, 0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        position: fixed !important;
+        width: 100% !important; 
+        height: 70px !important; 
+        flex-direction: row !important; 
+        bottom: 0 !important; 
+        top: auto !important; 
+        left: 0 !important;
+        padding: 0 !important;
+        background: rgba(10, 10, 12, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        z-index: 1000 !important;
+        border-top: 1px solid var(--border) !important;
     }
-    .sidebar-header { display: none; }
+    .sidebar-header { display: none !important; }
     
     .menu { 
-        display: flex;
-        flex-direction: row; 
-        width: 100%; 
-        justify-content: space-around; 
-        align-items: center; 
-        padding: 0; 
-        height: 100%;
-        margin: 0;
+        display: flex !important;
+        flex-direction: row !important; 
+        width: 100% !important; 
+        justify-content: space-around !important; 
+        align-items: center !important; 
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .menu-link { 
-        flex-direction: column; 
-        padding: 6px 0; 
-        gap: 4px; 
-        border-left: none !important; 
-        border-top: 3px solid transparent; 
-        font-size: 10px;
-        justify-content: center;
-        flex: 1;
-        text-align: center;
-        white-space: nowrap;
-        color: var(--text-muted);
+        flex-direction: column !important; 
+        padding: 8px 0 !important; 
+        gap: 5px !important; 
+        border: none !important; 
+        border-top: 3px solid transparent !important; 
+        font-size: 10px !important;
+        flex: 1 !important;
+        text-align: center !important;
     }
     
     .menu-link.active { 
-        border-top: 3px solid var(--gold); 
-        background: radial-gradient(circle at top, rgba(241,196,15,0.15) 0%, transparent 70%);
-        color: var(--gold);
+        border-top: 3px solid var(--gold) !important; 
+        background: radial-gradient(circle at top, rgba(241,196,15,0.15) 0%, transparent 70%) !important;
     }
 
-    /* 2. Botones de Acción Flotantes (Arriba) */
+    /* 2. Botones de Acción (Arrancados de la barra y pegados arriba) */
     .btn-gasto, .btn-logout {
-        position: fixed;
-        top: 15px;
-        width: auto;
-        margin: 0;
-        padding: 10px 16px;
-        font-size: 11px;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-        z-index: 1100;
-        background: #1a1c23; /* Fondo sólido para que el texto no se traslape al hacer scroll */
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        position: fixed !important;
+        top: 15px !important;
+        bottom: auto !important; /* Esto evita que se vayan abajo */
+        width: auto !important;
+        margin: 0 !important;
+        padding: 10px 16px !important;
+        font-size: 11px !important;
+        border-radius: 20px !important;
+        z-index: 9999 !important; /* Máxima prioridad visual */
+        background: #1a1c23 !important; 
+        border: 1px solid var(--border) !important;
     }
 
-    .btn-gasto { right: 15px; }
-    .btn-logout { left: 15px; }
+    .btn-gasto { right: 15px !important; left: auto !important; color: white !important; }
+    .btn-logout { left: 15px !important; right: auto !important; color: #ff4757 !important; border-color: rgba(255, 71, 87, 0.3) !important; }
 
-    /* 3. Liberar Pantalla Principal (CORRECCIÓN DE OVERLAP) */
+    /* 3. Pantalla Principal (Márgenes de seguridad) */
     .main-content { 
-        margin-left: 0; 
-        width: 100%; 
-        padding: 15px; 
-        padding-top: 85px !important; /* Empuja todo hacia abajo para que los botones flotantes no tapen nada */
-        padding-bottom: 90px; 
+        margin-left: 0 !important; 
+        width: 100% !important; 
+        padding: 15px !important; 
+        padding-top: 80px !important; /* Espacio para botones de arriba */
+        padding-bottom: 100px !important; /* Espacio para menú de abajo */
     }
 
-    .page-title { font-size: 22px; text-align: center; margin-top: 10px; margin-bottom: 25px; }
-
-    /* 4. Paneles de Dinero en Cuadrícula Compacta */
     .money-panel { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 10px; 
-        margin-top: 10px; 
-        margin-bottom: 20px;
-    }
-    
-    .stat-card { padding: 12px 10px; }
-    .stat-title { font-size: 9px; margin-bottom: 5px; }
-    .stat-value { font-size: 16px; }
-
-    /* 5. Ajustar ancho de las mesas */
-    .grid-mesas { 
-        grid-template-columns: 1fr; 
-        gap: 15px; 
+        display: grid !important; 
+        grid-template-columns: 1fr 1fr !important; 
+        gap: 10px !important; 
     }
 
-    /* 6. CORRECCIÓN DE TABLAS (Scroll Horizontal Táctil) */
+    /* 4. Tablas Táctiles (Evita el aplastamiento) */
     .tabla-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Efecto de inercia fluida en iPhone */
-        border-radius: 12px;
-        margin-bottom: 20px;
-        border: 1px solid var(--border);
+        width: 100% !important;
+        display: block !important;
+        overflow-x: auto !important; /* Activa la barra de desplazamiento horizontal */
+        -webkit-overflow-scrolling: touch !important; /* Deslizamiento suave en iPhone */
     }
 
     .tabla-container table {
-        min-width: 650px; /* Obliga a la tabla a no comprimirse más allá de este límite */
-        white-space: nowrap; /* Impide que los textos salten a una segunda línea */
+        min-width: 800px !important; /* Obliga a la tabla a ser ancha sí o sí */
+        width: 100% !important;
     }
 }
