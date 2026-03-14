@@ -95,6 +95,7 @@ const soloAdmin = (req, res, next) => {
 app.get('/dashboard.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'dashboard.html')));
 app.get('/cocina.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cocina.html')));
 app.get('/cierre_caja.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'cierre_caja.html')));
+app.get('/clientes.html', verificarSesion, (req, res) => res.sendFile(path.join(__dirname, 'private', 'clientes.html')));
 app.get('/inventario.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'inventario.html')));
 app.get('/reportes.html', verificarSesion, soloAdmin, (req, res) => res.sendFile(path.join(__dirname, 'private', 'reportes.html')));
 app.get('/auditoria.html', verificarSesion, soloAdmin, (req, res) => {
@@ -132,6 +133,19 @@ async function getPrecioBillar() {
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_efectivo DECIMAL(10,2) DEFAULT 0"); } catch (e) {} 
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_digital DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
         try { await pool.query("DROP TABLE IF EXISTS session CASCADE"); } catch(e){} // Eliminamos la tabla obsoleta
+        // 👇 AÑADIR ESTA LÍNEA PARA CREAR LA TABLA DE CLIENTES 👇
+        try { 
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS clientes (
+                    id SERIAL PRIMARY KEY, 
+                    nombre VARCHAR(100) NOT NULL, 
+                    telefono VARCHAR(20) UNIQUE, 
+                    sellos INTEGER DEFAULT 0, 
+                    nivel VARCHAR(20) DEFAULT 'Bronce', 
+                    fecha_registro TIMESTAMP DEFAULT NOW()
+                )
+            `); 
+        } catch (e) { console.log("Error creando tabla clientes:", e); }
     } catch (e) { console.error("Error en inicialización de BD:", e); } 
 })();
 
@@ -359,6 +373,55 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
         res.json({ success: true }); 
         io.emit('actualizar_caja'); 
     } catch (e) { next(e); } 
+});
+
+// ==========================================
+// 10.6. RUTAS API: CRM Y FIDELIZACIÓN (CLUB LA ESQUINA)
+// ==========================================
+
+// Obtener todos los clientes
+app.get('/api/clientes', verificarSesion, async (req, res, next) => {
+    try {
+        const result = await pool.query('SELECT * FROM clientes ORDER BY sellos DESC, fecha_registro DESC');
+        res.json(result.rows);
+    } catch (e) { next(e); }
+});
+
+// Registrar un nuevo cliente
+app.post('/api/clientes/nuevo', verificarSesion, async (req, res, next) => {
+    try {
+        // Validación básica (puedes añadir Zod aquí luego si deseas)
+        const { nombre, telefono } = req.body;
+        if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+
+        const existe = await pool.query('SELECT id FROM clientes WHERE telefono = $1', [telefono]);
+        if (existe.rows.length > 0) return res.status(400).json({ error: "Este teléfono ya está registrado" });
+
+        await pool.query('INSERT INTO clientes (nombre, telefono) VALUES ($1, $2)', [nombre, telefono]);
+        res.json({ success: true });
+    } catch (e) { next(e); }
+});
+
+// Añadir un sello (Punto) al cliente
+app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        // Sumamos 1 sello
+        await pool.query('UPDATE clientes SET sellos = sellos + 1 WHERE id = $1', [id]);
+        
+        // Lógica de Niveles (Opcional, pero le da un toque premium)
+        const cliente = await pool.query('SELECT sellos FROM clientes WHERE id = $1', [id]);
+        const totalSellos = cliente.rows[0].sellos;
+        
+        let nuevoNivel = 'Bronce';
+        if (totalSellos >= 10) nuevoNivel = 'Plata';
+        if (totalSellos >= 20) nuevoNivel = 'Oro 👑';
+
+        await pool.query('UPDATE clientes SET nivel = $1 WHERE id = $2', [nuevoNivel, id]);
+
+        res.json({ success: true, sellos_actuales: totalSellos, nivel: nuevoNivel });
+    } catch (e) { next(e); }
 });
 
 /* ============================================================
