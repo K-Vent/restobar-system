@@ -253,15 +253,22 @@ async function agregarPedido(productoId) {
 }
 
 async function eliminarPedido(idPedido, idMesa) {
-    const confirmado = await mostrarConfirmacion("⚠️ Acción Peligrosa", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
-    if (confirmado) {
-        try {
+    try {
+        // Llamamos al nuevo modal global asíncrono
+        const confirmado = await mostrarConfirmacion("⚠️ Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
+        
+        if (confirmado) {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
             if (res.ok) {
                 mostrarToast("🗑️ Producto retirado de la cuenta");
-                abrirModalCobro(idMesa); 
+                abrirModalCobro(idMesa); // Esto actualiza la lista y el total de la mesa al instante
+            } else {
+                mostrarAlerta("Error en el servidor al intentar eliminar.", "error");
             }
-        } catch (e) { mostrarAlerta("Error al intentar eliminar el pedido.", "error"); }
+        }
+    } catch (error) {
+        console.error("Error en eliminarPedido:", error);
+        mostrarAlerta("No se pudo cargar la confirmación. Revisa la consola.", "error");
     }
 }
 
