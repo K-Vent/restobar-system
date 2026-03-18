@@ -87,6 +87,16 @@
 
             <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid #D4AF37; padding: 10px; border-radius: 10px; margin-bottom: 20px;">
                 <div style="font-size: 11px; color: #D4AF37; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Tu Recompensa Actual</div>
+                <button class="btn-vip" style="margin-bottom: 20px; font-size: 14px; padding: 12px; border: 1px solid #D4AF37; background: transparent; color: #D4AF37;" onclick="mostrarBeneficiosCliente()">💎 Ver Mis Beneficios Exclusivos</button>
+
+            <div id="modal-ben-cliente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: #111; border: 1px solid #D4AF37; border-radius: 20px; padding: 25px; width: 100%; max-width: 350px; text-align: left;">
+                    <h3 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Tus Beneficios</h3>
+                    <div id="lista-ben-cliente" style="margin-bottom: 25px;">
+                        </div>
+                    <button class="btn-vip" onclick="document.getElementById('modal-ben-cliente').style.display='none'">Cerrar</button>
+                </div>
+            </div>
                 <div style="font-size: 16px; color: white; font-weight: 900;">🎱 1 Hora de Billar Gratis</div>
                 <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Premios disponibles: <span id="lbl-premios" style="color: #D4AF37; font-weight: bold; font-size: 16px;">0</span></div>
             </div>
@@ -101,6 +111,45 @@
     </div>
 
     <script>
+        async function mostrarBeneficiosCliente() {
+            // Obtenemos el nivel del cliente desde la etiqueta que ya está en pantalla
+            const textoNivel = document.getElementById('lbl-nivel').innerText.toLowerCase();
+            let poderNivel = 1; // Bronce por defecto
+            if (textoNivel.includes('plata')) poderNivel = 2;
+            if (textoNivel.includes('oro')) poderNivel = 3;
+
+            try {
+                const res = await fetch('/api/beneficios');
+                const beneficiosBD = await res.json();
+                
+                const contenedor = document.getElementById('lista-ben-cliente');
+                contenedor.innerHTML = '';
+
+                let encontrados = 0;
+                beneficiosBD.forEach(b => {
+                    let reqNivel = 1;
+                    if (b.nivel === 'Plata') reqNivel = 2;
+                    if (b.nivel === 'Oro') reqNivel = 3;
+
+                    // Solo le mostramos los beneficios que su nivel le permite acceder
+                    if (poderNivel >= reqNivel) {
+                        encontrados++;
+                        contenedor.innerHTML += `
+                            <div style="background: rgba(212, 175, 55, 0.05); border-left: 3px solid #D4AF37; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+                                <div style="color: #D4AF37; font-size: 11px; font-weight: bold; text-transform: uppercase;">Beneficio ${b.nivel}</div>
+                                <div style="color: #fff; font-size: 14px; margin-top: 4px;">${b.descripcion}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                if(encontrados === 0) {
+                    contenedor.innerHTML = `<div style="color: #888; text-align: center; font-size: 14px;">Aún no hay beneficios configurados para tu nivel. ¡Sigue acumulando sellos!</div>`;
+                }
+
+                document.getElementById('modal-ben-cliente').style.display = 'flex';
+            } catch (e) { alert("Error al cargar beneficios"); }
+        }
         // Al abrir la página, revisamos si el cliente ya había iniciado sesión antes
         document.addEventListener("DOMContentLoaded", () => {
             const credenciales = localStorage.getItem('vip_esquina');

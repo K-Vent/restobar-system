@@ -147,6 +147,15 @@ async function getPrecioBillar() {
             `); 
         } catch (e) { console.log("Error creando tabla clientes:", e); }
         try { await pool.query("ALTER TABLE clientes ADD COLUMN pin VARCHAR(4) DEFAULT '1234'"); } catch (e) {}
+        try { 
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS beneficios (
+                    id SERIAL PRIMARY KEY, 
+                    nivel VARCHAR(20) NOT NULL, 
+                    descripcion TEXT NOT NULL
+                )
+            `); 
+        } catch (e) { console.log("Error creando tabla beneficios:", e); }
     } catch (e) { console.error("Error en inicialización de BD:", e); } 
 })();
 
@@ -449,6 +458,36 @@ app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
     } catch (e) { next(e); }
 });
 
+// ==========================================
+// 10.7. RUTAS API: GESTOR DE BENEFICIOS (CMS)
+// ==========================================
+// Obtener todos los beneficios (Público, para que el celular del cliente lo pueda leer)
+app.get('/api/beneficios', async (req, res, next) => {
+    try {
+        const result = await pool.query('SELECT * FROM beneficios ORDER BY id ASC');
+        res.json(result.rows);
+    } catch (e) { next(e); }
+});
+
+// Añadir un nuevo beneficio (Solo el Admin/Sistema)
+app.post('/api/beneficios', verificarSesion, async (req, res, next) => {
+    try {
+        const { nivel, descripcion } = req.body;
+        if (!nivel || !descripcion) return res.status(400).json({ error: "Faltan datos" });
+        
+        await pool.query('INSERT INTO beneficios (nivel, descripcion) VALUES ($1, $2)', [nivel, descripcion]);
+        res.json({ success: true });
+    } catch (e) { next(e); }
+});
+
+// Eliminar un beneficio
+app.delete('/api/beneficios/:id', verificarSesion, async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        await pool.query('DELETE FROM beneficios WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (e) { next(e); }
+});
 /* ============================================================
    API AUDITORÍA FORENSE (ISO 27001)
    ============================================================ */

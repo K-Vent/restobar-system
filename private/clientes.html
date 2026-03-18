@@ -32,6 +32,7 @@
     <main class="main-content">
         <div class="page-title">👑 Club VIP <span class="gold-text">La Esquina</span></div>
         <p style="color: var(--text-muted); margin-bottom: 25px;">Gestión de fidelización y recompensas para clientes frecuentes.</p>
+        <button class="btn-sello" style="margin-bottom: 25px; font-size: 14px; padding: 12px 20px;" onclick="abrirGestorBeneficios()">⚙️ CONFIGURAR BENEFICIOS POR NIVEL</button>
 
         <div style="background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid #222; margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <div style="flex: 1; min-width: 200px;">
@@ -63,10 +64,80 @@
                 <tbody id="tabla-clientes"></tbody>
             </table>
         </div>
+        <div id="modal-beneficios" class="modal-overlay" style="display: none; z-index: 99999; align-items: center; justify-content: center;">
+            <div class="modal-box" style="width: 100%; max-width: 500px; padding: 25px; background: #111; border: 1px solid #D4AF37;">
+                <h3 style="color: #D4AF37; margin-bottom: 20px; text-align: center;">⚙️ Gestor de Beneficios</h3>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <select id="ben-nivel" class="modal-input" style="width: 30%;">
+                        <option value="Bronce">Bronce</option>
+                        <option value="Plata">Plata</option>
+                        <option value="Oro">Oro</option>
+                    </select>
+                    <input type="text" id="ben-desc" class="modal-input" placeholder="Ej: 10% dcto en piqueos" style="width: 70%;">
+                </div>
+                <button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: bold; width: 100%; margin-bottom: 20px;" onclick="guardarBeneficio()">➕ Agregar Beneficio</button>
+
+                <div style="max-height: 250px; overflow-y: auto; background: #0a0a0c; padding: 10px; border-radius: 8px; border: 1px solid #222;" id="lista-beneficios-admin">
+                    </div>
+
+                <button class="btn-modal btn-cancel" style="width: 100%; margin-top: 20px;" onclick="document.getElementById('modal-beneficios').style.display='none'">Cerrar Panel</button>
+            </div>
+        </div>
     </main>
 
     <script src="/js/alertas.js"></script>
     <script>
+        function abrirGestorBeneficios() {
+            document.getElementById('modal-beneficios').style.display = 'flex';
+            cargarBeneficiosAdmin();
+        }
+
+        async function cargarBeneficiosAdmin() {
+            try {
+                const res = await fetch('/api/beneficios');
+                const beneficios = await res.json();
+                const lista = document.getElementById('lista-beneficios-admin');
+                lista.innerHTML = '';
+                
+                beneficios.forEach(b => {
+                    let color = b.nivel === 'Oro' ? '#D4AF37' : (b.nivel === 'Plata' ? '#c0c0c0' : '#cd7f32');
+                    lista.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222;">
+                            <div>
+                                <span style="color: ${color}; font-weight: bold; font-size: 11px; text-transform: uppercase; border: 1px solid ${color}; padding: 2px 6px; border-radius: 4px; margin-right: 8px;">${b.nivel}</span>
+                                <span style="color: #ccc; font-size: 13px;">${b.descripcion}</span>
+                            </div>
+                            <button style="background: transparent; color: #ff4757; border: none; cursor: pointer; font-size: 16px;" onclick="eliminarBeneficio(${b.id})">🗑️</button>
+                        </div>
+                    `;
+                });
+            } catch (e) { console.error("Error cargando beneficios"); }
+        }
+
+        async function guardarBeneficio() {
+            const nivel = document.getElementById('ben-nivel').value;
+            const descripcion = document.getElementById('ben-desc').value.trim();
+            if(!descripcion) return mostrarAlerta("Escribe una descripción", "warning");
+
+            try {
+                const res = await fetch('/api/beneficios', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nivel, descripcion })
+                });
+                if(res.ok) {
+                    document.getElementById('ben-desc').value = '';
+                    cargarBeneficiosAdmin();
+                }
+            } catch (e) { mostrarAlerta("Error al guardar", "error"); }
+        }
+
+        async function eliminarBeneficio(id) {
+            try {
+                await fetch(`/api/beneficios/${id}`, { method: 'DELETE' });
+                cargarBeneficiosAdmin();
+            } catch (e) { mostrarAlerta("Error al eliminar", "error"); }
+        }
         async function cargarClientes() {
             try {
                 const res = await fetch('/api/clientes');
