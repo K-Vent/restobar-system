@@ -146,6 +146,7 @@ async function getPrecioBillar() {
                 )
             `); 
         } catch (e) { console.log("Error creando tabla clientes:", e); }
+        try { await pool.query("ALTER TABLE clientes ADD COLUMN pin VARCHAR(4) DEFAULT '1234'"); } catch (e) {}
     } catch (e) { console.error("Error en inicialización de BD:", e); } 
 })();
 
@@ -397,11 +398,23 @@ app.post('/api/clientes/nuevo', verificarSesion, async (req, res, next) => {
         const existe = await pool.query('SELECT id FROM clientes WHERE telefono = $1', [telefono]);
         if (existe.rows.length > 0) return res.status(400).json({ error: "Este teléfono ya está registrado" });
 
-        await pool.query('INSERT INTO clientes (nombre, telefono) VALUES ($1, $2)', [nombre, telefono]);
+        await pool.query('INSERT INTO clientes (nombre, telefono, pin) VALUES ($1, $2, $3)', [nombre, telefono, pin]);
         res.json({ success: true });
     } catch (e) { next(e); }
 });
-
+// Inicio de Sesión para Clientes VIP
+app.post('/api/vip/login', async (req, res, next) => {
+    try {
+        const { telefono, pin } = req.body;
+        
+        // Buscamos al cliente por teléfono y PIN
+        const result = await pool.query('SELECT id, nombre, sellos, nivel FROM clientes WHERE telefono = $1 AND pin = $2', [telefono, pin]);
+        
+        if (result.rows.length === 0) return res.status(401).json({ error: "Teléfono o PIN incorrectos." });
+        
+        res.json(result.rows[0]);
+    } catch (e) { next(e); }
+});
 // Añadir un sello (Punto) al cliente
 app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
     try {
@@ -421,18 +434,6 @@ app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
         await pool.query('UPDATE clientes SET nivel = $1 WHERE id = $2', [nuevoNivel, id]);
 
         res.json({ success: true, sellos_actuales: totalSellos, nivel: nuevoNivel });
-    } catch (e) { next(e); }
-});
-
-// Obtener datos públicos de la Tarjeta VIP de un cliente
-app.get('/api/vip/:id', async (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        const result = await pool.query('SELECT id, nombre, sellos, nivel FROM clientes WHERE id = $1', [id]);
-        
-        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado" });
-        
-        res.json(result.rows[0]);
     } catch (e) { next(e); }
 });
 

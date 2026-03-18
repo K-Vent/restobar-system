@@ -8,136 +8,165 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #0a0a0c; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         
-        /* Contenedor de la Tarjeta Estilo Apple Wallet */
+        /* Contenedor Principal */
         .wallet-card {
             background: linear-gradient(145deg, #1a1a1d 0%, #0a0a0c 100%);
             border: 1px solid rgba(212, 175, 55, 0.3);
             border-radius: 20px;
             width: 100%;
             max-width: 380px;
-            padding: 30px 20px;
+            padding: 40px 30px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
             text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        /* Brillo superior */
-        .wallet-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
-        }
+        .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); }
 
-        .header { margin-bottom: 25px; }
-        .logo-text { color: #D4AF37; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
-        .sub-text { color: #888; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-top: 5px; }
+        .logo-text { color: #D4AF37; font-size: 26px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .sub-text { color: #888; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
 
+        /* Estilos del Login */
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .input-vip { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; transition: 0.3s; }
+        .input-vip:focus { border-color: #D4AF37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .btn-vip { background: #D4AF37; color: #000; font-weight: 900; font-size: 16px; padding: 15px; border: none; border-radius: 10px; width: 100%; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
+        .btn-vip:hover { background: #e5c158; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+
+        /* Estilos de la Tarjeta Interna */
         .client-info { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid #222; }
         .client-name { font-size: 22px; font-weight: 800; color: white; margin-bottom: 5px; }
         .client-level { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Clases de Niveles */
         .lvl-bronce { background: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5); }
         .lvl-plata { background: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid rgba(192, 192, 192, 0.5); }
         .lvl-oro { background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.5); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
 
-        /* Contenedor del QR */
-        .qr-container { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 25px; }
-        .qr-container img { display: block; width: 180px; height: 180px; }
+        .qr-container { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px; }
+        .qr-container img { display: block; width: 160px; height: 160px; }
 
-        /* Sistema de Sellos Visuales */
-        .stamps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
-        .stamp-slot {
-            aspect-ratio: 1;
-            border-radius: 50%;
-            border: 2px dashed #333;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 20px; color: transparent;
-            transition: 0.5s;
-        }
+        .stamps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+        .stamp-slot { aspect-ratio: 1; border-radius: 50%; border: 2px dashed #333; display: flex; justify-content: center; align-items: center; font-size: 20px; color: transparent; }
         .stamp-filled { background: rgba(212, 175, 55, 0.1); border: 2px solid #D4AF37; color: #D4AF37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); }
 
-        .footer-note { font-size: 11px; color: #666; margin-top: 25px; }
+        .msg-error { color: #ff4757; font-size: 13px; margin-top: 15px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="wallet-card" id="card-content" style="display: none;">
+    <div class="wallet-card">
         <div class="header">
             <div class="logo-text">👑 LA ESQUINA</div>
-            <div class="sub-text">Club de Beneficios VIP</div>
+            <div class="sub-text" id="header-sub">Portal de Socios VIP</div>
         </div>
 
-        <div class="client-info">
-            <div class="client-name" id="lbl-nombre">Cargando...</div>
-            <div class="client-level lvl-bronce" id="lbl-nivel">Cargando...</div>
+        <div id="login-section">
+            <div class="input-group">
+                <label>Teléfono Registrado</label>
+                <input type="tel" id="in-tel" class="input-vip" placeholder="Ingresa tu celular">
+            </div>
+            <div class="input-group">
+                <label>PIN de Seguridad</label>
+                <input type="password" id="in-pin" class="input-vip" placeholder="4 dígitos" maxlength="4">
+            </div>
+            <button class="btn-vip" onclick="iniciarSesionVIP()">Acceder a mi Tarjeta</button>
+            <div class="msg-error" id="msg-error">Datos incorrectos. Intenta nuevamente.</div>
         </div>
 
-        <div class="qr-container">
-            <img id="qr-image" src="" alt="Tu Código QR">
-        </div>
-
-        <div style="font-size: 14px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Progreso para Recompensa</div>
-        <div class="stamps-grid" id="stamps-container">
+        <div id="card-section" style="display: none;">
+            <div class="client-info">
+                <div class="client-name" id="lbl-nombre">Cargando...</div>
+                <div class="client-level" id="lbl-nivel">Cargando...</div>
             </div>
 
-        <div class="footer-note">Presenta este código QR al momento de pagar para acumular tus visitas.</div>
+            <div class="qr-container">
+                <img id="qr-image" src="" alt="Código QR VIP">
+            </div>
+
+            <div style="font-size: 13px; color: #888; font-weight: bold; text-transform: uppercase; margin-top: 10px;">Progreso de Visitas</div>
+            <div class="stamps-grid" id="stamps-container"></div>
+            
+            <div style="margin-top: 20px; font-size: 12px;">
+                <a href="#" onclick="cerrarSesionVIP()" style="color: #666; text-decoration: none;">Cerrar sesión</a>
+            </div>
+        </div>
     </div>
 
     <script>
-        async function cargarTarjeta() {
-            // Extraer el ID de la URL (Ejemplo: vip.html?id=5)
-            const urlParams = new URLSearchParams(window.location.search);
-            const clienteId = urlParams.get('id');
-
-            if (!clienteId) {
-                document.body.innerHTML = "<h3 style='color:red;'>Error: Enlace de tarjeta inválido.</h3>";
-                return;
+        // Al abrir la página, revisamos si el cliente ya había iniciado sesión antes
+        document.addEventListener("DOMContentLoaded", () => {
+            const credenciales = localStorage.getItem('vip_esquina');
+            if(credenciales) {
+                const { telefono, pin } = JSON.parse(credenciales);
+                ejecutarLogin(telefono, pin); // Auto-login silencioso
             }
+        });
 
+        function iniciarSesionVIP() {
+            const tel = document.getElementById('in-tel').value.trim();
+            const pin = document.getElementById('in-pin').value.trim();
+            if(!tel || !pin) return alert("Completa tus datos");
+            ejecutarLogin(tel, pin);
+        }
+
+        async function ejecutarLogin(telefono, pin) {
+            document.getElementById('msg-error').style.display = 'none';
             try {
-                const res = await fetch(`/api/vip/${clienteId}`);
-                if (!res.ok) throw new Error("Socio no encontrado");
-                
+                const res = await fetch('/api/vip/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telefono, pin })
+                });
+
+                if (!res.ok) {
+                    document.getElementById('msg-error').style.display = 'block';
+                    localStorage.removeItem('vip_esquina');
+                    return;
+                }
+
                 const data = await res.json();
                 
-                // Llenar datos
+                // Guardamos la sesión en el celular del cliente
+                localStorage.setItem('vip_esquina', JSON.stringify({ telefono, pin }));
+
+                // Cambiamos la interfaz
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('header-sub').innerText = "Tarjeta Digital Activa";
+                document.getElementById('card-section').style.display = 'block';
+
+                // Llenamos la tarjeta
                 document.getElementById('lbl-nombre').innerText = data.nombre;
                 
                 const badge = document.getElementById('lbl-nivel');
                 badge.innerText = `NIVEL ${data.nivel.toUpperCase()}`;
+                if(data.nivel.includes('Bronce')) badge.className = 'client-level lvl-bronce';
                 if(data.nivel.includes('Plata')) badge.className = 'client-level lvl-plata';
                 if(data.nivel.includes('Oro')) badge.className = 'client-level lvl-oro';
 
-                // Generar el código QR que leerá tu cámara ("socio-ID")
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=socio-${data.id}`;
-                document.getElementById('qr-image').src = qrUrl;
+                document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=socio-${data.id}`;
 
                 // Renderizar los 10 sellos
                 const container = document.getElementById('stamps-container');
                 container.innerHTML = '';
-                
-                // Calculamos cuántos sellos tiene en su ciclo actual de 10
                 let sellosVisuales = data.sellos % 10;
-                // Si tiene un múltiplo exacto de 10 (ej. 10, 20), mostramos la tarjeta llena
                 if (data.sellos > 0 && sellosVisuales === 0) sellosVisuales = 10; 
 
                 for (let i = 1; i <= 10; i++) {
-                    if (i <= sellosVisuales) {
-                        container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
-                    } else {
-                        container.innerHTML += `<div class="stamp-slot"></div>`;
-                    }
+                    if (i <= sellosVisuales) container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
+                    else container.innerHTML += `<div class="stamp-slot"></div>`;
                 }
 
-                document.getElementById('card-content').style.display = 'block';
-
             } catch (error) {
-                document.body.innerHTML = `<h3 style='color:#ccc;'>${error.message}</h3>`;
+                alert("Error de conexión");
             }
         }
 
-        cargarTarjeta();
+        function cerrarSesionVIP() {
+            localStorage.removeItem('vip_esquina');
+            location.reload();
+        }
     </script>
 </body>
 </html>
