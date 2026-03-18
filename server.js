@@ -424,6 +424,18 @@ app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
     } catch (e) { next(e); }
 });
 
+// Obtener datos públicos de la Tarjeta VIP de un cliente
+app.get('/api/vip/:id', async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        const result = await pool.query('SELECT id, nombre, sellos, nivel FROM clientes WHERE id = $1', [id]);
+        
+        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado" });
+        
+        res.json(result.rows[0]);
+    } catch (e) { next(e); }
+});
+
 /* ============================================================
    API AUDITORÍA FORENSE (ISO 27001)
    ============================================================ */

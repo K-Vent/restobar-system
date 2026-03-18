@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>VIP | La Esquina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #0a0a0c; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        /* Contenedor de la Tarjeta Estilo Apple Wallet */
+        .wallet-card {
+            background: linear-gradient(145deg, #1a1a1d 0%, #0a0a0c 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Brillo superior */
+        .wallet-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+        }
+
+        .header { margin-bottom: 25px; }
+        .logo-text { color: #D4AF37; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+        .sub-text { color: #888; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-top: 5px; }
+
+        .client-info { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid #222; }
+        .client-name { font-size: 22px; font-weight: 800; color: white; margin-bottom: 5px; }
+        .client-level { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Clases de Niveles */
+        .lvl-bronce { background: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5); }
+        .lvl-plata { background: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid rgba(192, 192, 192, 0.5); }
+        .lvl-oro { background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.5); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+
+        /* Contenedor del QR */
+        .qr-container { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 25px; }
+        .qr-container img { display: block; width: 180px; height: 180px; }
+
+        /* Sistema de Sellos Visuales */
+        .stamps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+        .stamp-slot {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 2px dashed #333;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 20px; color: transparent;
+            transition: 0.5s;
+        }
+        .stamp-filled { background: rgba(212, 175, 55, 0.1); border: 2px solid #D4AF37; color: #D4AF37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); }
+
+        .footer-note { font-size: 11px; color: #666; margin-top: 25px; }
+    </style>
+</head>
+<body>
+
+    <div class="wallet-card" id="card-content" style="display: none;">
+        <div class="header">
+            <div class="logo-text">👑 LA ESQUINA</div>
+            <div class="sub-text">Club de Beneficios VIP</div>
+        </div>
+
+        <div class="client-info">
+            <div class="client-name" id="lbl-nombre">Cargando...</div>
+            <div class="client-level lvl-bronce" id="lbl-nivel">Cargando...</div>
+        </div>
+
+        <div class="qr-container">
+            <img id="qr-image" src="" alt="Tu Código QR">
+        </div>
+
+        <div style="font-size: 14px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Progreso para Recompensa</div>
+        <div class="stamps-grid" id="stamps-container">
+            </div>
+
+        <div class="footer-note">Presenta este código QR al momento de pagar para acumular tus visitas.</div>
+    </div>
+
+    <script>
+        async function cargarTarjeta() {
+            // Extraer el ID de la URL (Ejemplo: vip.html?id=5)
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteId = urlParams.get('id');
+
+            if (!clienteId) {
+                document.body.innerHTML = "<h3 style='color:red;'>Error: Enlace de tarjeta inválido.</h3>";
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/vip/${clienteId}`);
+                if (!res.ok) throw new Error("Socio no encontrado");
+                
+                const data = await res.json();
+                
+                // Llenar datos
+                document.getElementById('lbl-nombre').innerText = data.nombre;
+                
+                const badge = document.getElementById('lbl-nivel');
+                badge.innerText = `NIVEL ${data.nivel.toUpperCase()}`;
+                if(data.nivel.includes('Plata')) badge.className = 'client-level lvl-plata';
+                if(data.nivel.includes('Oro')) badge.className = 'client-level lvl-oro';
+
+                // Generar el código QR que leerá tu cámara ("socio-ID")
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=socio-${data.id}`;
+                document.getElementById('qr-image').src = qrUrl;
+
+                // Renderizar los 10 sellos
+                const container = document.getElementById('stamps-container');
+                container.innerHTML = '';
+                
+                // Calculamos cuántos sellos tiene en su ciclo actual de 10
+                let sellosVisuales = data.sellos % 10;
+                // Si tiene un múltiplo exacto de 10 (ej. 10, 20), mostramos la tarjeta llena
+                if (data.sellos > 0 && sellosVisuales === 0) sellosVisuales = 10; 
+
+                for (let i = 1; i <= 10; i++) {
+                    if (i <= sellosVisuales) {
+                        container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
+                    } else {
+                        container.innerHTML += `<div class="stamp-slot"></div>`;
+                    }
+                }
+
+                document.getElementById('card-content').style.display = 'block';
+
+            } catch (error) {
+                document.body.innerHTML = `<h3 style='color:#ccc;'>${error.message}</h3>`;
+            }
+        }
+
+        cargarTarjeta();
+    </script>
+</body>
+</html>
