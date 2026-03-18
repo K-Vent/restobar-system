@@ -391,26 +391,22 @@ app.get('/api/clientes', verificarSesion, async (req, res, next) => {
 // Registrar un nuevo cliente VIP
 app.post('/api/clientes/nuevo', verificarSesion, async (req, res, next) => {
     try {
-        // 1. Extraemos todos los datos, INCLUYENDO EL PIN
+        // 🚨 AQUÍ ESTÁ EL SECRETO: El servidor debe extraer el 'pin'
         const { nombre, telefono, pin } = req.body; 
         
         if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
 
-        // 2. Verificamos si el teléfono ya existe
         if (telefono) {
             const existe = await pool.query('SELECT id FROM clientes WHERE telefono = $1', [telefono]);
             if (existe.rows.length > 0) return res.status(400).json({ error: "Este teléfono ya está registrado" });
         }
 
-        // 3. Guardamos en la base de datos (Si no envían PIN, por defecto será 1234)
+        // Si 'pin' llega vacío, usa 1234. Si llega '2704', usa '2704'.
         const pinFinal = pin || '1234';
         await pool.query('INSERT INTO clientes (nombre, telefono, pin) VALUES ($1, $2, $3)', [nombre, telefono, pinFinal]);
         
         res.json({ success: true });
-    } catch (e) { 
-        // Si hay error, lo mandamos al gestor central para que no se caiga el servidor
-        next(e); 
-    }
+    } catch (e) { next(e); }
 });
 // Inicio de Sesión para Clientes VIP
 app.post('/api/vip/login', async (req, res, next) => {
