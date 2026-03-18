@@ -85,6 +85,12 @@
                 <img id="qr-image" src="" alt="Código QR VIP">
             </div>
 
+            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid #D4AF37; padding: 10px; border-radius: 10px; margin-bottom: 20px;">
+                <div style="font-size: 11px; color: #D4AF37; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Tu Recompensa Actual</div>
+                <div style="font-size: 16px; color: white; font-weight: 900;">🎱 1 Hora de Billar Gratis</div>
+                <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Premios disponibles: <span id="lbl-premios" style="color: #D4AF37; font-weight: bold; font-size: 16px;">0</span></div>
+            </div>
+
             <div style="font-size: 13px; color: #888; font-weight: bold; text-transform: uppercase; margin-top: 10px;">Progreso de Visitas</div>
             <div class="stamps-grid" id="stamps-container"></div>
             
@@ -152,7 +158,9 @@
                 container.innerHTML = '';
                 let sellosVisuales = data.sellos % 10;
                 if (data.sellos > 0 && sellosVisuales === 0) sellosVisuales = 10; 
-
+                // 👇 NUEVO: Calcular cuántos premios ha ganado (1 premio cada 10 sellos) 👇
+                const premiosGanados = Math.floor(data.sellos / 10);
+                document.getElementById('lbl-premios').innerText = premiosGanados;
                 for (let i = 1; i <= 10; i++) {
                     if (i <= sellosVisuales) container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
                     else container.innerHTML += `<div class="stamp-slot"></div>`;
