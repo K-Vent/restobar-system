@@ -128,7 +128,22 @@
             </div>
         </div>
     </div>
+    
+    <div id="modal-scanner" class="modal-overlay" style="display: none; z-index: 99999;">
+        <div class="modal-box" style="width: 100%; max-width: 400px; padding: 20px;">
+            <div class="modal-title" style="color: #D4AF37; text-align: center; font-size: 20px; font-weight: 900; margin-bottom: 15px;">
+                📸 Escanear Tarjeta VIP
+            </div>
+            
+            <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #D4AF37;"></div>
+            
+            <div class="modal-btns" style="margin-top: 20px;">
+                <button class="btn-modal btn-cancel" onclick="cerrarScanner()" style="width: 100%;">Cancelar</button>
+            </div>
+        </div>
+    </div>
 <button onclick="location.href='/logout'" class="btn-logout-mobile">🚪</button>
+<script src="https://unpkg.com/html5-qrcode"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/alertas.js"></script>
     <script src="/js/dashboard.js"></script>

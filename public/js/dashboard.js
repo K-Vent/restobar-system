@@ -322,6 +322,10 @@ async function abrirModalCobro(id) {
             <div style="font-size: 32px; text-align:center; font-weight:900; color:white; margin-bottom: 25px;">
                 TOTAL: <span style="color:var(--gold); text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
+
+            <button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 10px; font-size: 16px;" onclick="abrirScanner()">
+                📸 ESCANEAR SOCIO VIP (+1 Sello)
+            </button>
         `;
         document.getElementById('cobro-contenido').innerHTML = html;
         document.getElementById('modal-cobro').style.display = 'flex';
@@ -423,4 +427,60 @@ function iniciarCronometros() {
             if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
         });
     }, 1000);
+}
+
+// ==========================================
+// 12. MÓDULO DE ESCÁNER QR (CLUB LA ESQUINA)
+// ==========================================
+let escanerActivo = null;
+
+function abrirScanner() {
+    document.getElementById('modal-scanner').style.display = 'flex';
+    
+    // Configuramos el escáner para que use la cámara trasera por defecto
+    escanerActivo = new Html5QrcodeScanner(
+        "reader", 
+        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, 
+        false
+    );
+    
+    escanerActivo.render(escaneoExitoso, escaneoFallido);
+}
+
+function cerrarScanner() {
+    if (escanerActivo) {
+        escanerActivo.clear(); // Apaga la cámara
+    }
+    document.getElementById('modal-scanner').style.display = 'none';
+}
+
+async function escaneoExitoso(textoDecodificado) {
+    // Si la lectura es exitosa, apagamos la cámara inmediatamente
+    cerrarScanner();
+    
+    // Las tarjetas de La Esquina tendrán el formato "socio-ID" (Ej. socio-5)
+    if (textoDecodificado.startsWith('socio-')) {
+        const idSocio = textoDecodificado.split('-')[1];
+        
+        try {
+            // Mandamos la orden al servidor para sumarle el sello
+            const res = await fetch(`/api/clientes/${idSocio}/sello`, { method: 'POST' });
+            const data = await res.json();
+            
+            if (res.ok) {
+                // Alerta premium mostrando el nuevo nivel del cliente
+                mostrarAlerta(`✅ ¡Sello añadido al socio! Ahora tiene ${data.sellos_actuales} sellos (Nivel: ${data.nivel})`, "success");
+            } else {
+                mostrarAlerta("Error al intentar añadir el sello en la base de datos.", "error");
+            }
+        } catch (error) {
+            mostrarAlerta("Error de red al procesar el sello.", "error");
+        }
+    } else {
+        mostrarAlerta("⚠️ Código QR inválido. No pertenece al Club La Esquina.", "warning");
+    }
+}
+
+function escaneoFallido(error) {
+    // Esta función se ejecuta silenciosamente mientras la cámara busca un QR. No hacemos nada.
 }
