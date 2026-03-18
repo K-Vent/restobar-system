@@ -105,29 +105,45 @@
         }
 
         async function registrarCliente() {
-            const nombre = document.getElementById('cli-nombre').value.trim();
-            const telefono = document.getElementById('cli-telefono').value.trim();
-            const pin = document.getElementById('cli-pin').value.trim();
+            // 1. Capturamos los valores exactos de los inputs del HTML
+            const valNombre = document.getElementById('cli-nombre').value.trim();
+            const valTelefono = document.getElementById('cli-telefono').value.trim();
+            const valPin = document.getElementById('cli-pin').value.trim();
 
-            if (!nombre) return mostrarAlerta("El nombre del socio es obligatorio.", "warning");
+            // 2. Validaciones estrictas
+            if (!valNombre) return mostrarAlerta("El nombre del socio es obligatorio.", "warning");
+            if (!valTelefono) return mostrarAlerta("El teléfono es obligatorio.", "warning");
+            if (!valPin || valPin.length !== 4) return mostrarAlerta("El PIN debe tener exactamente 4 dígitos.", "warning");
 
             try {
+                // 3. EMPAQUETADO BLINDADO (Aquí forzamos a que el PIN viaje sí o sí)
+                const paqueteDeDatos = {
+                    nombre: valNombre,
+                    telefono: valTelefono,
+                    pin: valPin
+                };
+
                 const res = await fetch('/api/clientes/nuevo', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, telefono })
+                    body: JSON.stringify(paqueteDeDatos) 
                 });
 
                 const data = await res.json();
+                
                 if (res.ok) {
-                    mostrarAlerta(`Socio ${nombre} registrado con éxito.`, "success");
+                    mostrarAlerta(`Socio ${valNombre} registrado con éxito.`, "success");
+                    // Limpiamos las cajas de texto
                     document.getElementById('cli-nombre').value = '';
                     document.getElementById('cli-telefono').value = '';
-                    cargarClientes();
+                    document.getElementById('cli-pin').value = '';
+                    cargarClientes(); // Recargamos la tabla
                 } else {
                     mostrarAlerta(data.error || "Error al registrar", "error");
                 }
-            } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+            } catch (error) { 
+                mostrarAlerta("Error de conexión con el servidor", "error"); 
+            }
         }
 
         async function sumarSello(id, nombre) {
