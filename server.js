@@ -391,19 +391,25 @@ app.get('/api/clientes', verificarSesion, async (req, res, next) => {
 // Registrar un nuevo cliente VIP
 app.post('/api/clientes/nuevo', verificarSesion, async (req, res, next) => {
     try {
-        // 🚨 AQUÍ ESTÁ EL SECRETO: El servidor debe extraer el 'pin'
+        // 1. EL RADAR: Esto imprimirá en la consola de tu servidor (Render/Terminal) qué está recibiendo
+        console.log("📥 RECIBIENDO DATOS DEL SOCIO:", req.body); 
+
         const { nombre, telefono, pin } = req.body; 
         
         if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+        
+        // 2. EL ESCUDO: Si el PIN llega vacío o no llega, el servidor se detiene aquí y te lanza el error
+        if (!pin || pin.trim() === "") {
+            return res.status(400).json({ error: "⚠️ ALERTA: El PIN no está llegando al servidor desde la página web." });
+        }
 
         if (telefono) {
             const existe = await pool.query('SELECT id FROM clientes WHERE telefono = $1', [telefono]);
             if (existe.rows.length > 0) return res.status(400).json({ error: "Este teléfono ya está registrado" });
         }
 
-        // Si 'pin' llega vacío, usa 1234. Si llega '2704', usa '2704'.
-        const pinFinal = pin || '1234';
-        await pool.query('INSERT INTO clientes (nombre, telefono, pin) VALUES ($1, $2, $3)', [nombre, telefono, pinFinal]);
+        // 3. LA INSERCIÓN EXACTA: Ya no hay '1234' por defecto. Guarda lo que tú escribas.
+        await pool.query('INSERT INTO clientes (nombre, telefono, pin) VALUES ($1, $2, $3)', [nombre, telefono, pin]);
         
         res.json({ success: true });
     } catch (e) { next(e); }
