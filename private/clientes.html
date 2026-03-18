@@ -155,6 +155,15 @@
                     if(c.nivel.includes('Plata')) claseNivel = 'nivel-plata';
                     if(c.nivel.includes('Oro')) claseNivel = 'nivel-oro';
 
+                    // Lógica para saber si mostrar el botón de canje
+                    const canjeados = c.premios_canjeados || 0;
+                    const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
+                    
+                    let btnCanje = '';
+                    if (premiosDisponibles > 0) {
+                        btnCanje = `<button style="background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid #D4AF37; padding: 8px 15px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);" onclick="canjearPremio(${c.id}, '${c.nombre}')">🎁 Canjear Hora (${premiosDisponibles})</button>`;
+                    }
+
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #1f222b; transition: 0.2s;">
                             <td style="padding: 16px 25px; font-weight: 800; color: white; font-size: 15px;">${c.nombre}</td>
@@ -168,11 +177,29 @@
                             <td style="padding: 16px 25px; display: flex; gap: 10px;">
                                 <button class="btn-sello" onclick="sumarSello(${c.id}, '${c.nombre}')">⭐ Sello</button>
                                 <button style="background: rgba(37, 211, 102, 0.1); color: #25D366; border: 1px solid rgba(37, 211, 102, 0.4); padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;" onclick="enviarPromo('${c.nombre}', '${c.telefono}')">📲 Promo</button>
-                            </td>
+                                ${btnCanje} </td>
                         </tr>
                     `;
+
                 });
             } catch (error) { console.error("Error cargando CRM:", error); }
+        }
+
+        async function canjearPremio(id, nombre) {
+            const confirmado = await mostrarConfirmacion("🎁 Canjear Recompensa", `¿Confirmas que le vas a dar 1 Hora de Billar Gratis a ${nombre}? El premio se descontará de su tarjeta digital, pero mantendrá su nivel VIP.`);
+            
+            if (confirmado) {
+                try {
+                    const res = await fetch(`/api/clientes/${id}/canjear`, { method: 'POST' });
+                    if (res.ok) {
+                        mostrarAlerta("¡Premio canjeado! Hora gratis aplicada.", "success");
+                        cargarClientes(); // Recargamos para que desaparezca el botón si ya no tiene premios
+                    } else {
+                        const data = await res.json();
+                        mostrarAlerta(data.error || "No se pudo canjear.", "error");
+                    }
+                } catch (error) { mostrarAlerta("Error al conectar.", "error"); }
+            }
         }
 
         function enviarPromo(nombre, telefono) {

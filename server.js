@@ -429,7 +429,7 @@ app.post('/api/vip/login', async (req, res, next) => {
         const { telefono, pin } = req.body;
         
         // Buscamos al cliente por teléfono y PIN
-        const result = await pool.query('SELECT id, nombre, sellos, nivel FROM clientes WHERE telefono = $1 AND pin = $2', [telefono, pin]);
+        const result = await pool.query('SELECT id, nombre, sellos, nivel, premios_canjeados FROM clientes WHERE telefono = $1 AND pin = $2', [telefono, pin]);
         
         if (result.rows.length === 0) return res.status(401).json({ error: "Teléfono o PIN incorrectos." });
         
@@ -455,6 +455,31 @@ app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
         await pool.query('UPDATE clientes SET nivel = $1 WHERE id = $2', [nuevoNivel, id]);
 
         res.json({ success: true, sellos_actuales: totalSellos, nivel: nuevoNivel });
+    } catch (e) { next(e); }
+});
+
+// Canjear un premio (1 hora de billar gratis)
+app.post('/api/clientes/:id/canjear', verificarSesion, async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        // 1. Consultamos el estado exacto del cliente
+        const result = await pool.query('SELECT sellos, premios_canjeados FROM clientes WHERE id = $1', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado" });
+        
+        const c = result.rows[0];
+        const canjeados = c.premios_canjeados || 0;
+        
+        // 2. Calculamos matemáticamente si tiene premios disponibles
+        const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
+
+        if (premiosDisponibles > 0) {
+            // 3. Si tiene, le sumamos 1 al contador de premios cobrados
+            await pool.query('UPDATE clientes SET premios_canjeados = COALESCE(premios_canjeados, 0) + 1 WHERE id = $1', [id]);
+            res.json({ success: true });
+        } else {
+            res.status(400).json({ error: "Este socio no tiene recompensas pendientes de cobro." });
+        }
     } catch (e) { next(e); }
 });
 

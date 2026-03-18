@@ -208,7 +208,8 @@
                 let sellosVisuales = data.sellos % 10;
                 if (data.sellos > 0 && sellosVisuales === 0) sellosVisuales = 10; 
                 // 👇 NUEVO: Calcular cuántos premios ha ganado (1 premio cada 10 sellos) 👇
-                const premiosGanados = Math.floor(data.sellos / 10);
+                // Calculamos cuántos premios le quedan (Totales ganados - Totales canjeados)
+                const premiosGanados = Math.floor(data.sellos / 10) - (data.premios_canjeados || 0);
                 document.getElementById('lbl-premios').innerText = premiosGanados;
                 for (let i = 1; i <= 10; i++) {
                     if (i <= sellosVisuales) container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
