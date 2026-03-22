@@ -595,19 +595,24 @@ app.get('/api/auditoria', verificarSesion, soloAdmin, async (req, res, next) => 
 
 app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
     try { 
-        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); const f = u.rows[0].fecha; 
+        // 🛡️ SUB-CONSULTA PURA: Evitamos que Node.js desajuste las zonas horarias
+        const filtroCierre = "(SELECT COALESCE(MAX(fecha_cierre), '2000-01-01 00:00:00') FROM cierres)"; 
+        
         const queries = [ 
-            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago = 'EFECTIVO' THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_efectivo ELSE 0 END), 0) as t FROM ventas WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago IN ('YAPE', 'PLIN', 'TARJETA') THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_digital ELSE 0 END), 0) as t FROM ventas WHERE fecha > $1`, [f]), 
-            pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > $1 ORDER BY fecha DESC`, [f]) 
+            pool.query(`SELECT COALESCE(SUM(total_final), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT COALESCE(SUM(monto), 0) as t FROM gastos WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT COALESCE(SUM(total_productos), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago = 'EFECTIVO' THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_efectivo ELSE 0 END), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago IN ('YAPE', 'PLIN', 'TARJETA') THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_digital ELSE 0 END), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
+            pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > ${filtroCierre} ORDER BY fecha DESC`) 
         ]; 
+        
         const results = await Promise.all(queries); 
-        const totalVentas = parseFloat(results[0].rows[0].t || 0); const totalGastos = parseFloat(results[1].rows[0].t || 0); 
-        const totalEfectivo = parseFloat(results[4].rows[0].t || 0); const totalDigital = parseFloat(results[5].rows[0].t || 0); 
+        const totalVentas = parseFloat(results[0].rows[0].t || 0); 
+        const totalGastos = parseFloat(results[1].rows[0].t || 0); 
+        const totalEfectivo = parseFloat(results[4].rows[0].t || 0); 
+        const totalDigital = parseFloat(results[5].rows[0].t || 0); 
         
         res.json({ total_ventas: totalVentas, total_gastos: totalGastos, total_caja_real: totalVentas - totalGastos, dinero_en_cajon: totalEfectivo - totalGastos, desglose: { efectivo: totalEfectivo, digital: totalDigital }, total_productos: parseFloat(results[2].rows[0].t || 0), total_mesas: parseFloat(results[3].rows[0].t || 0), lista: results[6].rows }); 
     } catch (e) { next(e); }
@@ -615,26 +620,23 @@ app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
 
 app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { 
-        const u = await pool.query("SELECT COALESCE(MAX(fecha_cierre), '2000-01-01') as fecha FROM cierres"); 
-        const f = u.rows[0].fecha; 
+        // 🛡️ La misma sub-consulta nativa para el cierre definitivo
+        const filtroCierre = "(SELECT COALESCE(MAX(fecha_cierre), '2000-01-01 00:00:00') FROM cierres)"; 
         
-        const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > $1`, [f]); 
-        const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > $1`, [f]); 
+        const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > ${filtroCierre}`); 
+        const g = await pool.query(`SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE fecha > ${filtroCierre}`); 
         
         const totalVentas = parseFloat(v.rows[0].total || 0);
         const totalGastos = parseFloat(g.rows[0].total || 0);
         const cantidadMesas = parseInt(v.rows[0].cantidad || 0);
         const gananciaNeta = totalVentas - totalGastos;
 
-        // 1. Guardar en Base de Datos (Supabase)
+        // 1. Guardar en Base de Datos
         await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [totalVentas, totalGastos, cantidadMesas]); 
         
-        // 2. DISPARADOR AUTOMÁTICO HACIA n8n (Webhook) 🚀
+        // 2. DISPARADOR AUTOMÁTICO HACIA n8n
         try {
-            // Aquí pondrás la URL secreta que te dará n8n más adelante
             const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://tu-servidor-n8n.com/webhook/cierre-caja';
-            
-            // Usamos fetch sin "await" para que trabaje en segundo plano sin frenar el sistema
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -647,17 +649,13 @@ app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) 
                     ganancia_neta: gananciaNeta,
                     mesas_atendidas: cantidadMesas
                 })
-            }).catch(err => console.log("Aviso: El webhook no detiene el sistema, pero falló el envío:", err.message));
-            
-        } catch (error) {
-            console.log("Error interno al intentar disparar webhook:", error);
-        }
+            }).catch(err => console.log("Aviso webhook:", err.message));
+        } catch (error) { console.log("Error webhook:", error); }
 
         // 3. Responder al cajero instantáneamente
         res.json({ success: true, total: totalVentas, gastos: totalGastos }); 
     } catch (e) { next(e); } 
 });
-
 app.delete('/api/ventas/eliminar/:id', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { 
         const id = z.coerce.number().int().parse(req.params.id); 
