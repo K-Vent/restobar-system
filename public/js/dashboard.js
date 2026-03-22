@@ -508,6 +508,7 @@ async function escaneoExitoso(textoDecodificado) {
 
 // 4. La Función Definitiva que Cuadra la Caja y Resta el Premio
 async function ejecutarCanjeAgora(idSocio, idMesa) {
+    document.getElementById('modal-perfil-vip').style.display = 'none';
     const confirmado = await mostrarConfirmacion("⚠️ CONFIRMACIÓN DE SEGURIDAD", "¿Aplicar el descuento? Esta acción no se puede deshacer.");
     if (!confirmado) return;
 
