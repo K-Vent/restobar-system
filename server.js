@@ -484,6 +484,62 @@ app.post('/api/clientes/:id/canjear', verificarSesion, async (req, res, next) =>
 });
 
 // ==========================================
+// INTEGRACIÓN LECTURA Y CANJE SEGURO
+// ==========================================
+
+// 1. Leer el QR del cliente y devolver sus datos a la caja
+app.get('/api/vip/escanear/:codigo', verificarSesion, async (req, res, next) => {
+    try {
+        const codigo = req.params.codigo; // Ej: "socio-5"
+        if (!codigo.startsWith('socio-')) return res.status(400).json({ error: "QR no válido para este sistema." });
+        
+        const idSocio = parseInt(codigo.split('-')[1]);
+        const result = await pool.query('SELECT id, nombre, sellos, nivel, premios_canjeados FROM clientes WHERE id = $1', [idSocio]);
+        
+        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado." });
+        
+        const c = result.rows[0];
+        const canjeados = c.premios_canjeados || 0;
+        const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
+        
+        res.json({ id: c.id, nombre: c.nombre, nivel: c.nivel, premios: premiosDisponibles });
+    } catch (e) { next(e); }
+});
+
+// 2. Transacción Atómica: Canjear premio Y descontar la hora en la mesa al mismo tiempo
+app.post('/api/transaccion/canje-seguro', verificarSesion, async (req, res, next) => {
+    const cliente = await pool.connect(); // Usamos un cliente dedicado para la transacción
+    try {
+        const { idSocio, idMesa } = req.body;
+        
+        await cliente.query('BEGIN'); // Iniciamos el blindaje de la base de datos
+
+        // A. Verificamos que el socio realmente tenga el premio
+        const resSocio = await cliente.query('SELECT sellos, premios_canjeados FROM clientes WHERE id = $1', [idSocio]);
+        const premiosDisponibles = Math.floor(resSocio.rows[0].sellos / 10) - (resSocio.rows[0].premios_canjeados || 0);
+        
+        if (premiosDisponibles <= 0) throw new Error("El socio no tiene premios disponibles.");
+
+        // B. Descontamos el premio de su cuenta VIP
+        await cliente.query('UPDATE clientes SET premios_canjeados = COALESCE(premios_canjeados, 0) + 1 WHERE id = $1', [idSocio]);
+
+        // C. Descontamos 60 minutos del tiempo de la mesa para cuadrar tu caja
+        await cliente.query("UPDATE mesas SET hora_inicio = hora_inicio + INTERVAL '1 hour' WHERE id = $1", [idMesa]);
+
+        // D. Dejamos registro en auditoría
+        await cliente.query("INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'CANJE VIP AGORA', 'Socio ID ' || $2 || ' usó 1 hora gratis en Mesa ' || $3)", [req.usuario.id, idSocio, idMesa]);
+
+        await cliente.query('COMMIT'); // Guardamos los 3 cambios de golpe
+        res.json({ success: true });
+    } catch (e) { 
+        await cliente.query('ROLLBACK'); // Si algo falla, cancelamos todo para no descuadrar nada
+        res.status(400).json({ error: e.message || "Error en la transacción" });
+    } finally {
+        cliente.release();
+    }
+});
+
+// ==========================================
 // 10.7. RUTAS API: GESTOR DE BENEFICIOS (CMS)
 // ==========================================
 // Obtener todos los beneficios (Público, para que el celular del cliente lo pueda leer)

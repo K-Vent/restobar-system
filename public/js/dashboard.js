@@ -1,3 +1,11 @@
+
+// ==========================================
+// ESTADO GLOBAL DEL SISTEMA
+// ==========================================
+let mesaActivaParaCobro = null; // Memoria para saber qué mesa está abierta en la caja
+
+// ... (aquí abajo siguen tus otras variables que ya tenías, como let mesas = [], etc.)
+
 /* ============================================================
    DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
    Versión: Premium POS / Alertas Dinámicas / Mudanzas
@@ -429,58 +437,67 @@ function iniciarCronometros() {
     }, 1000);
 }
 
-// ==========================================
-// 12. MÓDULO DE ESCÁNER QR (CLUB LA ESQUINA)
-// ==========================================
-let escanerActivo = null;
-
-function abrirScanner() {
-    document.getElementById('modal-scanner').style.display = 'flex';
-    
-    // Configuramos el escáner para que use la cámara trasera por defecto
-    escanerActivo = new Html5QrcodeScanner(
-        "reader", 
-        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, 
-        false
-    );
-    
-    escanerActivo.render(escaneoExitoso, escaneoFallido);
-}
-
-function cerrarScanner() {
-    if (escanerActivo) {
-        escanerActivo.clear(); // Apaga la cámara
-    }
-    document.getElementById('modal-scanner').style.display = 'none';
-}
-
 async function escaneoExitoso(textoDecodificado) {
-    // Si la lectura es exitosa, apagamos la cámara inmediatamente
-    cerrarScanner();
+    cerrarScanner(); // Apagamos la cámara de inmediato
     
-    // Las tarjetas de La Esquina tendrán el formato "socio-ID" (Ej. socio-5)
-    if (textoDecodificado.startsWith('socio-')) {
-        const idSocio = textoDecodificado.split('-')[1];
+    try {
+        // 1. Consultamos a la base de datos quién es el dueño del QR
+        const res = await fetch(`/api/vip/escanear/${textoDecodificado}`);
+        const data = await res.json();
         
-        try {
-            // Mandamos la orden al servidor para sumarle el sello
-            const res = await fetch(`/api/clientes/${idSocio}/sello`, { method: 'POST' });
-            const data = await res.json();
-            
-            if (res.ok) {
-                // Alerta premium mostrando el nuevo nivel del cliente
-                mostrarAlerta(`✅ ¡Sello añadido al socio! Ahora tiene ${data.sellos_actuales} sellos (Nivel: ${data.nivel})`, "success");
-            } else {
-                mostrarAlerta("Error al intentar añadir el sello en la base de datos.", "error");
-            }
-        } catch (error) {
-            mostrarAlerta("Error de red al procesar el sello.", "error");
+        if (!res.ok) return mostrarAlerta(data.error, "error");
+
+        // 2. Sumamos su sello de visita por haber venido hoy (En segundo plano)
+        fetch(`/api/clientes/${data.id}/sello`, { method: 'POST' });
+
+        // 3. Mostramos su Perfil en la Caja (Estilo Agora)
+        document.getElementById('vip-nombre-caja').innerText = data.nombre;
+        document.getElementById('vip-nivel-caja').innerText = `Socio ${data.nivel}`;
+        
+        const recompensaDiv = document.getElementById('vip-recompensa-caja');
+        const btnContainer = document.getElementById('btn-container-canje');
+        
+        if (data.premios > 0) {
+            recompensaDiv.innerHTML = `<span style="color: #D4AF37; font-weight: 900; font-size: 16px;">🎁 ¡Tiene ${data.premios} Hora(s) Gratis disponible(s)!</span>`;
+            btnContainer.innerHTML = `<button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; padding: 15px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)">✅ APLICAR PREMIO A ESTA MESA</button>`;
+        } else {
+            recompensaDiv.innerHTML = `<span style="color: #888; font-size: 14px;">No tiene recompensas disponibles aún.</span><br><span style="color: #25D366; font-weight: bold; font-size: 12px;">+1 Sello añadido por su visita.</span>`;
+            btnContainer.innerHTML = ''; // Ocultamos el botón porque no tiene premios
         }
-    } else {
-        mostrarAlerta("⚠️ Código QR inválido. No pertenece al Club La Esquina.", "warning");
+
+        // Abrimos el Perfil VIP
+        document.getElementById('modal-perfil-vip').style.display = 'flex';
+
+    } catch (error) {
+        mostrarAlerta("Error al leer la tarjeta VIP.", "error");
     }
 }
 
-function escaneoFallido(error) {
-    // Esta función se ejecuta silenciosamente mientras la cámara busca un QR. No hacemos nada.
+// 4. La Función Definitiva que Cuadra la Caja y Resta el Premio
+async function ejecutarCanjeAgora(idSocio, idMesa) {
+    const confirmado = await mostrarConfirmacion("⚠️ CONFIRMACIÓN DE SEGURIDAD", "¿Aplicar el descuento? Esta acción no se puede deshacer.");
+    if (!confirmado) return;
+
+    try {
+        const res = await fetch('/api/transaccion/canje-seguro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idSocio, idMesa })
+        });
+
+        if (res.ok) {
+            document.getElementById('modal-perfil-vip').style.display = 'none';
+            document.getElementById('modal-cobro').style.display = 'none';
+            mostrarAlerta("🎁 ¡Descuento Agora aplicado! La cuenta ha sido recalculada.", "success");
+            
+            // Recargamos el sistema para mostrar el nuevo total exacto
+            await cargarMesas();
+            abrirModalCobro(idMesa); 
+        } else {
+            const err = await res.json();
+            mostrarAlerta(err.error, "error");
+        }
+    } catch (error) {
+        mostrarAlerta("Error de conexión.", "error");
+    }
 }

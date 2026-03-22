@@ -142,6 +142,23 @@
             </div>
         </div>
     </div>
+    
+    <div id="modal-perfil-vip" class="modal-overlay" style="display: none; z-index: 99999;">
+        <div class="modal-box" style="width: 100%; max-width: 400px; padding: 25px; border: 1px solid #D4AF37;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 40px;">👑</span>
+                <h3 style="color: white; margin-top: 10px;" id="vip-nombre-caja">Cargando...</h3>
+                <span id="vip-nivel-caja" style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #D4AF37; border: 1px solid #D4AF37; padding: 3px 8px; border-radius: 4px;">NIVEL</span>
+            </div>
+            
+            <div id="vip-recompensa-caja" style="background: rgba(212, 175, 55, 0.1); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                </div>
+
+            <div id="btn-container-canje"></div>
+
+            <button class="btn-modal btn-cancel" onclick="document.getElementById('modal-perfil-vip').style.display='none'" style="width: 100%; margin-top: 10px;">Cerrar Perfil</button>
+        </div>
+    </div>
 <button onclick="location.href='/logout'" class="btn-logout-mobile">🚪</button>
 <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="/socket.io/socket.io.js"></script>
