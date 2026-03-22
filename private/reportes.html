@@ -38,6 +38,20 @@
     <main class="main-content">
         <div class="page-title">📈 Business Intelligence <span style="color: #D4AF37;">La Esquina</span></div>
         <p style="color: var(--text-muted);">Métricas de rendimiento en tiempo real para toma de decisiones.</p>
+        <div style="background: rgba(17, 17, 17, 0.8); border: 1px solid #D4AF37; padding: 15px; border-radius: 12px; margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(0)">Hoy</button>
+            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(7)">7 Días</button>
+            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(30)">30 Días</button>
+            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="cargarBI()">Histórico Total</button>
+            
+            <div style="width: 1px; height: 30px; background: #444; margin: 0 10px;"></div>
+            
+            <input type="date" id="f-inicio" style="background: #0a0a0c; color: #fff; border: 1px solid #D4AF37; padding: 8px 12px; border-radius: 6px; font-family: inherit;">
+            <span style="color: #888; font-size: 13px;">hasta</span>
+            <input type="date" id="f-fin" style="background: #0a0a0c; color: #fff; border: 1px solid #D4AF37; padding: 8px 12px; border-radius: 6px; font-family: inherit;">
+            
+            <button class="btn-mesa" style="background: #D4AF37; color: #000; padding: 8px 20px; font-size: 13px; font-weight: 900; margin-left: auto;" onclick="filtrarRangoCustom()">🔍 APLICAR FILTRO</button>
+        </div>
 
         <div class="bi-grid">
             <div class="bi-card">
@@ -58,92 +72,95 @@
     </main>
 
     <script>
-        // Configuración Global de la paleta de colores para que parezca Power BI Premium
+        // Configuración Global y Variables de Memoria para los gráficos
         Chart.defaults.color = '#888';
         Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
-        const colorOro = '#D4AF37';
-        const colorOroTransparente = 'rgba(212, 175, 55, 0.4)';
-        const colorVerde = '#2ecc71';
-        const colorMorado = '#8e44ad';
-        const colorAzul = '#2980b9';
+        const colorOro = '#D4AF37'; const colorOroTransparente = 'rgba(212, 175, 55, 0.4)';
+        const colorVerde = '#2ecc71'; const colorMorado = '#8e44ad'; const colorAzul = '#2980b9';
 
-        async function cargarBI() {
+        let chartMesasInst = null;
+        let chartProdInst = null;
+        let chartPagosInst = null;
+
+        // 1. Motor de consulta (Ahora recibe fechas opcionales)
+        async function cargarBI(inicio = null, fin = null) {
             try {
-                const res = await fetch('/api/analytics/dashboard');
+                let url = '/api/analytics/dashboard';
+                if (inicio && fin) url += `?inicio=${inicio}&fin=${fin}`;
+
+                const res = await fetch(url);
                 const data = await res.json();
 
-                if (data.error) return console.warn("Esperando datos reales de la BD. Usando simulación visual.");
+                if (data.error) return alert("Error al cargar los datos.");
 
                 renderizarGraficoMesas(data.mesas);
                 renderizarGraficoProductos(data.productos);
                 renderizarGraficoPagos(data.metodos);
-            } catch (error) {
-                console.error("Error al cargar BI:", error);
-            }
+            } catch (error) { console.error("Error al cargar BI:", error); }
         }
 
-        function renderizarGraficoMesas(datos) {
-            // Si la base de datos está vacía, usamos datos de muestra elegantes
-            const labels = datos.length > 0 ? datos.map(d => `Mesa ${d.numero_mesa}`) : ['Mesa 1', 'Mesa 2', 'Mesa 3', 'Mesa 4'];
-            const valores = datos.length > 0 ? datos.map(d => parseFloat(d.recaudacion)) : [450, 320, 500, 210];
+        // 2. Lógica de Botones Rápidos
+        function filtrarRapido(dias) {
+            const hoy = new Date();
+            const fechaFin = hoy.toISOString().split('T')[0];
+            
+            const fechaInicioObj = new Date();
+            fechaInicioObj.setDate(hoy.getDate() - dias);
+            const fechaInicio = fechaInicioObj.toISOString().split('T')[0];
 
-            new Chart(document.getElementById('chartMesas'), {
+            document.getElementById('f-inicio').value = fechaInicio;
+            document.getElementById('f-fin').value = fechaFin;
+            cargarBI(fechaInicio, fechaFin);
+        }
+
+        // 3. Lógica del Botón de Búsqueda Personalizada
+        function filtrarRangoCustom() {
+            const inicio = document.getElementById('f-inicio').value;
+            const fin = document.getElementById('f-fin').value;
+            if (!inicio || !fin) return alert("Por favor, selecciona fecha de inicio y fin.");
+            if (inicio > fin) return alert("La fecha de inicio no puede ser mayor a la final.");
+            cargarBI(inicio, fin);
+        }
+
+        // 4. Renderizadores con destrucción de memoria
+        function renderizarGraficoMesas(datos) {
+            if (chartMesasInst) chartMesasInst.destroy();
+            const labels = datos.length > 0 ? datos.map(d => `Mesa ${d.numero_mesa}`) : ['Sin datos'];
+            const valores = datos.length > 0 ? datos.map(d => parseFloat(d.recaudacion)) : [0];
+
+            chartMesasInst = new Chart(document.getElementById('chartMesas'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Ingresos Brutos (S/)',
-                        data: valores,
-                        backgroundColor: colorOroTransparente,
-                        borderColor: colorOro,
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#222' } }, x: { grid: { display: false } } } }
+                data: { labels, datasets: [{ label: 'Ingresos (S/)', data: valores, backgroundColor: colorOroTransparente, borderColor: colorOro, borderWidth: 2, borderRadius: 6 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#222' } }, x: { grid: { display: false } } } }
             });
         }
 
         function renderizarGraficoProductos(datos) {
-            const labels = datos.length > 0 ? datos.map(d => d.nombre) : ['Pilsen Callao', 'Alitas BB', 'Chilcano', 'Agua Cielo', 'Tequeños'];
-            const valores = datos.length > 0 ? datos.map(d => parseInt(d.total_vendido)) : [120, 45, 60, 30, 80];
+            if (chartProdInst) chartProdInst.destroy();
+            const labels = datos.length > 0 ? datos.map(d => d.nombre) : ['Sin datos'];
+            const valores = datos.length > 0 ? datos.map(d => parseInt(d.total_vendido)) : [1]; // El 1 es para que el anillo no desaparezca vacío
 
-            new Chart(document.getElementById('chartProductos'), {
+            chartProdInst = new Chart(document.getElementById('chartProductos'), {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: valores,
-                        backgroundColor: [colorOro, '#e5c158', '#b5952f', '#8c7324', '#594917'],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
+                data: { labels, datasets: [{ data: valores, backgroundColor: datos.length > 0 ? [colorOro, '#e5c158', '#b5952f', '#8c7324', '#594917'] : ['#222'], borderWidth: 0, hoverOffset: 10 }] },
                 options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'right', labels: { color: '#ccc' } } } }
             });
         }
 
         function renderizarGraficoPagos(datos) {
-            const labels = datos.length > 0 ? datos.map(d => d.metodo_pago) : ['Efectivo', 'Yape / Plin', 'Tarjeta'];
-            const valores = datos.length > 0 ? datos.map(d => parseFloat(d.monto)) : [850.50, 1200.00, 340.00];
+            if (chartPagosInst) chartPagosInst.destroy();
+            const labels = datos.length > 0 ? datos.map(d => d.metodo_pago) : ['Sin datos'];
+            const valores = datos.length > 0 ? datos.map(d => parseFloat(d.monto)) : [0];
 
-            new Chart(document.getElementById('chartPagos'), {
+            chartPagosInst = new Chart(document.getElementById('chartPagos'), {
                 type: 'polarArea',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: valores,
-                        backgroundColor: [colorVerde, colorMorado, colorAzul],
-                        borderColor: '#111',
-                        borderWidth: 3
-                    }]
-                },
+                data: { labels, datasets: [{ data: valores, backgroundColor: datos.length > 0 ? [colorVerde, colorMorado, colorAzul] : ['#222'], borderColor: '#111', borderWidth: 3 }] },
                 options: { responsive: true, scales: { r: { grid: { color: '#333' }, ticks: { display: false } } }, plugins: { legend: { position: 'bottom' } } }
             });
         }
 
-        // Iniciar el motor al abrir la página
-        document.addEventListener("DOMContentLoaded", cargarBI);
+        // Iniciar el motor al abrir la página con todo el historial
+        document.addEventListener("DOMContentLoaded", () => cargarBI());
     </script>
 </body>
 </html>

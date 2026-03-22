@@ -799,33 +799,48 @@ server.listen(PORT, () => console.log(`🎱 Servidor "La Esquina" ejecutándose 
 
 app.get('/api/analytics/dashboard', verificarSesion, soloAdmin, async (req, res, next) => {
     try {
-        // 1. KPI: Productos más vendidos (Histórico pagado)
+        const { inicio, fin } = req.query;
+        let filtroVentas = "";
+        let filtroPedidos = "";
+        let params = [];
+
+        // Si el cliente envía fechas, activamos el filtro temporal
+        if (inicio && fin) {
+            // Se le suma 1 día al final para que incluya las ventas hasta las 23:59:59 de ese día
+            filtroVentas = "AND v.fecha >= $1::date AND v.fecha < ($2::date + interval '1 day')";
+            filtroPedidos = "AND pm.fecha_creacion >= $1::date AND pm.fecha_creacion < ($2::date + interval '1 day')";
+            params = [inicio, fin];
+        }
+
+        // 1. KPI: Productos más vendidos (Top 5)
         const topProductos = await pool.query(`
             SELECT p.nombre, SUM(pm.cantidad) as total_vendido 
             FROM pedidos_mesa pm 
             JOIN productos p ON pm.producto_id = p.id 
-            WHERE pm.pagado = TRUE
+            WHERE pm.pagado = TRUE ${filtroPedidos}
             GROUP BY p.nombre 
             ORDER BY total_vendido DESC LIMIT 5
-        `);
+        `, params);
 
-        // 2. KPI: Ingresos por Método de Pago (Desde la tabla ventas)
+        // 2. KPI: Ingresos por Método de Pago
+        // (Reemplazamos v.fecha por fecha ya que en esta tabla no usamos alias 'v')
+        let filtroVentasDirecto = filtroVentas.replace(/v\.fecha/g, 'fecha');
         const ingresosMetodo = await pool.query(`
             SELECT metodo_pago, COUNT(id) as transacciones, SUM(total_final) as monto 
             FROM ventas 
-            WHERE metodo_pago IS NOT NULL
+            WHERE metodo_pago IS NOT NULL ${filtroVentasDirecto}
             GROUP BY metodo_pago
-        `);
+        `, params);
 
-        // 3. KPI: Rendimiento de las Mesas de Billar (Cruza ventas con la mesa original)
+        // 3. KPI: Rendimiento de las Mesas de Billar
         const rendimientoMesas = await pool.query(`
             SELECT m.numero_mesa, COUNT(v.id) as usos, SUM(v.total_tiempo) as recaudacion 
             FROM ventas v
             JOIN mesas m ON v.mesa_id = m.id
-            WHERE v.total_tiempo > 0
+            WHERE v.total_tiempo > 0 ${filtroVentas}
             GROUP BY m.numero_mesa 
             ORDER BY recaudacion DESC LIMIT 5
-        `);
+        `, params);
 
         res.json({
             productos: topProductos.rows,
