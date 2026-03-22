@@ -69,6 +69,25 @@
                 <canvas id="chartPagos" height="200"></canvas>
             </div>
         </div>
+        <div style="margin-top: 40px;">
+            <div class="bi-title">Historial de Cierres de Caja <span class="bi-icon">🔒</span></div>
+            <div style="background: #111; border: 1px solid #333; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <table style="width: 100%; border-collapse: collapse; color: white; text-align: left; font-size: 14px;">
+                    <thead style="background: #1a1a1d; border-bottom: 1px dashed #444;">
+                        <tr>
+                            <th style="padding: 15px;">Fecha de Cierre</th>
+                            <th style="padding: 15px;">Ingresos</th>
+                            <th style="padding: 15px;">Gastos</th>
+                            <th style="padding: 15px; color: #D4AF37;">Ganancia Neta</th>
+                            <th style="padding: 15px;">Mesas Atendidas</th>
+                            <th style="padding: 15px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-cierres">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -159,8 +178,70 @@
             });
         }
 
-        // Iniciar el motor al abrir la página con todo el historial
-        document.addEventListener("DOMContentLoaded", () => cargarBI());
+        // ==========================================
+        // 5. MOTOR DEL HISTORIAL DE CIERRES
+        // ==========================================
+        async function cargarHistorialCierres() {
+            try {
+                const res = await fetch('/api/reportes/historial');
+                const historial = await res.json();
+                const tbody = document.getElementById('tabla-cierres');
+                tbody.innerHTML = '';
+
+                if (historial.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #888;">No hay cierres de caja registrados en el sistema.</td></tr>';
+                    return;
+                }
+
+                historial.forEach(c => {
+                    // Calculamos la ganancia neta restando gastos
+                    const gananciaNeta = parseFloat(c.total_ventas) - parseFloat(c.total_gastos);
+                    // Formateamos la fecha a formato de Perú
+                    const fecha = new Date(c.fecha_cierre).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
+                    
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #222; transition: 0.2s;">
+                            <td style="padding: 15px;">${fecha}</td>
+                            <td style="padding: 15px; color: ${colorVerde}; font-weight: bold;">S/ ${parseFloat(c.total_ventas).toFixed(2)}</td>
+                            <td style="padding: 15px; color: #ff4757;">S/ ${parseFloat(c.total_gastos).toFixed(2)}</td>
+                            <td style="padding: 15px; color: ${colorOro}; font-weight: 900; font-size: 15px;">S/ ${gananciaNeta.toFixed(2)}</td>
+                            <td style="padding: 15px;">🎱 ${c.cantidad_mesas}</td>
+                            <td style="padding: 15px; text-align: center;">
+                                <button style="background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s;" onclick="eliminarCierre(${c.id})" title="Anular Cierre">🗑️ Anular</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar el historial:", error);
+            }
+        }
+
+        async function eliminarCierre(id) {
+            const pass = prompt("⚠️ PELIGRO: Anular este cierre eliminará TODO el historial de ventas de ese turno. Para continuar, escribe 'ANULAR':");
+            if (pass !== 'ANULAR') return alert("Operación de seguridad cancelada.");
+
+            try {
+                const res = await fetch(`/api/reportes/eliminar/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert("✅ Cierre anulado correctamente. La caja ha sido recalculada.");
+                    cargarHistorialCierres(); // Recargamos la tabla
+                    cargarBI(); // Recargamos los gráficos porque los ingresos cambiaron
+                } else {
+                    alert("Error al intentar anular el cierre en el servidor.");
+                }
+            } catch (error) {
+                alert("Error de conexión.");
+            }
+        }
+
+    
+
+        // Iniciar todos los motores al abrir la página
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarBI();
+            cargarHistorialCierres();
+        });
     </script>
 </body>
 </html>
