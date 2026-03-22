@@ -437,6 +437,39 @@ function iniciarCronometros() {
     }, 1000);
 }
 
+// ==========================================
+// MÓDULO DE ESCÁNER QR Y CÁMARA
+// ==========================================
+let escanerActivo = null;
+
+function abrirScanner() {
+    // 1. Mostramos la ventana negra
+    document.getElementById('modal-scanner').style.display = 'flex';
+    
+    // 2. Encendemos la cámara con la librería
+    escanerActivo = new Html5QrcodeScanner(
+        "reader", 
+        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, 
+        false
+    );
+    
+    // 3. Le decimos qué hacer si lee un código o si falla
+    escanerActivo.render(escaneoExitoso, escaneoFallido);
+}
+
+function cerrarScanner() {
+    // Apagamos la cámara para que no gaste batería
+    if (escanerActivo) {
+        escanerActivo.clear(); 
+    }
+    document.getElementById('modal-scanner').style.display = 'none';
+}
+
+function escaneoFallido(error) {
+    // Esta función debe existir para que la librería no de errores mientras busca un QR.
+    // La dejamos vacía para que trabaje en silencio.
+}
+
 async function escaneoExitoso(textoDecodificado) {
     cerrarScanner(); // Apagamos la cámara de inmediato
     
