@@ -66,7 +66,6 @@ app.use('/api/usuarios', require('./routes/usuarios.routes'));
 // 👇 CONEXIÓN DE MÓDULOS MVC 👇
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
 app.use('/api/productos', require('./routes/inventario.routes')); // <-- Agrega esta línea
-
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
 
@@ -645,6 +644,7 @@ app.delete('/api/ventas/eliminar/:id', verificarSesion, soloAdmin, async (req, r
         res.json({ success: true }); io.emit('actualizar_caja'); 
     } catch (e) { next(e); } 
 });
+
 
 app.post('/api/productos/agregar-stock', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { 
