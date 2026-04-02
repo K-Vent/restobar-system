@@ -5,6 +5,7 @@
 
 require('dotenv').config();
 const express = require('express');
+const { verificarSesion, soloAdmin } = require('./middlewares/auth.middleware');
 const http = require('http'); 
 const { Server } = require('socket.io'); 
 const path = require('path');
