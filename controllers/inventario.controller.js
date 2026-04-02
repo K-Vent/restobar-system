@@ -12,12 +12,12 @@ const obtenerProductos = async (req, res, next) => {
 
 const crearProducto = async (req, res, next) => {
     try {
-        // Ajusta estos campos si tu tabla tiene más columnas (ej. categoria)
-        const { nombre, precio_venta, stock, categoria } = req.body; 
+        const { nombre, precio, stock, categoria } = req.body; 
         
+        // Fíjate en la consulta SQL: insertamos en "precio_venta" el valor de "precio"
         await pool.query(
-            "INSERT INTO productos (nombre, precio_venta, stock, categoria, estado) VALUES ($1, $2, $3, $4, 'activo')", 
-            [nombre, precio_venta, stock, categoria]
+            "INSERT INTO productos (nombre, precio_venta, stock, categoria, estado) VALUES ($1, $2, $3,$4, 'activo')", 
+            [nombre, precio, stock, categoria]
         );
         res.json({ success: true });
     } catch (e) { 
