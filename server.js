@@ -61,33 +61,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser()); // Activa la lectura de cookies de alta velocidad
+app.use('/api/usuarios', require('./routes/usuarios.routes'));
 
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
-// ==========================================
-// 3. MIDDLEWARES DE SEGURIDAD (STATELESS JWT)
-// ==========================================
-const verificarSesion = (req, res, next) => { 
-    const token = req.cookies.token; // Lee el token directamente (Sin ir a la BD)
-    if (!token) { 
-        if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autorizado.' }); 
-        return res.redirect('/'); 
-    } 
-    try { 
-        const decoded = jwt.verify(token, SECRET_KEY); 
-        req.usuario = decoded; // Adjuntamos los datos descifrados a la petición
-        next(); 
-    } catch (e) { 
-        res.clearCookie('token');
-        if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Sesión expirada.' }); 
-        res.redirect('/'); 
-    } 
-};
 
-const soloAdmin = (req, res, next) => { 
-    if (req.usuario && req.usuario.rol === 'admin') return next(); 
-    res.status(403).json({ error: '⛔ Acceso Denegado. Permisos insuficientes.' }); 
-};
 
 // ==========================================
 // 4. RUTAS DE VISTAS (FRONTEND PROTEGIDO)
@@ -736,42 +714,6 @@ app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res, 
 // ==========================================
 // 10.5. RUTAS API: GESTIÓN DE EMPLEADOS
 // ==========================================
-app.get('/api/usuarios', verificarSesion, soloAdmin, async (req, res, next) => { 
-    try { 
-        // No enviamos las contraseñas al frontend por seguridad
-        const r = await pool.query('SELECT id, username, rol FROM usuarios ORDER BY id ASC'); 
-        res.json(r.rows); 
-    } catch (e) { next(e); } 
-});
-
-app.post('/api/usuarios/nuevo', verificarSesion, soloAdmin, async (req, res, next) => { 
-    try { 
-        const { username, password, rol } = usuarioSchema.parse(req.body); 
-        
-        // 1. Verificar si el usuario ya existe
-        const existe = await pool.query('SELECT id FROM usuarios WHERE username = $1', [username]);
-        if (existe.rows.length > 0) return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
-
-        // 2. Encriptar la contraseña (Bcrypt)
-        const hash = await bcrypt.hash(password, 10); 
-        
-        // 3. Guardar en BD
-        await pool.query('INSERT INTO usuarios (username, password, rol) VALUES ($1, $2, $3)', [username, hash, rol]); 
-        res.json({ success: true }); 
-    } catch (e) { next(e); } 
-});
-
-app.delete('/api/usuarios/eliminar/:id', verificarSesion, soloAdmin, async (req, res, next) => { 
-    try { 
-        const id = z.coerce.number().int().parse(req.params.id); 
-        
-        // Evitar que el administrador se borre a sí mismo por accidente
-        if (id === req.usuario.id) return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta actual' });
-        
-        await pool.query('DELETE FROM usuarios WHERE id = $1', [id]); 
-        res.json({ success: true }); 
-    } catch (e) { next(e); } 
-});
 
 
 // ==========================================
