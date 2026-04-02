@@ -63,6 +63,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser()); // Activa la lectura de cookies de alta velocidad
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
+// 👇 CONEXIÓN DE MÓDULOS MVC 👇
+app.use('/api/usuarios', require('./routes/usuarios.routes'));
+app.use('/api/productos', require('./routes/inventario.routes')); // <-- Agrega esta línea
 
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
@@ -640,25 +643,6 @@ app.delete('/api/ventas/eliminar/:id', verificarSesion, soloAdmin, async (req, r
         const id = z.coerce.number().int().parse(req.params.id); 
         await pool.query('DELETE FROM ventas WHERE id = $1', [id]); 
         res.json({ success: true }); io.emit('actualizar_caja'); 
-    } catch (e) { next(e); } 
-});
-
-app.get('/api/productos', verificarSesion, async (req, res, next) => { 
-    try { const r = await pool.query('SELECT * FROM productos ORDER BY nombre ASC'); res.json(r.rows); } catch (e) { next(e); } 
-});
-
-app.post('/api/productos/nuevo', verificarSesion, soloAdmin, async (req, res, next) => { 
-    try { 
-        const val = nuevoProductoSchema.parse(req.body); 
-        await pool.query('INSERT INTO productos (nombre, precio_venta, stock, categoria) VALUES ($1, $2, $3, $4)', [val.nombre, val.precio, val.stock, val.categoria]); res.json({success:true}); 
-    } catch(e){ next(e); } 
-});
-
-app.delete('/api/productos/eliminar/:id', verificarSesion, soloAdmin, async (req, res, next) => { 
-    try { 
-        const id = z.coerce.number().int().parse(req.params.id); 
-        await pool.query('DELETE FROM pedidos_mesa WHERE producto_id = $1', [id]); 
-        await pool.query('DELETE FROM productos WHERE id = $1', [id]); res.json({ success: true }); 
     } catch (e) { next(e); } 
 });
 
