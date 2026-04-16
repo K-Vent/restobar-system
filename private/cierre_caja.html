@@ -152,11 +152,15 @@
                 const data = await res.json();
 
                 // 1. Llenamos las tarjetas de arriba (Dinero Global)
-                document.getElementById('lbl-total-ventas').innerText = 'S/ ' + data.total_ventas.toFixed(2);
-                document.getElementById('lbl-gastos').innerText = 'S/ ' + data.total_gastos.toFixed(2);
-                const totalDigital = data.desglose.digital + (data.desglose.tarjeta || 0);
+                document.getElementById('lbl-total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas || 0).toFixed(2);
+                document.getElementById('lbl-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos || 0).toFixed(2);
+                
+                const digital = parseFloat(data.desglose?.digital || 0);
+                const tarjeta = parseFloat(data.desglose?.tarjeta || 0);
+                const totalDigital = digital + tarjeta;
                 document.getElementById('lbl-digital').innerText = 'S/ ' + totalDigital.toFixed(2);
-                document.getElementById('lbl-en-cajon').innerText = 'S/ ' + data.dinero_en_cajon.toFixed(2);
+                
+                document.getElementById('lbl-en-cajon').innerText = 'S/ ' + parseFloat(data.dinero_en_cajon || 0).toFixed(2);
 
                 // 2. Variables para las estadísticas desglosadas
                 let ingresosBillar = 0;
@@ -170,9 +174,12 @@
                     cantidadTickets = data.lista.length;
                     
                     data.lista.forEach(venta => {
-                        // Sumamos de manera precisa cuánto fue por Tiempo y cuánto por Producto
-                        ingresosBillar += parseFloat(venta.total_tiempo || 0);
-                        ingresosConsumo += parseFloat(venta.total_productos || 0);
+                        // EXTRACCIÓN BLINDADA: Aseguramos que sea número aunque llegue como texto o nulo
+                        const tiempoCobrado = parseFloat(venta.total_tiempo) || 0;
+                        const productosCobrados = parseFloat(venta.total_productos) || 0;
+                        
+                        ingresosBillar += tiempoCobrado;
+                        ingresosConsumo += productosCobrados;
 
                         let concepto = venta.tipo_mesa === 'BILLAR' ? '🎱 Billar' : '🛒 Consumo';
                         let metodo = venta.metodo_pago || 'EFECTIVO';
@@ -183,7 +190,7 @@
 
                         tbody.innerHTML += `
                             <tr>
-                                <td class="text-muted">${venta.hora}</td>
+                                <td class="text-muted">${venta.hora || '--:--'}</td>
                                 <td class="fw-bold">${concepto} <span class="text-muted small ms-2">#${venta.id}</span></td>
                                 <td><span class="badge border ${borderClass}">${metodo}</span></td>
                                 <td class="text-end text-white fw-bold">S/ ${parseFloat(venta.total_final).toFixed(2)}</td>
@@ -197,12 +204,14 @@
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay ventas registradas en el turno actual.</td></tr>';
                 }
 
-                // 3. Pintamos las estadísticas desglosadas en la pantalla
+                // 3. Pintamos las estadísticas desglosadas (con blindaje de 2 decimales)
                 document.getElementById('lbl-stat-billar').innerText = 'S/ ' + ingresosBillar.toFixed(2);
                 document.getElementById('lbl-stat-consumo').innerText = 'S/ ' + ingresosConsumo.toFixed(2);
                 document.getElementById('lbl-stat-tickets').innerText = cantidadTickets;
 
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Error al procesar los datos de caja:", e); 
+            }
         }
 
         function cerrarModal() { document.getElementById('modal-confirm').style.display = 'none'; }
