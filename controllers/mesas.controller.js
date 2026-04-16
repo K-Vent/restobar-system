@@ -22,11 +22,21 @@ const cambiarMesaSchema = z.object({
 // ==========================================
 // 2. FUNCIONES AUXILIARES
 // ==========================================
+// ==========================================
+// 2. FUNCIONES AUXILIARES (Blindada)
+// ==========================================
 async function getPrecioBillar() {
-    const r = await pool.query("SELECT valor FROM configuracion WHERE clave = 'PRECIO_HORA_BILLAR'");
-    return parseFloat(r.rows[0]?.valor || 15);
+    try {
+        // Intenta buscar en la base de datos
+        const r = await pool.query("SELECT valor FROM configuracion WHERE clave = 'PRECIO_HORA_BILLAR'");
+        return parseFloat(r.rows[0]?.valor || 10);
+    } catch (error) {
+        // Si la tabla no existe o hay error, no colapsa el servidor (Error 500)
+        // Simplemente imprime una alerta en rojo y devuelve la tarifa de 10 Soles.
+        console.error("⚠️ Alerta en DB: No se pudo leer la tarifa. Usando S/ 10 por defecto.");
+        return 10.00; 
+    }
 }
-
 // ==========================================
 // 3. CONTROLADORES (Lógica de Negocio)
 // ==========================================
