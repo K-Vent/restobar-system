@@ -67,7 +67,8 @@ app.use('/api/usuarios', require('./routes/usuarios.routes'));
 // 👇 CONEXIÓN DE MÓDULOS MVC 👇
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
 app.use('/api/productos', require('./routes/inventario.routes'));
-app.use('/api/mesas', require('./routes/mesas.routes')); // <-- Agrega esta línea
+app.use('/api/mesas', require('./routes/mesas.routes'));
+app.use('/api', require('./routes/vip.routes')); // <-- Agrega esta línea
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
 
@@ -272,186 +273,16 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
 // 10.6. RUTAS API: CRM Y FIDELIZACIÓN (CLUB LA ESQUINA)
 // ==========================================
 
-// Obtener todos los clientes
-app.get('/api/clientes', verificarSesion, async (req, res, next) => {
-    try {
-        const result = await pool.query('SELECT * FROM clientes ORDER BY sellos DESC, fecha_registro DESC');
-        res.json(result.rows);
-    } catch (e) { next(e); }
-});
-
-// Registrar un nuevo cliente VIP
-app.post('/api/clientes/nuevo', verificarSesion, async (req, res, next) => {
-    try {
-        // 1. EL RADAR: Esto imprimirá en la consola de tu servidor (Render/Terminal) qué está recibiendo
-        console.log("📥 RECIBIENDO DATOS DEL SOCIO:", req.body); 
-
-        const { nombre, telefono, pin } = req.body; 
-        
-        if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
-        
-        // 2. EL ESCUDO: Si el PIN llega vacío o no llega, el servidor se detiene aquí y te lanza el error
-        if (!pin || pin.trim() === "") {
-            return res.status(400).json({ error: "⚠️ ALERTA: El PIN no está llegando al servidor desde la página web." });
-        }
-
-        if (telefono) {
-            const existe = await pool.query('SELECT id FROM clientes WHERE telefono = $1', [telefono]);
-            if (existe.rows.length > 0) return res.status(400).json({ error: "Este teléfono ya está registrado" });
-        }
-
-        // 3. LA INSERCIÓN EXACTA: Ya no hay '1234' por defecto. Guarda lo que tú escribas.
-        await pool.query('INSERT INTO clientes (nombre, telefono, pin) VALUES ($1, $2, $3)', [nombre, telefono, pin]);
-        
-        res.json({ success: true });
-    } catch (e) { next(e); }
-});
-// Inicio de Sesión para Clientes VIP
-app.post('/api/vip/login', async (req, res, next) => {
-    try {
-        const { telefono, pin } = req.body;
-        
-        // Buscamos al cliente por teléfono y PIN
-        const result = await pool.query('SELECT id, nombre, sellos, nivel, premios_canjeados FROM clientes WHERE telefono = $1 AND pin = $2', [telefono, pin]);
-        
-        if (result.rows.length === 0) return res.status(401).json({ error: "Teléfono o PIN incorrectos." });
-        
-        res.json(result.rows[0]);
-    } catch (e) { next(e); }
-});
-// Añadir un sello (Punto) al cliente
-app.post('/api/clientes/:id/sello', verificarSesion, async (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        
-        // Sumamos 1 sello
-        await pool.query('UPDATE clientes SET sellos = sellos + 1 WHERE id = $1', [id]);
-        
-        // Lógica de Niveles (Opcional, pero le da un toque premium)
-        const cliente = await pool.query('SELECT sellos FROM clientes WHERE id = $1', [id]);
-        const totalSellos = cliente.rows[0].sellos;
-        
-        let nuevoNivel = 'Bronce';
-        if (totalSellos >= 10) nuevoNivel = 'Plata';
-        if (totalSellos >= 20) nuevoNivel = 'Oro 👑';
-
-        await pool.query('UPDATE clientes SET nivel = $1 WHERE id = $2', [nuevoNivel, id]);
-
-        res.json({ success: true, sellos_actuales: totalSellos, nivel: nuevoNivel });
-    } catch (e) { next(e); }
-});
-
-// Canjear un premio (1 hora de billar gratis)
-app.post('/api/clientes/:id/canjear', verificarSesion, async (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        
-        // 1. Consultamos el estado exacto del cliente
-        const result = await pool.query('SELECT sellos, premios_canjeados FROM clientes WHERE id = $1', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado" });
-        
-        const c = result.rows[0];
-        const canjeados = c.premios_canjeados || 0;
-        
-        // 2. Calculamos matemáticamente si tiene premios disponibles
-        const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
-
-        if (premiosDisponibles > 0) {
-            // 3. Si tiene, le sumamos 1 al contador de premios cobrados
-            await pool.query('UPDATE clientes SET premios_canjeados = COALESCE(premios_canjeados, 0) + 1 WHERE id = $1', [id]);
-            res.json({ success: true });
-        } else {
-            res.status(400).json({ error: "Este socio no tiene recompensas pendientes de cobro." });
-        }
-    } catch (e) { next(e); }
-});
 
 // ==========================================
 // INTEGRACIÓN LECTURA Y CANJE SEGURO
 // ==========================================
 
-// 1. Leer el QR del cliente y devolver sus datos a la caja
-app.get('/api/vip/escanear/:codigo', verificarSesion, async (req, res, next) => {
-    try {
-        const codigo = req.params.codigo; // Ej: "socio-5"
-        if (!codigo.startsWith('socio-')) return res.status(400).json({ error: "QR no válido para este sistema." });
-        
-        const idSocio = parseInt(codigo.split('-')[1]);
-        const result = await pool.query('SELECT id, nombre, sellos, nivel, premios_canjeados FROM clientes WHERE id = $1', [idSocio]);
-        
-        if (result.rows.length === 0) return res.status(404).json({ error: "Socio no encontrado." });
-        
-        const c = result.rows[0];
-        const canjeados = c.premios_canjeados || 0;
-        const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
-        
-        res.json({ id: c.id, nombre: c.nombre, nivel: c.nivel, premios: premiosDisponibles });
-    } catch (e) { next(e); }
-});
-
-// 2. Transacción Atómica: Canjear premio Y descontar la hora en la mesa al mismo tiempo
-app.post('/api/transaccion/canje-seguro', verificarSesion, async (req, res, next) => {
-    const cliente = await pool.connect(); // Usamos un cliente dedicado para la transacción
-    try {
-        const { idSocio, idMesa } = req.body;
-        
-        await cliente.query('BEGIN'); // Iniciamos el blindaje de la base de datos
-
-        // A. Verificamos que el socio realmente tenga el premio
-        const resSocio = await cliente.query('SELECT sellos, premios_canjeados FROM clientes WHERE id = $1', [idSocio]);
-        const premiosDisponibles = Math.floor(resSocio.rows[0].sellos / 10) - (resSocio.rows[0].premios_canjeados || 0);
-        
-        if (premiosDisponibles <= 0) throw new Error("El socio no tiene premios disponibles.");
-
-        // B. Descontamos el premio de su cuenta VIP
-        await cliente.query('UPDATE clientes SET premios_canjeados = COALESCE(premios_canjeados, 0) + 1 WHERE id = $1', [idSocio]);
-
-        // C. Descontamos 60 minutos del tiempo de la mesa para cuadrar tu caja
-        await cliente.query("UPDATE mesas SET hora_inicio = hora_inicio + INTERVAL '1 hour' WHERE id = $1", [idMesa]);
-
-        // D. Dejamos registro en auditoría
-        await cliente.query("INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'CANJE VIP AGORA', 'Socio ID ' || $2 || ' usó 1 hora gratis en Mesa ' || $3)", [req.usuario.id, idSocio, idMesa]);
-
-        await cliente.query('COMMIT'); // Guardamos los 3 cambios de golpe
-        res.json({ success: true });
-    } catch (e) { 
-        await cliente.query('ROLLBACK'); // Si algo falla, cancelamos todo para no descuadrar nada
-        res.status(400).json({ error: e.message || "Error en la transacción" });
-    } finally {
-        cliente.release();
-    }
-});
 
 // ==========================================
 // 10.7. RUTAS API: GESTOR DE BENEFICIOS (CMS)
 // ==========================================
-// Obtener todos los beneficios (Público, para que el celular del cliente lo pueda leer)
-app.get('/api/beneficios', async (req, res, next) => {
-    try {
-        const result = await pool.query('SELECT * FROM beneficios ORDER BY id ASC');
-        res.json(result.rows);
-    } catch (e) { next(e); }
-});
 
-// Añadir un nuevo beneficio (Solo el Admin/Sistema)
-app.post('/api/beneficios', verificarSesion, async (req, res, next) => {
-    try {
-        const { nivel, descripcion } = req.body;
-        if (!nivel || !descripcion) return res.status(400).json({ error: "Faltan datos" });
-        
-        await pool.query('INSERT INTO beneficios (nivel, descripcion) VALUES ($1, $2)', [nivel, descripcion]);
-        res.json({ success: true });
-    } catch (e) { next(e); }
-});
-
-// Eliminar un beneficio
-app.delete('/api/beneficios/:id', verificarSesion, async (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        await pool.query('DELETE FROM beneficios WHERE id = $1', [id]);
-        res.json({ success: true });
-    } catch (e) { next(e); }
-});
 /* ============================================================
    API AUDITORÍA FORENSE (ISO 27001)
    ============================================================ */
