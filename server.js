@@ -319,7 +319,7 @@ app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
             pool.query(`SELECT COALESCE(SUM(total_tiempo), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
             pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago = 'EFECTIVO' THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_efectivo ELSE 0 END), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
             pool.query(`SELECT COALESCE(SUM(CASE WHEN metodo_pago IN ('YAPE', 'PLIN', 'TARJETA') THEN total_final WHEN metodo_pago = 'MIXTO' THEN pago_digital ELSE 0 END), 0) as t FROM ventas WHERE fecha > ${filtroCierre}`), 
-            pool.query(`SELECT id, tipo_mesa, total_final, metodo_pago, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > ${filtroCierre} ORDER BY fecha DESC`) 
+            pool.query(`SELECT *, TO_CHAR(fecha, 'HH24:MI') as hora FROM ventas WHERE fecha > ${filtroCierre} ORDER BY fecha DESC`) 
         ]; 
         
         const results = await Promise.all(queries); 
