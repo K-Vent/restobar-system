@@ -1,577 +1,157 @@
-/* =========================================
-   DASHBOARD CSS - PREMIUM DARK MODE POS
-   ========================================= */
+/* ============================================================
+   LA ESQUINA - CORE CSS (Optimizado para Bootstrap 5 Darkly)
+   ============================================================ */
 
-:root {
-    --bg-main: #0a0a0c;
-    --bg-sidebar: #131315;
-    --bg-card: #1c1c1e;
-    --bg-card-hover: #242427;
-    
-    --gold: #f1c40f;
-    --gold-dim: rgba(241, 196, 15, 0.15);
-    --gold-glow: 0 0 15px rgba(241, 196, 15, 0.3);
-    
-    --danger: #ff4757;
-    --danger-dim: rgba(255, 71, 87, 0.1);
-    
-    --success: #2ed573;
-    --success-dim: rgba(46, 213, 115, 0.1);
-    
-    --text-main: #ffffff;
-    --text-muted: #a4b0be;
-    --border: #2f3542;
-    --border-light: #3a404d;
+/* 1. ESTRUCTURA Y PANTALLA COMPLETA */
+body, html {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #1a1a1d; /* Fondo oscuro premium */
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-/* --- BASE --- */
-body { 
-    background: var(--bg-main); 
-    color: var(--text-main); 
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-    margin: 0; 
-    display: flex; 
-    min-height: 100vh; 
-    overflow-x: hidden; 
+/* 2. SIDEBAR (Navegación Lateral Fija) */
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: #0a0a0c;
+    border-right: 1px solid #222;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
 }
 
-/* --- SIDEBAR ELEGANT --- */
-.sidebar { 
-    width: 260px; 
-    background-color: var(--bg-sidebar); 
-    border-right: 1px solid var(--border); 
-    display: flex; 
-    flex-direction: column; 
-    position: fixed; 
-    height: 100%; 
-    z-index: 500;
-    box-shadow: 5px 0 25px rgba(0,0,0,0.5);
-}
-
-.sidebar-header { 
-    padding: 30px 20px; 
-    text-align: center; 
-    border-bottom: 1px solid var(--border); 
-    background: radial-gradient(circle at center, #1a1a1d 0%, var(--bg-sidebar) 100%);
-}
-
-.logo-img { 
-    width: 100%; 
-    max-width: 180px; 
-    height: auto; 
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-}
-
-.btn-gasto {
-    margin: 20px;
-    padding: 14px;
-    background: #2f3542;
-    color: white;
-    border: 1px solid #444;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 13px;
-}
-
-.btn-gasto:hover {
-    background: var(--text-main);
-    color: black;
-    transform: translateY(-2px);
-}
-
-.menu {
-    display: flex;
-    flex-direction: column;
-    padding: 10px 0;
-    flex-grow: 1; /* Esto ayuda a empujar el botón de salir hacia abajo */
-}
-
-.menu-link { 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
-    padding: 16px 25px; 
-    color: var(--text-muted); 
-    text-decoration: none; 
-    transition: all 0.3s; 
-    border-left: 4px solid transparent;
-    font-weight: 500;
-    font-size: 15px;
-}
-
-.menu-link:hover, .menu-link.active { 
-    background: var(--bg-card); 
-    color: var(--gold); 
-    border-left: 4px solid var(--gold); 
-    box-shadow: inset 20px 0 20px -20px var(--gold-dim);
-}
-
-/* --- NUEVOS ESTILOS PARA SALIR (Versión PC y Oculto) --- */
-.btn-logout-mobile { 
-    display: none; 
-}
-
-.link-logout-pc {
-    margin-top: auto; 
-    margin-bottom: 20px;
-    color: var(--text-muted) !important;
-    border-left: 3px solid transparent !important;
+.main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    padding: 30px;
     transition: all 0.3s ease;
 }
 
-.link-logout-pc:hover {
-    background: var(--danger-dim) !important;
-    color: var(--danger) !important;
-    border-left: 3px solid var(--danger) !important;
+/* 3. RESPONSIVE (Móviles y Tablets) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%; height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+    .main-content {
+        margin-left: 0; width: 100%;
+        padding: 15px;
+    }
 }
 
-/* --- MAIN CONTENT & PANELS --- */
-.main-content { 
-    margin-left: 260px; 
-    padding: 40px; 
-    width: calc(100% - 260px); 
-    box-sizing: border-box;
+/* ============================================================
+   4. COMPONENTES NATIVOS DEL SISTEMA (Requeridos por el JS)
+   ============================================================ */
+
+/* MODALES (Ventanas emergentes) */
+.modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(5px); /* Efecto vidrio moderno */
 }
 
-.money-panel { 
-    display: flex; 
-    gap: 25px; 
-    margin-bottom: 40px; 
-}
-
-.stat-card { 
-    background: var(--bg-card); 
-    padding: 25px 20px; 
-    border-radius: 16px; 
-    border: 1px solid var(--border); 
-    flex: 1; 
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    position: relative;
+.modal-box {
+    background: #1a1a1d;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 0;
+    width: 90%; max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
     overflow: hidden;
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 4px;
-}
-.stat-card:nth-child(1)::before { background: var(--success); }
-.stat-card:nth-child(2)::before { background: var(--danger); }
-.card-real { 
-    border: 1px solid rgba(241, 196, 15, 0.4) !important; 
-    background: linear-gradient(145deg, #1c1c1e 0%, #2a2510 100%);
-    box-shadow: var(--gold-glow);
-}
-.card-real::before { background: var(--gold); }
-
-.stat-title { 
-    font-size: 13px; 
-    color: var(--text-muted); 
-    text-transform: uppercase; 
-    letter-spacing: 1.5px; 
-    margin-bottom: 12px; 
-    font-weight: 600;
-}
-
-.stat-value { 
-    font-size: 34px; 
-    font-weight: 800; 
-    letter-spacing: -1px;
-}
-
-#total-ventas { color: var(--success); }
-#total-gastos { color: var(--danger); }
-#total-real { color: var(--gold); text-shadow: 0 0 10px rgba(241,196,15,0.4); }
-
-/* --- GRID DE MESAS (POS STYLE) --- */
-.grid-mesas { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-    gap: 25px; 
-}
-
-.mesa-card { 
-    background: var(--bg-card); 
-    border-radius: 16px; 
-    padding: 25px; 
-    border: 1px solid var(--border); 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-}
-
-.mesa-card:hover { 
-    transform: translateY(-5px); 
-    background: var(--bg-card-hover);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-
-.mesa-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 20px; 
-}
-
-.mesa-titulo { 
-    font-size: 22px; 
-    font-weight: 800; 
-    color: white; 
-    letter-spacing: -0.5px;
-}
-
-.mesa-estado { 
-    font-size: 12px; 
-    padding: 6px 12px; 
-    border-radius: 20px; 
-    font-weight: 700; 
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.libre { 
-    background: var(--success-dim); 
-    color: var(--success); 
-    border: 1px solid rgba(46, 213, 115, 0.3); 
-}
-
-.ocupada { 
-    background: var(--danger-dim); 
-    color: var(--danger); 
-    border: 1px solid rgba(255, 71, 87, 0.3); 
-    animation: pulseBorder 2s infinite;
-}
-
-@keyframes pulseBorder {
-    0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
-}
-
-/* --- CRONÓMETRO DIGITAL PANTALLA --- */
-.info-tiempo { 
-    font-size: 32px; 
-    font-family: 'Courier New', Courier, monospace; 
-    text-align: center; 
-    margin: 20px 0; 
-    background: #050505; 
-    padding: 15px; 
-    border-radius: 12px; 
-    border: 2px solid #222; 
-    color: #fff;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+.modal-title {
+    background: #0a0a0c;
+    padding: 15px 20px;
+    font-size: 1.25rem;
     font-weight: bold;
-    letter-spacing: 2px;
+    color: #fff;
+    border-bottom: 1px solid #333;
 }
 
-.dinero-vivo { 
-    color: var(--gold); 
-    font-size: 20px; 
-    font-weight: 900; 
-    margin-top: 8px; 
-    display: block;
-    font-family: 'Segoe UI', sans-serif;
-    letter-spacing: normal;
+.modal-body { padding: 20px; }
+
+.modal-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: 0.2s;
 }
-
-/* --- BOTONES TÁCTILES POS --- */
-.btn-mesa { 
-    padding: 16px; 
-    border: none; 
-    border-radius: 10px; 
-    cursor: pointer; 
-    font-weight: 700; 
-    font-size: 15px;
-    transition: all 0.2s; 
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.btn-mesa:active { transform: scale(0.96); }
-
-.btn-abrir { 
-    background: var(--success); 
-    color: #000; 
-    width: 100%; 
-    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
-}
-.btn-abrir:hover { background: #26b963; }
-
-.btn-cerrar { 
-    background: var(--danger); 
-    color: white; 
-    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
-}
-.btn-cerrar:hover { background: #ff3344; }
-
-.btn-producto { 
-    background: #2f3542; 
-    color: white; 
-    border: 1px solid #444;
-}
-.btn-producto:hover { background: var(--border-light); }
-
-.acciones-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: auto;
-}
-
-/* --- GLASSMORPHISM MODALES --- */
-.modal-overlay { 
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.7); 
-    z-index: 1000; 
-    justify-content: center; align-items: center; 
-    backdrop-filter: blur(12px); 
-    -webkit-backdrop-filter: blur(12px);
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.modal-box { 
-    background: var(--bg-card); 
-    border-radius: 20px; 
-    width: 90%; max-width: 480px; 
-    border: 1px solid var(--border-light); 
-    overflow: hidden; 
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
-    transform: translateY(0);
-    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalSlideUp {
-    from { opacity: 0; transform: translateY(40px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.modal-title { 
-    background: #151515; 
-    padding: 25px; 
-    color: var(--gold); 
-    font-size: 20px;
-    font-weight: 800; 
-    text-align: center; 
-    border-bottom: 1px solid var(--border);
-    letter-spacing: 0.5px;
-}
-
-.modal-body {
-    padding: 30px;
-}
-
-.modal-input { 
-    width: 100%; 
-    padding: 16px; 
-    background: #111; 
-    border: 2px solid var(--border); 
-    color: white; 
-    border-radius: 10px; 
-    font-size: 16px;
-    outline: none; 
-    box-sizing: border-box;
-    transition: all 0.3s;
-}
-
-.modal-input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 4px var(--gold-dim);
-}
+.modal-input:focus { border-color: #D4AF37; outline: none; }
 
 .modal-btns {
-    display: flex;
-    gap: 15px;
-    padding: 0 30px 30px 30px;
+    display: flex; gap: 10px;
+    padding: 15px 20px;
+    background: #0a0a0c;
+    border-top: 1px solid #333;
 }
 
 .btn-modal {
     flex: 1;
-    padding: 16px;
+    padding: 12px;
     border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 15px;
+    border-radius: 8px;
+    font-weight: bold;
     cursor: pointer;
+    transition: 0.2s;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.2s;
 }
+.btn-cancel { background: #333; color: #fff; }
+.btn-cancel:hover { background: #444; }
+.btn-confirm { background: #D4AF37; color: #000; }
+.btn-confirm:hover { background: #e5c158; }
 
-.btn-modal:active { transform: scale(0.97); }
-
-.btn-cancel {
-    background: #2f3542;
-    color: white;
-}
-.btn-cancel:hover { background: #3a404d; }
-
-.btn-confirm {
-    background: var(--gold);
+/* NOTIFICACIONES (Toasts) */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #2ecc71; /* Verde éxito */
     color: #000;
-    box-shadow: 0 4px 15px var(--gold-dim);
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 10000;
+    left: 50%;
+    bottom: 30px;
+    font-weight: bold;
+    transform: translateX(-50%);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
-.btn-confirm:hover { background: var(--gold-hover); }
-
-/* --- TOAST NOTIFICACIÓN --- */
-#toast { 
-    visibility: hidden; 
-    min-width: 300px; 
-    background: #2ed573; 
-    color: #000; 
-    text-align: center; 
-    border-radius: 30px; 
-    padding: 18px 25px; 
-    position: fixed; 
-    left: 50%; 
-    bottom: 40px; 
-    transform: translateX(-50%); 
-    z-index: 2000; 
-    font-weight: 800; 
-    font-size: 15px;
-    box-shadow: 0 10px 25px rgba(46, 213, 115, 0.4);
-}
-#toast.show { 
-    visibility: visible; 
-    animation: toastPop 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+#toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 
-@keyframes toastPop { 
-    0% { opacity: 0; bottom: 0; transform: translateX(-50%) scale(0.8); } 
-    50% { transform: translateX(-50%) scale(1.05); }
-    100% { opacity: 1; bottom: 40px; transform: translateX(-50%) scale(1); } 
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+/* ============================================================
+   5. AJUSTES VISUALES EXTRAS
+   ============================================================ */
+
+/* Fuente digital para los cronómetros de las mesas */
+.info-tiempo {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 2px;
 }
 
-/* =========================================
-   RESPONSIVE TABLETS/MOVILES (ESTILO APP NATIVA)
-   ========================================= */
-@media (max-width: 900px) {
-    /* 1. Menú Inferior Fijo */
-    .sidebar { 
-        position: fixed !important;
-        width: 100% !important; 
-        height: 70px !important; 
-        flex-direction: row !important; 
-        bottom: 0 !important; 
-        top: auto !important; 
-        left: 0 !important;
-        padding: 0 !important;
-        background: #0a0a0c !important; 
-        z-index: 1000 !important;
-        border-top: 1px solid var(--border) !important;
-    }
-    .sidebar-header { display: none !important; }
-    
-    .menu { 
-        display: flex !important;
-        flex-direction: row !important; 
-        width: 100% !important; 
-        justify-content: space-around !important; 
-        align-items: center !important; 
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: auto !important; 
-    }
-    
-    .menu-link { 
-        flex-direction: column !important; 
-        padding: 8px 2px !important; 
-        gap: 5px !important; 
-        border: none !important; 
-        border-top: 3px solid transparent !important; 
-        font-size: 9px !important;
-        flex: 1 !important;
-        text-align: center !important;
-        min-width: 60px !important;
-    }
-    
-    .menu-link.active { 
-        border-top: 3px solid var(--gold) !important; 
-        background: radial-gradient(circle at top, rgba(241,196,15,0.15) 0%, transparent 70%) !important;
-    }
-
-    /* Ocultar el enlace de texto de PC en móvil */
-    .link-logout-pc { display: none !important; }
-
-    /* 2. Botones de Acción Flotantes (Separados por forma) */
-    
-    /* Botón Salir: Círculo perfecto a la izquierda */
-    .btn-logout-mobile {
-        display: flex !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        width: 42px !important; 
-        height: 42px !important; 
-        border-radius: 50% !important; /* Forma circular */
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 0 !important;
-        font-size: 18px !important; 
-        margin: 0 !important;
-        z-index: 9999 !important;
-        background: rgba(20, 22, 28, 0.95) !important;
-        backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(255, 71, 87, 0.3) !important;
-        color: var(--danger) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-    }
-
-    /* Botón Gasto: Píldora extendida a la derecha */
-    .btn-gasto {
-        display: flex !important;
-        position: fixed !important;
-        top: 15px !important;
-        right: 15px !important;
-        width: auto !important; /* Se adapta al texto */
-        height: auto !important;
-        border-radius: 20px !important; /* Forma de píldora */
-        padding: 10px 16px !important; /* Espacio para respirar */
-        font-size: 11px !important; 
-        font-weight: bold !important;
-        margin: 0 !important;
-        z-index: 9999 !important;
-        background: rgba(20, 22, 28, 0.95) !important;
-        backdrop-filter: blur(10px) !important;
-        border: 1px solid var(--gold-dim) !important;
-        color: var(--gold) !important; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-    }
-
-    /* 3. Pantalla Principal (Márgenes) */
-    .main-content { 
-        margin-left: 0 !important; 
-        width: 100% !important; 
-        padding: 15px !important; 
-        padding-top: 70px !important; 
-        padding-bottom: 90px !important; 
-    }
-
-    .money-panel { 
-        display: grid !important; 
-        grid-template-columns: 1fr 1fr !important; 
-        gap: 10px !important; 
-    }
-
-    /* 4. Tablas Táctiles */
-    .tabla-container {
-        width: 100% !important;
-        display: block !important;
-        overflow-x: auto !important; 
-        -webkit-overflow-scrolling: touch !important; 
-    }
-
-    .tabla-container table {
-        min-width: 800px !important; 
-        width: 100% !important;
-    }
-}
+/* Scrollbar oscuro y elegante para toda la app */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
