@@ -4,104 +4,131 @@
     <meta charset="UTF-8">
     <title>BI | La Esquina Analytics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/dashboard.css?v=4">
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        .bi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; margin-top: 25px; }
-        .bi-card { 
-            background: linear-gradient(145deg, #16181d 0%, #0a0a0c 100%); 
-            border: 1px solid rgba(212, 175, 55, 0.2); 
-            border-radius: 16px; padding: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            position: relative; overflow: hidden;
+        body { background-color: #1a1a1d; color: #eee; }
+        .sidebar { width: 250px; min-height: 100vh; background: #000; border-right: 1px solid #333; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .bi-icon { background: rgba(212, 175, 55, 0.1); color: #D4AF37; padding: 5px 10px; border-radius: 8px; font-size: 1.2rem; }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #333; }
+            .main-content { margin-left: 0; padding: 15px; }
         }
-        .bi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); }
-        .bi-title { color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .bi-icon { background: rgba(212, 175, 55, 0.1); color: #D4AF37; padding: 8px; border-radius: 8px; }
     </style>
 </head>
-<body>
-    <nav class="sidebar">
-        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
-        <div class="menu">
-            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
-            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
-            <a href="/clientes.html" class="menu-link">👑 Club La Esquina</a>
-            <a href="#" class="menu-link active" style="color: #D4AF37; border-left-color: #D4AF37;">📈 Analytics (BI)</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="menu-link" style="color: var(--danger);">🕵️‍♂️ Auditoría</a>
-            <a href="/empleados.html" class="menu-link">👥 Empleados</a>
-        </div>
-        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
-    </nav>
+<body class="text-light">
+    <div class="d-flex flex-column flex-md-row">
+        
+        <nav class="sidebar p-4 d-flex flex-column">
+            <div class="text-center mb-4">
+                <img src="/logo.png" class="img-fluid px-3" alt="La Esquina">
+            </div>
+            <div class="d-flex flex-column gap-2 flex-grow-1">
+                <a href="/dashboard.html" class="btn btn-outline-light text-start border-0">🎱 Mesas</a>
+                <a href="/inventario.html" class="btn btn-outline-light text-start border-0">📦 Inventario</a>
+                <a href="/clientes.html" class="btn btn-outline-light text-start border-0">👑 Socios VIP</a>
+                <a href="/reportes.html" class="btn btn-warning fw-bold text-dark text-start shadow-sm">📈 Analytics (BI)</a>
+                <a href="/cierre_caja.html" class="btn btn-outline-light text-start border-0">🔒 Cerrar Caja</a>
+                <a href="/auditoria.html" class="btn btn-outline-danger text-start border-0">🕵️‍♂️ Auditoría</a>
+                <a href="/empleados.html" class="btn btn-outline-light text-start border-0">👥 Empleados</a>
+            </div>
+            <a href="/logout" class="btn btn-danger w-100 mt-4 fw-bold shadow-sm">🚪 Salir</a>
+        </nav>
 
-    <main class="main-content">
-        <div class="page-title">📈 Business Intelligence <span style="color: #D4AF37;">La Esquina</span></div>
-        <p style="color: var(--text-muted);">Métricas de rendimiento en tiempo real para toma de decisiones.</p>
-        <div style="background: rgba(17, 17, 17, 0.8); border: 1px solid #D4AF37; padding: 15px; border-radius: 12px; margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(0)">Hoy</button>
-            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(7)">7 Días</button>
-            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="filtrarRapido(30)">30 Días</button>
-            <button class="btn-mesa" style="padding: 8px 15px; font-size: 13px; background: transparent; border: 1px solid #444; color: #ccc;" onclick="cargarBI()">Histórico Total</button>
+        <main class="main-content flex-grow-1">
             
-            <div style="width: 1px; height: 30px; background: #444; margin: 0 10px;"></div>
+            <div class="mb-4 border-bottom border-secondary pb-3">
+                <h2 class="fw-bold">📈 Business Intelligence <span class="text-warning">La Esquina</span></h2>
+                <p class="text-muted mb-0">Métricas de rendimiento en tiempo real para toma de decisiones.</p>
+            </div>
+
+            <div class="card bg-dark border-warning shadow-sm p-3 mb-4">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="filtrarRapido(0)">Hoy</button>
+                    <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="filtrarRapido(7)">7 Días</button>
+                    <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="filtrarRapido(30)">30 Días</button>
+                    <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="cargarBI()">Histórico Total</button>
+                    
+                    <div class="vr bg-secondary d-none d-md-block mx-2"></div>
+                    
+                    <div class="d-flex flex-wrap gap-2 align-items-center flex-grow-1 mt-2 mt-md-0">
+                        <input type="date" id="f-inicio" class="form-control bg-black text-light border-warning" style="max-width: 150px;">
+                        <span class="text-muted small">hasta</span>
+                        <input type="date" id="f-fin" class="form-control bg-black text-light border-warning" style="max-width: 150px;">
+                        <button class="btn btn-warning text-dark fw-bold ms-auto" onclick="filtrarRangoCustom()">🔍 APLICAR FILTRO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-xl-4">
+                    <div class="card bg-dark border-secondary shadow h-100">
+                        <div class="card-body">
+                            <h6 class="text-white fw-bold d-flex justify-content-between align-items-center mb-4">
+                                Rendimiento por Mesa <span class="bi-icon">🎱</span>
+                            </h6>
+                            <canvas id="chartMesas" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="card bg-dark border-secondary shadow h-100">
+                        <div class="card-body">
+                            <h6 class="text-white fw-bold d-flex justify-content-between align-items-center mb-4">
+                                Top 5 Productos <span class="bi-icon">🍺</span>
+                            </h6>
+                            <canvas id="chartProductos" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="card bg-dark border-secondary shadow h-100">
+                        <div class="card-body">
+                            <h6 class="text-white fw-bold d-flex justify-content-between align-items-center mb-4">
+                                Flujo de Caja <span class="bi-icon">💳</span>
+                            </h6>
+                            <canvas id="chartPagos" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold m-0">Historial de Cierres de Caja <span class="bi-icon fs-6 ms-2">🔒</span></h4>
+            </div>
             
-            <input type="date" id="f-inicio" style="background: #0a0a0c; color: #fff; border: 1px solid #D4AF37; padding: 8px 12px; border-radius: 6px; font-family: inherit;">
-            <span style="color: #888; font-size: 13px;">hasta</span>
-            <input type="date" id="f-fin" style="background: #0a0a0c; color: #fff; border: 1px solid #D4AF37; padding: 8px 12px; border-radius: 6px; font-family: inherit;">
-            
-            <button class="btn-mesa" style="background: #D4AF37; color: #000; padding: 8px 20px; font-size: 13px; font-weight: 900; margin-left: auto;" onclick="filtrarRangoCustom()">🔍 APLICAR FILTRO</button>
-        </div>
-
-        <div class="bi-grid">
-            <div class="bi-card">
-                <div class="bi-title">Rendimiento por Mesa <span class="bi-icon">🎱</span></div>
-                <canvas id="chartMesas" height="200"></canvas>
+            <div class="card bg-dark border-secondary shadow-lg overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="table-active">
+                            <tr>
+                                <th>Fecha de Cierre</th>
+                                <th>Ingresos</th>
+                                <th>Gastos</th>
+                                <th class="text-warning">Ganancia Neta</th>
+                                <th>Mesas Atendidas</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cierres">
+                            </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="bi-card">
-                <div class="bi-title">Top 5 Productos Estrella <span class="bi-icon">🍺</span></div>
-                <canvas id="chartProductos" height="200"></canvas>
-            </div>
-
-            <div class="bi-card">
-                <div class="bi-title">Flujo de Caja por Canal <span class="bi-icon">💳</span></div>
-                <canvas id="chartPagos" height="200"></canvas>
-            </div>
-        </div>
-        <div style="margin-top: 40px;">
-            <div class="bi-title">Historial de Cierres de Caja <span class="bi-icon">🔒</span></div>
-            <div style="background: #111; border: 1px solid #333; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                <table style="width: 100%; border-collapse: collapse; color: white; text-align: left; font-size: 14px;">
-                    <thead style="background: #1a1a1d; border-bottom: 1px dashed #444;">
-                        <tr>
-                            <th style="padding: 15px;">Fecha de Cierre</th>
-                            <th style="padding: 15px;">Ingresos</th>
-                            <th style="padding: 15px;">Gastos</th>
-                            <th style="padding: 15px; color: #D4AF37;">Ganancia Neta</th>
-                            <th style="padding: 15px;">Mesas Atendidas</th>
-                            <th style="padding: 15px; text-align: center;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-cierres">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script>
-        // Configuración Global y Variables de Memoria para los gráficos
         Chart.defaults.color = '#888';
         Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
         const colorOro = '#D4AF37'; const colorOroTransparente = 'rgba(212, 175, 55, 0.4)';
         const colorVerde = '#2ecc71'; const colorMorado = '#8e44ad'; const colorAzul = '#2980b9';
 
-        let chartMesasInst = null;
-        let chartProdInst = null;
-        let chartPagosInst = null;
+        let chartMesasInst = null; let chartProdInst = null; let chartPagosInst = null;
 
-        // 1. Motor de consulta (Ahora recibe fechas opcionales)
         async function cargarBI(inicio = null, fin = null) {
             try {
                 let url = '/api/analytics/dashboard';
@@ -118,11 +145,9 @@
             } catch (error) { console.error("Error al cargar BI:", error); }
         }
 
-        // 2. Lógica de Botones Rápidos
         function filtrarRapido(dias) {
             const hoy = new Date();
             const fechaFin = hoy.toISOString().split('T')[0];
-            
             const fechaInicioObj = new Date();
             fechaInicioObj.setDate(hoy.getDate() - dias);
             const fechaInicio = fechaInicioObj.toISOString().split('T')[0];
@@ -132,7 +157,6 @@
             cargarBI(fechaInicio, fechaFin);
         }
 
-        // 3. Lógica del Botón de Búsqueda Personalizada
         function filtrarRangoCustom() {
             const inicio = document.getElementById('f-inicio').value;
             const fin = document.getElementById('f-fin').value;
@@ -141,7 +165,6 @@
             cargarBI(inicio, fin);
         }
 
-        // 4. Renderizadores con destrucción de memoria
         function renderizarGraficoMesas(datos) {
             if (chartMesasInst) chartMesasInst.destroy();
             const labels = datos.length > 0 ? datos.map(d => `Mesa ${d.numero_mesa}`) : ['Sin datos'];
@@ -157,7 +180,7 @@
         function renderizarGraficoProductos(datos) {
             if (chartProdInst) chartProdInst.destroy();
             const labels = datos.length > 0 ? datos.map(d => d.nombre) : ['Sin datos'];
-            const valores = datos.length > 0 ? datos.map(d => parseInt(d.total_vendido)) : [1]; // El 1 es para que el anillo no desaparezca vacío
+            const valores = datos.length > 0 ? datos.map(d => parseInt(d.total_vendido)) : [1]; 
 
             chartProdInst = new Chart(document.getElementById('chartProductos'), {
                 type: 'doughnut',
@@ -178,9 +201,6 @@
             });
         }
 
-        // ==========================================
-        // 5. MOTOR DEL HISTORIAL DE CIERRES
-        // ==========================================
         async function cargarHistorialCierres() {
             try {
                 const res = await fetch('/api/reportes/historial');
@@ -189,32 +209,29 @@
                 tbody.innerHTML = '';
 
                 if (historial.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #888;">No hay cierres de caja registrados en el sistema.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No hay cierres de caja registrados en el sistema.</td></tr>';
                     return;
                 }
 
                 historial.forEach(c => {
-                    // Calculamos la ganancia neta restando gastos
                     const gananciaNeta = parseFloat(c.total_ventas) - parseFloat(c.total_gastos);
-                    // Formateamos la fecha a formato de Perú
                     const fecha = new Date(c.fecha_cierre).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
                     
+                    // Ajuste de colores usando clases Bootstrap (text-success, text-danger, text-warning)
                     tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #222; transition: 0.2s;">
-                            <td style="padding: 15px;">${fecha}</td>
-                            <td style="padding: 15px; color: ${colorVerde}; font-weight: bold;">S/ ${parseFloat(c.total_ventas).toFixed(2)}</td>
-                            <td style="padding: 15px; color: #ff4757;">S/ ${parseFloat(c.total_gastos).toFixed(2)}</td>
-                            <td style="padding: 15px; color: ${colorOro}; font-weight: 900; font-size: 15px;">S/ ${gananciaNeta.toFixed(2)}</td>
-                            <td style="padding: 15px;">🎱 ${c.cantidad_mesas}</td>
-                            <td style="padding: 15px; text-align: center;">
-                                <button style="background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s;" onclick="eliminarCierre(${c.id})" title="Anular Cierre">🗑️ Anular</button>
+                        <tr>
+                            <td>${fecha}</td>
+                            <td class="text-success fw-bold">S/ ${parseFloat(c.total_ventas).toFixed(2)}</td>
+                            <td class="text-danger fw-bold">S/ ${parseFloat(c.total_gastos).toFixed(2)}</td>
+                            <td class="text-warning fw-bold fs-5">S/ ${gananciaNeta.toFixed(2)}</td>
+                            <td>🎱 ${c.cantidad_mesas}</td>
+                            <td class="text-center">
+                                <button class="btn btn-outline-danger btn-sm" onclick="eliminarCierre(${c.id})" title="Anular Cierre">🗑️ Anular</button>
                             </td>
                         </tr>
                     `;
                 });
-            } catch (error) {
-                console.error("Error al cargar el historial:", error);
-            }
+            } catch (error) { console.error("Error al cargar el historial:", error); }
         }
 
         async function eliminarCierre(id) {
@@ -225,19 +242,14 @@
                 const res = await fetch(`/api/reportes/eliminar/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     alert("✅ Cierre anulado correctamente. La caja ha sido recalculada.");
-                    cargarHistorialCierres(); // Recargamos la tabla
-                    cargarBI(); // Recargamos los gráficos porque los ingresos cambiaron
+                    cargarHistorialCierres(); 
+                    cargarBI(); 
                 } else {
                     alert("Error al intentar anular el cierre en el servidor.");
                 }
-            } catch (error) {
-                alert("Error de conexión.");
-            }
+            } catch (error) { alert("Error de conexión."); }
         }
 
-    
-
-        // Iniciar todos los motores al abrir la página
         document.addEventListener("DOMContentLoaded", () => {
             cargarBI();
             cargarHistorialCierres();
