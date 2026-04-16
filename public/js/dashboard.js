@@ -87,50 +87,76 @@ async function cargarMesas() {
 function renderizarMesas(mesas) {
     const grid = document.getElementById('grid-mesas');
     grid.innerHTML = '';
+    
+    // Convertimos tu contenedor en una "Grilla Responsiva" de Bootstrap
+    // Se adapta a PC (4 columnas), Tablet (2 columnas) o Celular (1 columna)
+    grid.className = 'row g-3'; 
+    
     clearInterval(intervaloCronometros);
 
     mesas.forEach(mesa => {
         const isOcupada = mesa.estado === 'OCUPADA';
-        const estadoClass = isOcupada ? 'ocupada' : 'libre';
-        const estadoTexto = isOcupada ? 'OCUPADA' : 'LIBRE';
+        // Colores Bootstrap: success (verde) = libre, danger (rojo) = ocupada
+        const bgClass = isOcupada ? 'text-bg-danger' : 'text-bg-success';
         const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
-        
+
         let html = `
-            <div class="mesa-card">
-                <div class="mesa-header">
-                    <div class="mesa-titulo">${icono} MESA ${mesa.numero_mesa}</div>
-                    <div class="mesa-estado ${estadoClass}">${estadoTexto}</div>
-                </div>
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="card ${bgClass} shadow-lg h-100 border-0" style="border-radius: 15px; transition: transform 0.2s;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title d-flex justify-content-between align-items-center fw-bold mb-3">
+                        <span style="font-size: 1.1rem; letter-spacing: 1px;">${icono} MESA ${mesa.numero_mesa}</span>
+                        <span class="badge ${isOcupada ? 'bg-dark text-danger' : 'bg-dark text-success'} rounded-pill shadow-sm" style="font-size: 0.8rem;">
+                            ${isOcupada ? 'OCUPADA' : 'LIBRE'}
+                        </span>
+                    </h5>
         `;
 
         if (isOcupada) {
             html += `
-                <div class="info-tiempo" id="tiempo-${mesa.id}" data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}">
-                    ${mesa.tipo === 'BILLAR' ? '00:00:00' : 'MESA CONSUMO'}
-                </div>
-                <div style="text-align:center; margin-bottom:15px;">
-                    <span class="dinero-vivo" id="dinero-${mesa.id}">S/ 0.00</span>
-                </div>
-                <div class="acciones-grid" style="grid-template-columns: 1fr 1fr;">
-                    <button class="btn-mesa btn-producto" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button>
-                    <button class="btn-mesa btn-cerrar" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button>
-                    <button class="btn-mesa" style="grid-column: span 2; background: #1a1a1d; color: var(--text-muted); border: 1px dashed #3a404d; font-size: 13px; padding: 12px; margin-top: 5px;" onclick="abrirModalMover(${mesa.id})">🔄 MUDANZA DE MESA</button>
-                </div>
+                    <div class="text-center my-3" style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px;">
+                        <h2 class="display-6 fw-bold mb-0 info-tiempo" id="tiempo-${mesa.id}" data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}" style="letter-spacing: 3px; font-family: monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6);">
+                            ${mesa.tipo === 'BILLAR' ? '00:00:00' : 'MESA CONSUMO'}
+                        </h2>
+                        <p class="fs-4 fw-bold text-warning mb-0 mt-2" id="dinero-${mesa.id}" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">S/ 0.00</p>
+                    </div>
+                    <div class="mt-auto">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button class="btn btn-warning w-100 fw-bold shadow-sm py-2" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-dark w-100 fw-bold shadow-sm py-2" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-outline-light w-100 btn-sm mt-1" style="opacity: 0.8;" onclick="abrirModalMover(${mesa.id})">🔄 MUDANZA DE MESA</button>
+                            </div>
+                        </div>
+                    </div>
             `;
         } else {
             html += `
-                <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding: 30px 0;">
-                    <span style="color:var(--text-muted); font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Mesa Disponible</span>
-                </div>
-                <button class="btn-mesa btn-abrir" onclick="abrirMesa(${mesa.id})">▶ INICIAR MESA</button>
+                    <div class="text-center my-4 flex-grow-1 d-flex flex-column justify-content-center">
+                        <p class="mb-1 fw-bold text-uppercase opacity-75" style="letter-spacing: 1px;">Mesa Disponible</p>
+                        <p class="small opacity-50 mb-0">Tarifa Dinámica: S/ ${parseFloat(mesa.precio_hora || 15).toFixed(2)} / hr</p>
+                    </div>
+                    <div class="mt-auto">
+                        <button class="btn btn-light w-100 fw-bold shadow-sm text-success py-3" style="font-size: 1.1rem; border-radius: 10px;" onclick="abrirMesa(${mesa.id})">
+                            ▶ INICIAR MESA
+                        </button>
+                    </div>
             `;
         }
 
-        html += `</div>`;
+        html += `
+                </div>
+            </div>
+        </div>
+        `;
         grid.innerHTML += html;
     });
 
-    iniciarCronometros();
+    iniciarCronometros(); // El motor de tiempo arranca intacto
 }
 
 // ==========================================
