@@ -38,11 +38,11 @@
                 </button>
             </div>
 
-            <div class="row g-4 mb-5">
+            <div class="row g-4 mb-4">
                 <div class="col-12 col-md-4">
                     <div class="card bg-dark border-success shadow-sm h-100">
                         <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-success fw-bold text-uppercase mb-2">Ingresos Brutos</h6>
+                            <h6 class="text-success fw-bold text-uppercase mb-2">Ingresos Brutos Totales</h6>
                             <h2 class="text-white mb-0" id="lbl-total-ventas">S/ 0.00</h2>
                         </div>
                     </div>
@@ -66,27 +66,66 @@
                 </div>
             </div>
 
-            <div class="card bg-dark border-secondary">
-                <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
-                    📜 Detalle de Movimientos
+            <div class="row g-4">
+                
+                <div class="col-12 col-lg-4">
+                    <div class="card bg-dark border-secondary h-100 shadow-sm">
+                        <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
+                            📊 Desglose de Ventas
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                    <div>
+                                        <span class="fs-4 me-2">🎱</span> 
+                                        <span class="fw-bold">Alquiler de Mesas</span>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill fs-6" id="lbl-stat-billar">S/ 0.00</span>
+                                </li>
+                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                    <div>
+                                        <span class="fs-4 me-2">🍺</span> 
+                                        <span class="fw-bold">Consumo (Barra)</span>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill fs-6" id="lbl-stat-consumo">S/ 0.00</span>
+                                </li>
+                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                    <div>
+                                        <span class="fs-4 me-2">🧾</span> 
+                                        <span class="fw-bold">Tickets Emitidos</span>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill fs-6" id="lbl-stat-tickets">0</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="table-responsive shadow-lg rounded">
-                    <table class="table table-dark table-hover mb-0 align-middle">
-                        <thead class="table-active">
-                            <tr>
-                                <th>Hora</th>
-                                <th>Concepto</th>
-                                <th>Método</th>
-                                <th class="text-end">Monto</th>
-                                <th class="text-center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-ventas">
-                            <tr><td colspan="5" class="text-center text-muted py-4">Cargando...</td></tr>
-                        </tbody>
-                    </table>
+
+                <div class="col-12 col-lg-8">
+                    <div class="card bg-dark border-secondary shadow-sm h-100">
+                        <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
+                            📜 Detalle de Movimientos
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 align-middle">
+                                <thead class="table-active">
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Concepto</th>
+                                        <th>Método</th>
+                                        <th class="text-end">Monto</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-ventas">
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </main>
     </div>
 
@@ -112,21 +151,32 @@
                 const res = await fetch('/api/caja/actual');
                 const data = await res.json();
 
+                // 1. Llenamos las tarjetas de arriba (Dinero Global)
                 document.getElementById('lbl-total-ventas').innerText = 'S/ ' + data.total_ventas.toFixed(2);
                 document.getElementById('lbl-gastos').innerText = 'S/ ' + data.total_gastos.toFixed(2);
                 const totalDigital = data.desglose.digital + (data.desglose.tarjeta || 0);
                 document.getElementById('lbl-digital').innerText = 'S/ ' + totalDigital.toFixed(2);
                 document.getElementById('lbl-en-cajon').innerText = 'S/ ' + data.dinero_en_cajon.toFixed(2);
 
+                // 2. Variables para las estadísticas desglosadas
+                let ingresosBillar = 0;
+                let ingresosConsumo = 0;
+                let cantidadTickets = 0;
+
                 const tbody = document.getElementById('tbody-ventas');
                 tbody.innerHTML = '';
 
                 if (data.lista && data.lista.length > 0) {
+                    cantidadTickets = data.lista.length;
+                    
                     data.lista.forEach(venta => {
+                        // Sumamos de manera precisa cuánto fue por Tiempo y cuánto por Producto
+                        ingresosBillar += parseFloat(venta.total_tiempo || 0);
+                        ingresosConsumo += parseFloat(venta.total_productos || 0);
+
                         let concepto = venta.tipo_mesa === 'BILLAR' ? '🎱 Billar' : '🛒 Consumo';
                         let metodo = venta.metodo_pago || 'EFECTIVO';
                         
-                        // Diseño de Badges integrados en la lógica (Clases de Bootstrap)
                         let borderClass = 'border-success text-success';
                         if(metodo === 'YAPE' || metodo === 'PLIN') borderClass = 'border-info text-info';
                         if(metodo === 'TARJETA') borderClass = 'border-primary text-primary';
@@ -146,6 +196,12 @@
                 } else {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay ventas registradas en el turno actual.</td></tr>';
                 }
+
+                // 3. Pintamos las estadísticas desglosadas en la pantalla
+                document.getElementById('lbl-stat-billar').innerText = 'S/ ' + ingresosBillar.toFixed(2);
+                document.getElementById('lbl-stat-consumo').innerText = 'S/ ' + ingresosConsumo.toFixed(2);
+                document.getElementById('lbl-stat-tickets').innerText = cantidadTickets;
+
             } catch (e) { console.error(e); }
         }
 
@@ -155,7 +211,7 @@
             document.getElementById('modal-titulo').innerText = "🗑️ Eliminar Venta";
             document.getElementById('modal-texto').innerText = "¿Estás seguro de eliminar este cobro del reporte? Esto afectará el total en caja.";
             const btnOk = document.getElementById('btn-modal-ok');
-            btnOk.style.background = "#ff4757"; // Color rojo error (Bootstrap Danger no mapea directo en JS inline a menos que se use class)
+            btnOk.style.background = "#ff4757"; 
             btnOk.innerText = "ELIMINAR";
             btnOk.onclick = () => ejecutarBorrar(id);
             document.getElementById('modal-confirm').style.display = 'flex';
@@ -174,7 +230,7 @@
             document.getElementById('modal-titulo').innerText = "🔒 Cerrar Caja";
             document.getElementById('modal-texto').innerText = "¿Confirmar cierre de turno? El dinero volverá a cero.";
             const btnOk = document.getElementById('btn-modal-ok');
-            btnOk.style.background = "#2ecc71"; // Color verde success
+            btnOk.style.background = "#2ecc71"; 
             btnOk.style.color = "#000";
             btnOk.innerText = "CERRAR TURNO";
             btnOk.onclick = ejecutarCierre;
