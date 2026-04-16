@@ -243,30 +243,33 @@ function renderizarProductosMesa(productos) {
             ? '<span class="badge bg-danger">Agotado</span>' 
             : `<span class="badge border border-success text-success">Stock: ${p.stock}</span>`;
 
-        container.innerHTML += `
-            <div class="card bg-dark border-secondary mb-2 shadow-sm">
-                <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div class="flex-grow-1">
-                        <h6 class="text-white fw-bold mb-1">${p.nombre}</h6>
-                        <div class="d-flex align-items-center gap-2">
-                            ${stockBadge}
-                            <span class="text-warning fw-bold">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
-                        <input type="number" id="cant-${p.id}" value="1" min="1" max="${p.stock}" 
-                               class="form-control bg-black text-white border-secondary text-center fw-bold" 
-                               style="width: 70px;" 
-                               ${isOutOfStock ? 'disabled' : ''}>
-                        
-                        <button class="btn btn-warning fw-bold shadow-sm" 
-                                onclick="agregarPedido(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
-                            + AÑADIR
-                        </button>
-                    </div>
+        // Dentro de renderizarProductosMesa(productos)...
+container.innerHTML += `
+    <div class="card bg-dark border-secondary mb-2 shadow-sm">
+        <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+                <h6 class="text-white fw-bold mb-1">${p.nombre}</h6>
+                <div class="d-flex align-items-center gap-2">
+                    ${stockBadge}
+                    <span class="text-warning fw-bold">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
                 </div>
             </div>
-        `;
+            <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                <div class="input-group-cantidad">
+                    <button class="btn-qty" onclick="cambiarQty(${p.id}, -1)" ${isOutOfStock ? 'disabled' : ''}>-</button>
+                    <input type="number" id="cant-${p.id}" value="1" min="1" max="${p.stock}" 
+                           class="input-qty-num" readonly>
+                    <button class="btn-qty" onclick="cambiarQty(${p.id}, 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
+                </div>
+                
+                <button class="btn btn-warning fw-bold shadow-sm" 
+                        onclick="agregarPedido(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
+                    AÑADIR
+                </button>
+            </div>
+        </div>
+    </div>
+`;
     });
 }
 
