@@ -2,60 +2,79 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>La Esquina - Panel de Control</title>
+    <title>Panel de Control | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/css/dashboard.css?v=2">
-    <link rel="icon" href="/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css?v=6">
+    <link rel="icon" href="/logo.png">
 </head>
-<body>
-    <div id="toast">✅ Acción realizada</div>
+<body class="text-light">
     
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <img src="/logo.png" class="logo-img" alt="La Esquina">
-        </div>
-        <button class="btn-gasto" onclick="document.getElementById('modal-gasto').style.display='flex'">💸 Registrar Gasto</button>
-        <div class="menu">
-            <a href="#" class="menu-link active">🎱 Control de Mesas</a>
-            <a href="/cocina.html" class="menu-link" target="_blank">👨‍🍳 Pantalla Cocina</a>
-            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
-            <a href="/clientes.html" class="menu-link">👑 Club La Esquina</a>
-            <a href="/reportes.html" class="menu-link">📅 Historial</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="menu-link" style="color: var(--danger);">🕵️‍♂️ Auditoría</a>
-            <a href="/empleados.html" class="menu-link">👥 Empleados</a>
-        </div>
-        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
-    </nav>
+    <div id="toast">✅ Acción realizada</div>
 
-    <main class="main-content">
-        <div class="money-panel">
-            <div class="stat-card">
-                <div class="stat-title">💰 VENTAS TOTALES</div>
-                <div class="stat-value" id="total-ventas">S/ 0.00</div>
+    <div class="d-flex flex-column flex-md-row">
+        <nav class="sidebar p-4 d-flex flex-column">
+            <div class="text-center mb-4">
+                <img src="/logo.png" class="img-fluid px-3" alt="La Esquina">
             </div>
-            <div class="stat-card">
-                <div class="stat-title">📉 GASTOS (SALIDAS)</div>
-                <div class="stat-value" id="total-gastos">S/ 0.00</div>
+            <button class="btn btn-success w-100 fw-bold mb-4 shadow-sm" onclick="document.getElementById('modal-gasto').style.display='flex'">
+                💸 Registrar Gasto
+            </button>
+            <div class="d-flex flex-column gap-2 flex-grow-1">
+                <a href="/dashboard.html" class="btn btn-warning fw-bold text-dark text-start shadow-sm">🎱 Control de Mesas</a>
+                <a href="/cocina.html" class="btn btn-outline-light text-start border-0" target="_blank">👨‍🍳 Pantalla Cocina</a>
+                <a href="/inventario.html" class="btn btn-outline-light text-start border-0">📦 Inventario</a>
+                <a href="/clientes.html" class="btn btn-outline-light text-start border-0">👑 Club La Esquina</a>
+                <a href="/reportes.html" class="btn btn-outline-light text-start border-0">📈 Analytics (BI)</a>
+                <a href="/cierre_caja.html" class="btn btn-outline-light text-start border-0">🔒 Cerrar Caja</a>
+                <a href="/auditoria.html" class="btn btn-outline-danger text-start border-0">🕵️‍♂️ Auditoría</a>
+                <a href="/empleados.html" class="btn btn-outline-light text-start border-0">👥 Empleados</a>
             </div>
-            <div class="stat-card card-real" style="border: 1px solid #f1c40f;">
-                <div class="stat-title">💵 EFECTIVO EN CAJA</div>
-                <div class="stat-value" id="total-real" style="color: #f1c40f;">S/ 0.00</div>
+            <a href="/logout" class="btn btn-danger w-100 mt-4 fw-bold shadow-sm">🚪 Salir</a>
+        </nav>
+
+        <main class="main-content flex-grow-1">
+            
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <div class="card bg-dark border-secondary shadow-sm h-100">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h6 class="text-muted fw-bold mb-2">💰 VENTAS TOTALES</h6>
+                            <h3 class="text-white mb-0" id="total-ventas">S/ 0.00</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card bg-dark border-secondary shadow-sm h-100">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h6 class="text-muted fw-bold mb-2">📉 GASTOS (SALIDAS)</h6>
+                            <h3 class="text-white mb-0" id="total-gastos">S/ 0.00</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card bg-black border-warning shadow h-100" style="border-width: 2px;">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h6 class="text-warning fw-bold mb-2">💵 EFECTIVO EN CAJA</h6>
+                            <h2 class="text-warning mb-0 fw-bold" id="total-real" style="text-shadow: 0 0 10px rgba(212,175,55,0.3);">S/ 0.00</h2>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <h2 style="margin-bottom: 20px; color: white;">Mesas y Pedidos</h2>
-        <div id="grid-mesas" class="grid-mesas">
-            </div>
-    </main>
+            
+            <h4 class="fw-bold mb-4 text-white border-bottom border-secondary pb-2">Control de Mesas y Consumo</h4>
+            
+            <div id="grid-mesas" class="row g-3">
+                </div>
+
+        </main>
+    </div>
 
     <div id="modal-gasto" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">💸 Registrar Gasto de Caja</div>
             <div class="modal-body">
-                <input type="text" id="gasto-desc" class="modal-input" placeholder="Descripción (ej: Compra de Limones)">
+                <input type="text" id="gasto-desc" class="modal-input mb-3" placeholder="Descripción (ej: Compra de Limones)">
                 <input type="number" id="gasto-monto" class="modal-input" placeholder="Monto S/" style="margin-top:10px">
             </div>
             <div class="modal-btns">
@@ -64,13 +83,13 @@
             </div>
         </div>
     </div>
+
     <div id="modal-mover" class="modal-overlay">
         <div class="modal-box" style="max-width: 400px;">
             <div class="modal-title" style="color: var(--gold);">🔄 Mudanza de Mesa</div>
             <div class="modal-body" style="padding: 20px; text-align: center;">
                 <p style="color: var(--text-muted); margin-bottom: 15px; font-weight: 600;">Selecciona la mesa libre de destino:</p>
-                <select id="select-mesa-destino" class="modal-input" style="margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold;">
-                    </select>
+                <select id="select-mesa-destino" class="modal-input" style="margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold;"></select>
             </div>
             <div class="modal-btns">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-mover')">Cancelar</button>
@@ -78,24 +97,24 @@
             </div>
         </div>
     </div>
-<div id="modal-pedidos" class="modal-overlay">
+
+    <div id="modal-pedidos" class="modal-overlay">
         <div class="modal-box" style="max-width: 500px;">
             <div class="modal-title">🍺 Añadir Consumo</div>
             <div class="modal-body" style="padding: 20px;">
                 <input type="text" id="buscador-productos" class="modal-input" placeholder="🔍 Buscar cerveza, trago, etc..." onkeyup="filtrarProductosMesa()" style="margin-bottom: 20px;">
-                <div id="lista-productos-mesa" style="max-height: 350px; overflow-y: auto; display: grid; gap: 12px; padding-right: 5px;">
-                    </div>
+                <div id="lista-productos-mesa" style="max-height: 350px; overflow-y: auto; display: grid; gap: 12px; padding-right: 5px;"></div>
             </div>
             <div class="modal-btns">
                 <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-pedidos')">Cerrar</button>
             </div>
         </div>
     </div>
+
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">💰 Finalizar Cuenta</div>
-            <div id="cobro-contenido" class="modal-body">
-                </div>
+            <div id="cobro-contenido" class="modal-body"></div>
             <div style="padding: 20px; background: #1a1a1a; border-top: 1px solid #333;">
                 <div style="display:flex; flex-direction: column; gap: 10px;">
                     <button class="btn-modal" style="background:#27ae60; color:white; padding:15px;" onclick="ejecutarCobroReal('EFECTIVO')">💵 EFECTIVO</button>
@@ -130,15 +149,13 @@
             </div>
         </div>
     </div>
-    
+
     <div id="modal-scanner" class="modal-overlay" style="display: none; z-index: 99999;">
         <div class="modal-box" style="width: 100%; max-width: 400px; padding: 20px;">
             <div class="modal-title" style="color: #D4AF37; text-align: center; font-size: 20px; font-weight: 900; margin-bottom: 15px;">
                 📸 Escanear Tarjeta VIP
             </div>
-            
             <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #D4AF37;"></div>
-            
             <div class="modal-btns" style="margin-top: 20px;">
                 <button class="btn-modal btn-cancel" onclick="cerrarScanner()" style="width: 100%;">Cancelar</button>
             </div>
@@ -152,17 +169,15 @@
                 <h3 style="color: white; margin-top: 10px;" id="vip-nombre-caja">Cargando...</h3>
                 <span id="vip-nivel-caja" style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #D4AF37; border: 1px solid #D4AF37; padding: 3px 8px; border-radius: 4px;">NIVEL</span>
             </div>
-            
-            <div id="vip-recompensa-caja" style="background: rgba(212, 175, 55, 0.1); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
-                </div>
-
+            <div id="vip-recompensa-caja" style="background: rgba(212, 175, 55, 0.1); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;"></div>
             <div id="btn-container-canje"></div>
-
             <button class="btn-modal btn-cancel" onclick="document.getElementById('modal-perfil-vip').style.display='none'" style="width: 100%; margin-top: 10px;">Cerrar Perfil</button>
         </div>
     </div>
-<button onclick="location.href='/logout'" class="btn-logout-mobile">🚪</button>
-<script src="https://unpkg.com/html5-qrcode"></script>
+
+    <button onclick="location.href='/logout'" class="btn-logout-mobile">🚪</button>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/alertas.js"></script>
     <script src="/js/dashboard.js"></script>
