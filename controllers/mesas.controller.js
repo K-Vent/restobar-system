@@ -25,17 +25,25 @@ const cambiarMesaSchema = z.object({
 // ==========================================
 // 2. FUNCIONES AUXILIARES (Blindada)
 // ==========================================
+// ==========================================
+// 2. FUNCIONES AUXILIARES (Con Caché Nativo)
+// ==========================================
+let configCache = { precio_billar: 10, ultimaActualizacion: 0 };
+
 async function getPrecioBillar() {
-    try {
-        // Intenta buscar en la base de datos
-        const r = await pool.query("SELECT valor FROM configuracion WHERE clave = 'PRECIO_HORA_BILLAR'");
-        return parseFloat(r.rows[0]?.valor || 10);
-    } catch (error) {
-        // Si la tabla no existe o hay error, no colapsa el servidor (Error 500)
-        // Simplemente imprime una alerta en rojo y devuelve la tarifa de 10 Soles.
-        console.error("⚠️ Alerta en DB: No se pudo leer la tarifa. Usando S/ 10 por defecto.");
-        return 10.00; 
+    const AHORA = Date.now();
+    // Si ha pasado más de 1 minuto (60000 ms), volvemos a consultar la base de datos
+    if (AHORA - configCache.ultimaActualizacion > 60000) { 
+        try { 
+            // Apuntamos a la tabla 'config' y la clave 'precio_billar' exactas de tu BD
+            const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'"); 
+            configCache.precio_billar = parseFloat(conf.rows[0]?.valor || 10); 
+            configCache.ultimaActualizacion = AHORA; 
+        } catch (e) {
+            console.error("⚠️ Error leyendo tabla config:", e.message);
+        } 
     }
+    return configCache.precio_billar;
 }
 // ==========================================
 // 3. CONTROLADORES (Lógica de Negocio)
