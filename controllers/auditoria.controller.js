@@ -11,7 +11,7 @@ const obtenerRegistrosAuditoria = async (req, res, next) => {
                 a.fecha, 
                 a.accion, 
                 a.detalles, 
-                COALESCE(u.nombre, 'Admin/Desconocido') AS usuario 
+                COALESCE(u.username, 'Admin/Desconocido') AS usuario 
             FROM auditoria a
             LEFT JOIN usuarios u ON a.usuario_id = u.id
             ORDER BY a.fecha DESC
