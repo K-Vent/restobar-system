@@ -2,123 +2,77 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inventario - La Esquina</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0c">
+    <title>Inventario | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/css/dashboard.css?v=2">
-    <link rel="icon" href="/logo.png" type="image/png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
-        .page-title { font-size: 32px; font-weight: 800; color: white; margin: 0; letter-spacing: -1px; }
-        .search-bar { padding: 14px 20px; width: 100%; max-width: 350px; background: #111; border: 2px solid var(--border); color: white; border-radius: 10px; font-size: 15px; outline: none; transition: 0.3s; }
-        .search-bar:focus { border-color: var(--gold); box-shadow: 0 0 0 4px var(--gold-dim); }
-
-        .card-nuevo { background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .form-group { flex: 1; min-width: 180px; }
-        .form-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-crear { padding: 16px 25px; background: var(--success); color: #000; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; height: 52px; transition: 0.2s; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3); text-transform: uppercase; }
-        .btn-crear:hover { background: #26b963; transform: translateY(-2px); }
-
-        .tabla-container { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 16px 25px; text-align: left; border-bottom: 1px solid #1f222b; font-size: 15px; }
-        th { background: #151515; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-        tr:hover { background: var(--bg-card-hover); }
-        
-        .stock-tag { padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; }
-        .stock-ok { background: var(--success-dim); color: var(--success); border: 1px solid rgba(46, 213, 115, 0.3); }
-        .stock-low { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); animation: pulseBorder 2s infinite; }
-
-        .btn-icon { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; margin-right: 5px; }
-        .btn-add { background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); }
-        .btn-add:hover { background: #3498db; color: white; }
-        .btn-del { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); }
-        .btn-del:hover { background: var(--danger); color: white; }
-
-        .btn-logout { margin: 20px; padding: 14px; background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .btn-logout:hover { background: var(--danger); color: white; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="icon" href="/logo.png">
 </head>
-<body>
+<body class="text-light">
+    
     <div id="toast">✅ Acción realizada</div>
+    
+    <div id="overlay-sidebar" class="overlay-mobile" onclick="cerrarMenuMovil()"></div>
 
     <nav class="sidebar">
-        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
-        <div class="menu">
-            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
-            <a href="#" class="menu-link active">📦 Inventario</a>
-            <a href="/clientes.html" class="menu-link">👑 Club La Esquina</a>
-            <a href="/reportes.html" class="menu-link">📅 Historial</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="menu-link" style="color: var(--danger);">🕵️‍♂️ Auditoría</a>
-            <a href="/empleados.html" class="menu-link">👥 Empleados</a>
+        <div class="text-center mb-4">
+            <img src="/logo.png" style="max-width: 150px;" alt="La Esquina">
         </div>
-        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
+        
+        <div class="d-flex flex-column flex-grow-1 mt-3">
+            <a href="/dashboard.html" class="nav-item-vip">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="nav-item-vip active">📦 Inventario</a> <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
+            <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
+            <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
+            <a href="/empleados.html" class="nav-item-vip">👥 Empleados</a>
+        </div>
+        
+        <a href="/logout" class="btn-logout-sidebar mt-4">🚪 CERRAR SESIÓN</a>
     </nav>
 
-    <main class="main-content">
-        <div class="page-header">
-            <h2 class="page-title">📦 Gestión de Inventario</h2>
-            <div style="display: flex; gap: 10px; width: 100%; max-width: 650px; flex-wrap: wrap;">
+    <main class="main-content" style="padding: 30px;">
+        
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(212,175,55,0.3) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-warning d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">
+                    ☰ MENÚ
+                </button>
+                <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">📦 Control de Inventario</h4>
+            </div>
+            
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+                <input type="text" id="busqueda" class="form-control bg-dark text-white border-secondary shadow-sm" 
+                       placeholder="🔍 Buscar producto o categoría..." style="width: 300px;">
                 
-                <select id="filtro-categoria" class="search-bar" style="width: auto; cursor: pointer; padding-right: 30px;" onchange="filtrarTabla()">
-                    <option value="TODAS">Todas las categorías</option>
-                </select>
-                
-                <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar producto..." onkeyup="filtrarTabla()" style="flex: 1; min-width: 150px;">
-                
-                <button class="btn-save" style="background: var(--success-dim); color: var(--success); border-color: rgba(46, 213, 115, 0.3); white-space: nowrap;" onclick="exportarInventarioExcel()">
-                    📊 EXPORTAR
+                <button class="btn btn-warning fw-bold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalProducto" title="Añadir Nuevo Producto">
+                    ➕ AGREGAR PRODUCTO
                 </button>
             </div>
         </div>
 
-        <div class="card-nuevo">
-            <div class="form-group">
-                <span class="form-label">Nombre del Producto</span>
-                <input type="text" id="newNombre" class="modal-input" placeholder="Ej. Pilsen Botella">
+        <div class="card bg-dark shadow-lg" style="border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle" style="border-collapse: separate; border-spacing: 0;">
+                        <thead style="background: linear-gradient(145deg, #1a170b, #050505);">
+                            <tr>
+                                <th class="py-3 px-4 text-warning" style="border-bottom: 2px solid #D4AF37;">ID</th>
+                                <th class="py-3 px-4 text-warning" style="border-bottom: 2px solid #D4AF37;">NOMBRE DEL PRODUCTO</th>
+                                <th class="py-3 px-4 text-warning" style="border-bottom: 2px solid #D4AF37;">CATEGORÍA</th>
+                                <th class="py-3 px-4 text-warning text-center" style="border-bottom: 2px solid #D4AF37;">STOCK</th>
+                                <th class="py-3 px-4 text-warning text-end" style="border-bottom: 2px solid #D4AF37;">PRECIO (S/)</th>
+                                <th class="py-3 px-4 text-warning text-center" style="border-bottom: 2px solid #D4AF37;">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-inventario">
+                            </tbody>
+                    </table>
+                </div>
             </div>
-            
-            <div class="form-group" id="caja-select-cat">
-                <span class="form-label">Categoría</span>
-                <select id="newCategoria" class="modal-input" onchange="verificarCategoria(this)">
-                    <option value="Cargando...">Cargando...</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="caja-input-cat" style="display:none; position:relative;">
-                <span class="form-label" style="color: var(--gold);">✨ Nueva Categoría 
-                    <span style="float:right; cursor:pointer; color:var(--danger);" onclick="cancelarNuevaCategoria()">✖ Cancelar</span>
-                </span>
-                <input type="text" id="newCategoriaTexto" class="modal-input" placeholder="Ej. Vinos, Postres..." style="border-color: var(--gold); box-shadow: 0 0 0 4px rgba(241,196,15,0.1);">
-            </div>
-            <div class="form-group">
-                <span class="form-label">Precio Venta (S/)</span>
-                <input type="number" id="newPrecio" class="modal-input" placeholder="0.00" step="0.50">
-            </div>
-            <div class="form-group">
-                <span class="form-label">Stock Inicial</span>
-                <input type="number" id="newStock" class="modal-input" placeholder="0">
-            </div>
-            <button class="btn-crear" onclick="crearProducto()">+ AGREGAR</button>
         </div>
 
-        <div class="tabla-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Precio Venta</th>
-                        <th>Stock</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-productos"></tbody>
-            </table>
-        </div>
     </main>
 
     <div id="modal-stock" class="modal-overlay">
@@ -369,6 +323,15 @@
          XLSX.writeFile(libro, `Inventario_LaEsquina_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`);
          mostrarAlerta("✅ Inventario exportado correctamente", "success");
      }
+     function abrirMenuMovil() {
+    document.querySelector('.sidebar').classList.add('abierto-movil');
+    document.getElementById('overlay-sidebar').classList.add('activo');
+}
+
+function cerrarMenuMovil() {
+    document.querySelector('.sidebar').classList.remove('abierto-movil');
+    document.getElementById('overlay-sidebar').classList.remove('activo');
+}
         cargarProductos();
     </script>
 </body>

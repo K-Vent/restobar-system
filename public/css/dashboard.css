@@ -437,3 +437,26 @@ body, html, .main-content {
     color: #000 !important;
     box-shadow: 0 0 15px rgba(212,175,55,0.5) !important;
 }
+
+
+/* ============================================================
+   ESTILOS DE TABLAS CORPORATIVAS (Inventario, Clientes, etc.)
+   ============================================================ */
+.table-dark {
+    --bs-table-bg: transparent; /* Quita el gris por defecto de bootstrap */
+}
+.table-dark tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #222;
+}
+.table-dark tbody tr:hover {
+    background-color: rgba(212,175,55,0.05) !important; /* Brillo dorado muy suave al pasar el mouse */
+}
+.table-dark td {
+    padding: 1rem 1.5rem;
+    color: #ccc; /* Texto ligeramente gris para no cansar la vista */
+    border: none;
+}
+.table-dark td strong {
+    color: #fff; /* Nombres de productos en blanco puro */
+}
