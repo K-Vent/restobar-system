@@ -169,7 +169,8 @@ input::-webkit-inner-spin-button {
 
 /* Quitar flechas en Firefox */
 input[type=number] {
-    -moz-appearance: textfield;
+    appearance: textfield; /* Versión estándar */
+    -moz-appearance: textfield; /* Prefijo específico para compatibilidad con Firefox */
 }
 
 .input-group-cantidad {
