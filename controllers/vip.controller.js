@@ -151,9 +151,18 @@ const eliminarBeneficio = async (req, res, next) => {
         res.json({ success: true });
     } catch (e) { next(e); }
 };
-
+const eliminarCliente = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM clientes_vip WHERE id = $1', [id]);
+        res.status(200).json({ message: 'Cliente eliminado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar cliente' });
+    }
+};
+// Recuerda exportarlo al final: module.exports = { ... , eliminarCliente };
 module.exports = { 
     obtenerClientes, registrarCliente, loginVip, agregarSello, 
     canjearPremio, escanearQr, canjeSeguroTransaccion, 
-    obtenerBeneficios, agregarBeneficio, eliminarBeneficio 
+    obtenerBeneficios, agregarBeneficio, eliminarBeneficio, eliminarCliente
 };

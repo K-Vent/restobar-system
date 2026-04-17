@@ -179,7 +179,7 @@
                 
                 let btnCanje = '';
                 if (premiosDisponibles > 0) {
-                    btnCanje = `<button class="btn btn-sm btn-outline-warning fw-bold shadow-sm" onclick="canjearPremio(${c.id}, '${c.nombre}')">🎁 Canjear Hora (${premiosDisponibles})</button>`;
+                    btnCanje = `<button class="btn btn-sm btn-outline-warning fw-bold shadow-sm" onclick="canjearPremio(${c.id}, '${c.nombre}')" title="Canjear recompensa">🎁 Canjear (${premiosDisponibles})</button>`;
                 }
 
                 tbody.innerHTML += `
@@ -194,15 +194,21 @@
                         </td>
                         <td class="px-4">
                             <div class="d-flex gap-2 justify-content-center">
-                                <button class="btn btn-sm btn-warning fw-bold text-dark shadow-sm" onclick="sumarSello(${c.id}, '${c.nombre}')">⭐ +1 Sello</button>
-                                <button class="btn btn-sm btn-outline-success fw-bold shadow-sm" onclick="enviarPromo('${c.nombre}', '${c.telefono}')">📲 Promo</button>
+                                <button class="btn btn-sm btn-warning fw-bold text-dark shadow-sm" onclick="sumarSello(${c.id}, '${c.nombre}')" title="Sumar visita">⭐ +1 Sello</button>
+                                <button class="btn btn-sm btn-outline-success fw-bold shadow-sm" onclick="enviarPromo('${c.nombre}', '${c.telefono}')" title="Enviar WhatsApp">📲 Promo</button>
                                 ${btnCanje} 
+                                
+                                <button class="btn btn-sm btn-outline-danger fw-bold shadow-sm border-0" onclick="eliminarCliente(${c.id})" title="Dar de baja">
+                                    🗑️
+                                </button>
                             </div>
                         </td>
                     </tr>
                 `;
             });
         }
+
+            
 
         function filtrarClientes() {
             const txt = document.getElementById('buscador').value.toLowerCase();
@@ -241,6 +247,34 @@
                     mostrarAlerta(data.error || "Error al registrar", "error");
                 }
             } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+        }
+        
+        // --- ELIMINAR SOCIO VIP ---
+        async function eliminarCliente(id) {
+            // 1. Candado de seguridad corporativo
+            const confirmado = await mostrarConfirmacion(
+                "⚠️ Dar de Baja", 
+                "¿Estás seguro de que deseas eliminar a este socio VIP? Perderá todos sus sellos, nivel y recompensas acumuladas de forma irreversible."
+            );
+            
+            if (confirmado) {
+                try {
+                    // 2. Disparo a la Base de Datos
+                    const res = await fetch(`/api/clientes/${id}`, { 
+                        method: 'DELETE' 
+                    });
+                    
+                    if (res.ok) {
+                        mostrarToast("🗑️ Socio eliminado del Club La Esquina");
+                        cargarClientes(); // Recargamos la tabla en vivo
+                    } else {
+                        const data = await res.json();
+                        mostrarAlerta(data.error || "No se pudo eliminar al socio.", "error");
+                    }
+                } catch (error) { 
+                    mostrarAlerta("Error de conexión con el servidor.", "error"); 
+                }
+            }
         }
 
         async function sumarSello(id, nombre) {
