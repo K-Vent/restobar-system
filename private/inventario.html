@@ -228,17 +228,31 @@
         function pintarTabla(datos) {
             const tbody = document.getElementById('tabla-productos');
             tbody.innerHTML = '';
+            
             datos.forEach(p => {
-                const stockClass = p.stock < 10 ? 'stock-low' : 'stock-ok';
+                // 1. Estilo Premium para la etiqueta de Stock
+                // Si hay menos de 10 unidades, se pone rojo para alertarte. Si hay stock sano, se mantiene gris/oscuro elegante.
+                const stockBadge = p.stock < 10 
+                    ? `<span class="badge bg-danger shadow-sm px-2 py-1">⚠️ ${p.stock} un.</span>` 
+                    : `<span class="badge bg-dark border border-secondary text-light shadow-sm px-2 py-1">${p.stock} un.</span>`;
+
+                // 2. Dibujamos la fila con colores integrados a la paleta de La Esquina
                 tbody.innerHTML += `
                     <tr>
+                        <td class="text-white opacity-50">#${p.id}</td>
                         <td style="font-weight:800; color: white;">${p.nombre}</td>
-                        <td style="color: var(--text-muted); font-weight:600;">${p.categoria || '-'}</td>
-                        <td style="color:var(--success); font-weight: bold;">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
-                        <td><span class="stock-tag ${stockClass}">${p.stock} un.</span></td>
+                        <td style="color: #888; font-weight:600;">${p.categoria || '-'}</td>
+                        <td class="text-center">${stockBadge}</td>
+                        <td style="color: #D4AF37; font-weight: bold;" class="text-end">S/ ${parseFloat(p.precio_venta).toFixed(2)}</td>
                         <td>
-                            <button class="btn-icon btn-add" onclick="abrirModalStock(${p.id}, '${p.nombre}')" title="Reponer Stock">➕</button>
-                            <button class="btn-icon btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar">🗑️</button>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-sm btn-outline-warning fw-bold shadow-sm px-3" onclick="abrirModalStock(${p.id}, '${p.nombre}')">
+                                    📦 Reponer
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger fw-bold shadow-sm px-3 border-0" onclick="eliminarProducto(${p.id})">
+                                    Borrar
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
