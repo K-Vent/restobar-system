@@ -13,7 +13,7 @@ router.get('/clientes', verificarSesion, obtenerClientes);
 router.post('/clientes/nuevo', verificarSesion, registrarCliente);
 router.post('/clientes/:id/sello', verificarSesion, agregarSello);
 router.post('/clientes/:id/canjear', verificarSesion, canjearPremio);
-router.delete('/:id', verificarSesion, eliminarCliente); // Nueva ruta para eliminar cliente VIP
+router.delete('/clientes/:id', verificarSesion, eliminarCliente) // Nueva ruta para eliminar cliente VIP
 
 // --- RUTAS DE LOGEO Y QR (VIP) ---
 router.post('/vip/login', loginVip); // Público (lo usa el cliente en su celular)
