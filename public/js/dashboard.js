@@ -238,38 +238,37 @@ function renderizarProductosMesa(productos) {
     
     productos.forEach(p => {
         const isOutOfStock = p.stock <= 0;
-        // Badges modernos de Bootstrap para el Stock
         const stockBadge = isOutOfStock 
             ? '<span class="badge bg-danger">Agotado</span>' 
             : `<span class="badge border border-success text-success">Stock: ${p.stock}</span>`;
 
-        // Dentro de renderizarProductosMesa(productos)...
-container.innerHTML += `
-    <div class="card bg-dark border-secondary mb-2 shadow-sm">
-        <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div class="flex-grow-1">
-                <h6 class="text-white fw-bold mb-1">${p.nombre}</h6>
-                <div class="d-flex align-items-center gap-2">
-                    ${stockBadge}
-                    <span class="text-warning fw-bold">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+        container.innerHTML += `
+            <div class="card bg-dark border-secondary mb-2 shadow-sm">
+                <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="flex-grow-1">
+                        <h6 class="text-white fw-bold mb-1">${p.nombre}</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            ${stockBadge}
+                            <span class="text-warning fw-bold">S/ ${parseFloat(p.precio_venta).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                        <div class="input-group-cantidad">
+                            <button class="btn-qty" onclick="cambiarQty(${p.id}, -1)" ${isOutOfStock ? 'disabled' : ''}>-</button>
+                            <input type="number" id="cant-${p.id}" value="1" min="1" max="${p.stock}" 
+                                   class="input-qty-num" 
+                                   oninput="validarManual(${p.id}, ${p.stock})">
+                            <button class="btn-qty" onclick="cambiarQty(${p.id}, 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
+                        </div>
+                        
+                        <button class="btn btn-warning fw-bold shadow-sm" 
+                                onclick="agregarPedido(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
+                            AÑADIR
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
-                <div class="input-group-cantidad">
-                    <button class="btn-qty" onclick="cambiarQty(${p.id}, -1)" ${isOutOfStock ? 'disabled' : ''}>-</button>
-                    <input type="number" id="cant-${p.id}" value="1" min="1" max="${p.stock}" 
-                           class="input-qty-num" readonly>
-                    <button class="btn-qty" onclick="cambiarQty(${p.id}, 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
-                </div>
-                
-                <button class="btn btn-warning fw-bold shadow-sm" 
-                        onclick="agregarPedido(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
-                    AÑADIR
-                </button>
-            </div>
-        </div>
-    </div>
-`;
+        `;
     });
 }
 
@@ -572,4 +571,36 @@ async function ejecutarCanjeAgora(idSocio, idMesa) {
     } catch (error) {
         mostrarAlerta("Error de conexión.", "error");
     }
+}
+// Función para los botones + y -
+function cambiarQty(id, delta) {
+    const input = document.getElementById(`cant-${id}`);
+    if (!input) return;
+    
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    
+    const min = parseInt(input.min) || 1;
+    const max = parseInt(input.max) || 999;
+
+    if (val < min) val = min;
+    if (val > max) val = max;
+    
+    input.value = val;
+}
+
+// Función para validar cuando el usuario escribe manualmente
+function validarManual(id, maxStock) {
+    const input = document.getElementById(`cant-${id}`);
+    if (!input) return;
+
+    let val = parseInt(input.value);
+    
+    // Si borra el número, lo dejamos en blanco para que pueda escribir, 
+    // pero si pone un número mayor al stock, lo bajamos al máximo.
+    if (val > maxStock) {
+        input.value = maxStock;
+        mostrarToast(`Solo hay ${maxStock} en stock`);
+    }
+    if (val < 1) input.value = 1;
 }

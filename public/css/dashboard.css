@@ -198,12 +198,18 @@ input[type=number] {
 .btn-qty:active { background: #444; }
 
 .input-qty-num {
-    width: 50px;
-    background: transparent !important;
-    border: none !important;
+    width: 60px; /* Un poco más ancho para números como 15 o 100 */
+    background: #111 !important; /* Un poco más oscuro para que sepa que es editable */
+    border: 1px solid #333 !important;
     color: #fff !important;
     text-align: center;
     font-weight: bold;
     font-size: 1.1rem;
+    border-radius: 4px;
     padding: 5px 0;
+}
+
+.input-qty-num:focus {
+    border-color: #D4AF37 !important; /* Brillo dorado al hacer clic */
+    outline: none;
 }
