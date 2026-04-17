@@ -151,33 +151,22 @@ const eliminarBeneficio = async (req, res, next) => {
         res.json({ success: true });
     } catch (e) { next(e); }
 };
-const eliminarCliente = async (req, res) => {
+const eliminarCliente = async (req, res, next) => {
     try {
         const { id } = req.params;
         
-        // 1. Verificamos cómo se llama tu conexión (pool o db)
-        const conexion = typeof pool !== 'undefined' ? pool : db;
-
-        // 2. Intentamos borrar de la tabla 'clientes' (el nombre más común)
-        // Usamos una consulta segura para Postgres
-        await conexion.query('DELETE FROM clientes WHERE id = $1', [id]);
+        // Usamos tu conexión 'pool' directamente y sin rodeos
+        await pool.query('DELETE FROM clientes WHERE id = $1', [id]);
         
         res.status(200).json({ message: 'Socio VIP eliminado correctamente' });
         
     } catch (error) {
         console.error("🔥 ERROR CRÍTICO AL BORRAR CLIENTE:", error.message);
         
-        // Si el error es por Llave Foránea (El cliente tiene historial)
+        // Candado de seguridad: Si el cliente tiene canjes, no se borra para no dañar la contabilidad
         if (error.code === '23503') {
             return res.status(500).json({ 
-                error: 'Seguridad: No puedes borrar a este cliente porque tiene historial de canjes o ventas. Debes desactivarlo o borrar su historial primero.' 
-            });
-        }
-
-        // Si el error es porque la tabla se llama diferente
-        if (error.code === '42P01') {
-            return res.status(500).json({ 
-                error: 'Error interno: La tabla "clientes" no existe. Revisa el nombre en tu Base de Datos.' 
+                error: 'Seguridad: No puedes borrar a este cliente porque tiene historial de canjes o compras.' 
             });
         }
 
