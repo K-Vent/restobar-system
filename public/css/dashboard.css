@@ -230,13 +230,13 @@ input[type=number] {
 }
 
 /* ============================================================
-   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - CORREGIDO
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ANTI-TIC
    ============================================================ */
 .sidebar {
     width: 320px;
     height: 100vh;
     position: fixed;
-    left: -305px; 
+    left: -300px; /* PARCHE 1: Le dejamos 20px (un poco más) para agarrarlo más fácil */
     top: 0;
     z-index: 3000;
     background: #050505;
@@ -245,7 +245,25 @@ input[type=number] {
     display: flex;
     flex-direction: column;
     padding: 2rem 1rem;
-    overflow-y: auto; /* ⬅️ LA SOLUCIÓN: Permite deslizar el menú */
+    overflow-y: auto; 
+}
+
+/* PARCHE 2: Si el ratón se sale por accidente, espera 0.15 segundos antes de cerrarse. 
+   Esto elimina el parpadeo. */
+.sidebar:not(:hover) {
+    transition-delay: 0.15s; 
+}
+
+/* PARCHE 3: Un escudo invisible de 30px a la derecha. 
+   Aunque muevas el ratón súper rápido, este escudo atrapa el cursor para que no se cierre. */
+.sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -30px;
+    width: 30px;
+    height: 100%;
+    background: transparent;
 }
 
 /* Ocultar la barra de scroll del menú para que se vea limpio */
