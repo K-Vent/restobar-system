@@ -624,3 +624,16 @@ function validarManual(id, maxStock) {
     }
     if (val < 1) input.value = 1;
 }
+
+// ==========================================
+// CONTROL DE MENÚ EN DISPOSITIVOS MÓVILES
+// ==========================================
+function abrirMenuMovil() {
+    document.querySelector('.sidebar').classList.add('abierto-movil');
+    document.getElementById('overlay-sidebar').classList.add('activo');
+}
+
+function cerrarMenuMovil() {
+    document.querySelector('.sidebar').classList.remove('abierto-movil');
+    document.getElementById('overlay-sidebar').classList.remove('activo');
+}

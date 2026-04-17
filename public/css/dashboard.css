@@ -258,26 +258,41 @@ input[type=number] {
 .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 .sidebar::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
 
-/* Retardo mínimo de seguridad para que no tiemble si el ratón resbala */
-.sidebar:not(:hover) {
-    transition-delay: 0.15s; 
+
+/* ============================================================
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ADAPTACIÓN TÁCTIL
+   ============================================================ */
+
+/* 1. EL HOVER MÁGICO SOLO FUNCIONARÁ EN PC (Donde hay ratón real) */
+@media (hover: hover) and (pointer: fine) {
+    .sidebar:hover {
+        transform: translateX(0);
+        box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+    }
+    .sidebar::after {
+        content: ''; position: absolute; top: 0; right: -40px; width: 40px; height: 100%;
+        background: transparent;
+    }
 }
 
-/* Al pasar el mouse, el panel regresa a su posición 0 perfecta */
-.sidebar:hover {
-    transform: translateX(0);
-    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+/* 2. CLASE PARA ABRIR EL MENÚ EN CELULARES */
+.sidebar.abierto-movil {
+    transform: translateX(0) !important;
+    box-shadow: 20px 0 100px rgba(0,0,0,0.9);
 }
 
-/* Escudo magnético invisible a la derecha (atrapa el cursor si vas muy rápido) */
-.sidebar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: -40px; /* Agrandamos el escudo de seguridad a 40px */
-    width: 40px;
-    height: 100%;
-    background: transparent;
+/* 3. CAPA OSCURA DE SEGURIDAD (Para cerrar tocando afuera en el celular) */
+.overlay-mobile {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); 
+    z-index: 2999; /* Justo debajo del menú (que es 3000) */
+    backdrop-filter: blur(3px);
+}
+.overlay-mobile.activo {
+    display: block;
 }
 
 /* Ocultar la barra de scroll del menú para que se vea limpio */
