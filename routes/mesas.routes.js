@@ -7,7 +7,9 @@ const {
     abrirMesa, 
     detalleMesa, 
     cerrarMesa, 
-    cambiarMesa 
+    cambiarMesa, 
+    crearMesa, 
+    eliminarUltimaMesa
 } = require('../controllers/mesas.controller');
 
 router.get('/', verificarSesion, obtenerMesas);
@@ -15,5 +17,7 @@ router.post('/abrir/:id', verificarSesion, abrirMesa);
 router.get('/detalle/:id', verificarSesion, detalleMesa);
 router.post('/cerrar/:id', verificarSesion, cerrarMesa);
 router.post('/cambiar', verificarSesion, cambiarMesa);
-
+// Rutas de Infraestructura (Gestión de local)
+router.post('/crear', crearMesa);
+router.delete('/eliminar-ultima', eliminarUltimaMesa);
 module.exports = router;

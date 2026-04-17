@@ -68,22 +68,25 @@
             </div>
         </div>
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom border-secondary pb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(212,175,55,0.3) !important;">
             
             <button class="btn btn-warning d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">
                     ☰ MENÚ
                 </button>
-            <h4 class="fw-bold mb-0 text-white">🎱 Mesas y Consumo</h4>
+            <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">🎱 Mesas y Consumo</h4>
             
-            <div class="d-flex gap-2 flex-wrap">
-                <input type="text" id="busqueda-mesa" class="form-control bg-black text-white border-secondary" 
-                       placeholder="🔍 Buscar mesa..." style="width: 150px;" onkeyup="filtrarMesas()">
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+                <input type="text" id="busqueda-mesa" class="form-control bg-dark text-white border-secondary shadow-sm" 
+                       placeholder="🔍 Buscar mesa..." style="width: 160px;" onkeyup="filtrarMesas()">
                 
                 <div class="btn-group shadow-sm">
-                    <button class="btn btn-outline-warning btn-sm active" onclick="setFiltro('TODAS', this)">Todas</button>
-                    <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('OCUPADA', this)">Ocupadas</button>
-                    <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('BILLAR', this)">Solo Billar</button>
+                    <button class="btn btn-outline-warning btn-sm active fw-bold" onclick="setFiltro('TODAS', this)">Todas</button>
+                    <button class="btn btn-outline-warning btn-sm fw-bold" onclick="setFiltro('OCUPADA', this)">Ocupadas</button>
+                    <button class="btn btn-outline-warning btn-sm fw-bold" onclick="setFiltro('BILLAR', this)">Solo Billar</button>
                 </div>
+                <button class="btn btn-dark border-warning text-warning btn-sm fw-bold shadow-sm" onclick="abrirModalGestionMesas()" title="Añadir o Quitar Mesas">
+                    ⚙️ Gestionar Mesas
+                </button>
             </div>
         </div>
         
@@ -92,6 +95,32 @@
 
     </main>
 
+
+    <div id="modal-gestion-mesas" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:4000; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+        <div style="background:#050505; padding:30px; border-radius:15px; width:90%; max-width:450px; border:1px solid #D4AF37; box-shadow: 0 10px 40px rgba(212,175,55,0.2);">
+            <h3 style="color:#fff; font-weight:bold; border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:20px;">⚙️ Infraestructura</h3>
+            
+            <p class="text-muted small mb-4">Administra el número de mesas físicas en el local. Los cambios se actualizarán en tiempo real en la base de datos.</p>
+
+            <div class="d-grid gap-3">
+                <button class="btn btn-outline-warning fw-bold py-3 text-start" onclick="agregarMesaDB('BILLAR')">
+                    ➕ Añadir nueva Mesa de Billar
+                </button>
+                <button class="btn btn-outline-light fw-bold py-3 text-start opacity-75" onclick="agregarMesaDB('CONSUMO')">
+                    ➕ Añadir nueva Mesa de Consumo
+                </button>
+                <hr class="border-secondary my-2">
+                <button class="btn btn-outline-danger fw-bold py-3 text-start" onclick="eliminarUltimaMesaDB()">
+                    🗑️ Eliminar Última Mesa Registrada
+                </button>
+            </div>
+
+            <button class="btn btn-dark w-100 fw-bold py-3 mt-4" style="border: 1px solid #333;" onclick="document.getElementById('modal-gestion-mesas').style.display='none'">
+                CERRAR PANEL
+            </button>
+        </div>
+    </div>
+    
     <div id="modal-gasto" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">💸 Registrar Gasto de Caja</div>

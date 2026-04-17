@@ -636,3 +636,57 @@ function cerrarMenuMovil() {
     document.querySelector('.sidebar').classList.remove('abierto-movil');
     document.getElementById('overlay-sidebar').classList.remove('activo');
 }
+
+// ==========================================
+// MÓDULO DE INFRAESTRUCTURA (AUMENTAR/QUITAR MESAS)
+// ==========================================
+
+function abrirModalGestionMesas() {
+    // Validamos que solo el Admin pueda tocar la infraestructura
+    if (usuarioActual && usuarioActual.rol !== 'admin') {
+        return mostrarAlerta("Acceso denegado. Solo la gerencia puede alterar la infraestructura.", "error");
+    }
+    document.getElementById('modal-gestion-mesas').style.display = 'flex';
+}
+
+async function agregarMesaDB(tipo) {
+    try {
+        // Asumiendo que crearás esta ruta en tu backend
+        const res = await fetch('/api/mesas/crear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: tipo }) // Envía 'BILLAR' o 'CONSUMO'
+        });
+        
+        if (res.ok) {
+            mostrarToast("✅ Mesa añadida a la infraestructura");
+            cargarMesas(); // Recargamos el tablero automáticamente
+            document.getElementById('modal-gestion-mesas').style.display = 'none';
+        } else {
+            mostrarAlerta("Error en el servidor al intentar crear la mesa.");
+        }
+    } catch (e) {
+        mostrarAlerta("Error de conexión al servidor.");
+    }
+}
+
+async function eliminarUltimaMesaDB() {
+    const confirmado = await mostrarConfirmacion(
+        "⚠️ ALERTA DE INFRAESTRUCTURA", 
+        "¿Estás seguro de eliminar la ÚLTIMA mesa registrada? Asegúrate de que esté vacía."
+    );
+    if (!confirmado) return;
+
+    try {
+        const res = await fetch('/api/mesas/eliminar-ultima', { method: 'DELETE' });
+        if (res.ok) {
+            mostrarToast("🗑️ Mesa retirada exitosamente");
+            cargarMesas(); // Recargamos el tablero
+            document.getElementById('modal-gestion-mesas').style.display = 'none';
+        } else {
+            mostrarAlerta("No se pudo eliminar la mesa. Verifica si tiene cuentas activas.");
+        }
+    } catch (e) {
+        mostrarAlerta("Error de conexión al servidor.");
+    }
+}

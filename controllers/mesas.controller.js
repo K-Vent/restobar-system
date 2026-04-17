@@ -163,4 +163,55 @@ const cambiarMesa = async (req, res, next) => {
     } catch (e) { next(e); } 
 };
 
+// ==========================================
+// MÓDULO DE INFRAESTRUCTURA (Añadir/Quitar Mesas)
+// ==========================================
+
+const crearMesa = async (req, res) => {
+    const { tipo } = req.body; // Recibe 'BILLAR' o 'CONSUMO' desde el panel
+    
+    try {
+        // 1. Buscamos cuál es el número de la última mesa para seguir el orden (ej. si hay 10, la nueva será la 11)
+        const [ultimaMesa] = await db.query('SELECT numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        let nuevoNumero = 1;
+        
+        if (ultimaMesa.length > 0) {
+            nuevoNumero = ultimaMesa[0].numero_mesa + 1;
+        }
+
+        // 2. Insertamos la mesa en la base de datos
+        // Por defecto, toda mesa nueva nace en estado 'LIBRE'
+        await db.query('INSERT INTO mesas (numero_mesa, tipo, estado) VALUES (?, ?, ?)', [nuevoNumero, tipo, 'LIBRE']);
+        
+        res.status(200).json({ message: 'Infraestructura actualizada: Mesa creada.' });
+    } catch (error) {
+        console.error("Error crítico al crear mesa:", error);
+        res.status(500).json({ error: 'Error interno del servidor al crear mesa' });
+    }
+};
+
+const eliminarUltimaMesa = async (req, res) => {
+    try {
+        // 1. Buscamos la mesa con el número más alto
+        const [ultimaMesa] = await db.query('SELECT id, estado, numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        
+        if (ultimaMesa.length === 0) {
+            return res.status(400).json({ error: 'No hay mesas registradas en el sistema.' });
+        }
+
+        // 2. SEGURIDAD DE LA FRANQUICIA: Nunca borrar una mesa que está generando dinero
+        if (ultimaMesa[0].estado !== 'LIBRE') {
+            return res.status(400).json({ error: 'Operación denegada: La última mesa está OCUPADA. Ciérrela primero.' });
+        }
+
+        // 3. Si está libre, la eliminamos de la base de datos
+        await db.query('DELETE FROM mesas WHERE id = ?', [ultimaMesa[0].id]);
+        
+        res.status(200).json({ message: 'Infraestructura actualizada: Mesa retirada.' });
+    } catch (error) {
+        console.error("Error crítico al eliminar mesa:", error);
+        res.status(500).json({ error: 'Error interno del servidor al eliminar mesa' });
+    }
+};
+
 module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa };
