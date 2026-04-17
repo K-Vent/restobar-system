@@ -95,14 +95,20 @@ function setFiltro(tipo, btn) {
 }
 
 function filtrarMesas() {
-    const busqueda = document.getElementById('busqueda-mesa').value.toLowerCase();
+    const inputBusqueda = document.getElementById('busqueda-mesa');
+    // Si el buscador no existe aún en el HTML, no hacemos nada para evitar errores
+    if (!inputBusqueda) return; 
+    
+    const busqueda = inputBusqueda.value.toLowerCase();
     
     const filtradas = todasLasMesas.filter(m => {
         const cumpleTipo = filtroActual === 'TODAS' || 
                            (filtroActual === 'OCUPADA' && m.estado === 'OCUPADA') ||
                            (filtroActual === 'BILLAR' && m.tipo === 'BILLAR');
         
-        const cumpleBusqueda = m.numero_mesa.toString().includes(busqueda);
+        // Blindamos el número de mesa por si viene vacío desde la base de datos
+        const numeroSeguro = String(m.numero_mesa || '').toLowerCase();
+        const cumpleBusqueda = numeroSeguro.includes(busqueda);
         
         return cumpleTipo && cumpleBusqueda;
     });
@@ -110,8 +116,16 @@ function filtrarMesas() {
     renderizarMesas(filtradas);
 }
 
+// Versión V3 Blindada
 function renderizarMesas(mesas) {
     const grid = document.getElementById('grid-mesas');
+    
+    // Si borraste el grid sin querer, te avisará en vez de romper la página
+    if (!grid) {
+        console.error("Falta el <div id='grid-mesas'> en tu HTML.");
+        return; 
+    }
+    
     grid.innerHTML = '';
     grid.className = 'row g-3'; 
     
@@ -149,7 +163,7 @@ function renderizarMesas(mesas) {
                         </div>
                     ` : `
                         <div class="text-center py-4 flex-grow-1">
-                            <p class="small text-muted mb-0">TARIFA: S/ ${parseFloat(mesa.precio_hora).toFixed(2)}/hr</p>
+                            <p class="small text-muted mb-0">TARIFA: S/ ${parseFloat(mesa.precio_hora || 0).toFixed(2)}/hr</p>
                         </div>
                         <div class="mt-auto">
                             <button class="btn btn-outline-success w-100 fw-bold py-3" onclick="abrirMesa(${mesa.id})">
@@ -165,7 +179,6 @@ function renderizarMesas(mesas) {
 
     iniciarCronometros();
 }
-
 // ==========================================
 // 5. ACCIONES DE MUDANZA (NUEVO)
 // ==========================================
