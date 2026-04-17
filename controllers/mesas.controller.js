@@ -214,4 +214,4 @@ const eliminarUltimaMesa = async (req, res) => {
     }
 };
 
-module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa };
+module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa,crearMesa, eliminarUltimaMesa };

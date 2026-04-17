@@ -7,7 +7,7 @@ const {
     abrirMesa, 
     detalleMesa, 
     cerrarMesa, 
-    cambiarMesa, 
+    cambiarMesa,
     crearMesa, 
     eliminarUltimaMesa
 } = require('../controllers/mesas.controller');
