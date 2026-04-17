@@ -2,94 +2,289 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Club La Esquina - Socios</title>
+    <title>Club VIP | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/css/dashboard.css?v=3">
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="icon" href="/logo.png">
+    
     <style>
-        .gold-text { color: #D4AF37; }
-        .gold-border { border-color: #D4AF37; }
-        .nivel-bronce { background: rgba(205, 127, 50, 0.1); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.3); }
-        .nivel-plata { background: rgba(192, 192, 192, 0.1); color: #c0c0c0; border: 1px solid rgba(192, 192, 192, 0.3); }
-        .nivel-oro { background: rgba(212, 175, 55, 0.15); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.5); font-weight: 900; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .btn-sello { background: rgba(212, 175, 55, 0.1); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.4); padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-sello:hover { background: #D4AF37; color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        /* Estilos específicos para las medallas VIP */
+        .nivel-bronce { background: rgba(205, 127, 50, 0.15); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5); }
+        .nivel-plata { background: rgba(192, 192, 192, 0.15); color: #c0c0c0; border: 1px solid rgba(192, 192, 192, 0.5); }
+        .nivel-oro { background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid #D4AF37; font-weight: 900; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        
+        .caja-afiliacion {
+            background: linear-gradient(145deg, #1a170b, #050505);
+            border: 1px solid #D4AF37;
+            box-shadow: 0 10px 30px rgba(212,175,55,0.1);
+        }
     </style>
 </head>
-<body>
+<body class="text-light">
+    
+    <div id="toast">✅ Acción realizada</div>
+    
+    <div id="overlay-sidebar" class="overlay-mobile" onclick="cerrarMenuMovil()"></div>
+
     <nav class="sidebar">
-        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
-        <div class="menu">
-            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
-            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
-            <a href="#" class="menu-link active" style="color: #D4AF37; border-left-color: #D4AF37;">👑 Club La Esquina</a>
-            <a href="/reportes.html" class="menu-link">📅 Historial</a>
-            <a href="/empleados.html" class="menu-link">👥 Empleados</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
+        <div class="text-center mb-4">
+            <img src="/logo.png" style="max-width: 150px;" alt="La Esquina">
         </div>
-        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
+        
+        <div class="d-flex flex-column flex-grow-1 mt-3">
+            <a href="/dashboard.html" class="nav-item-vip">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="nav-item-vip">📦 Inventario</a>
+            <a href="/clientes.html" class="nav-item-vip active">👑 Club La Esquina</a> <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
+            <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
+            <a href="/empleados.html" class="nav-item-vip">👥 Empleados</a>
+        </div>
+        
+        <a href="/logout" class="btn-logout-sidebar mt-4">🚪 CERRAR SESIÓN</a>
     </nav>
 
-    <main class="main-content">
-        <div class="page-title">👑 Club VIP <span class="gold-text">La Esquina</span></div>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Gestión de fidelización y recompensas para clientes frecuentes.</p>
-        <button class="btn-sello" style="margin-bottom: 25px; font-size: 14px; padding: 12px 20px;" onclick="abrirGestorBeneficios()">⚙️ CONFIGURAR BENEFICIOS POR NIVEL</button>
-
-        <div style="background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid #222; margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="flex: 1; min-width: 200px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Nombre del Socio</span>
-                <input type="text" id="cli-nombre" class="modal-input gold-border" placeholder="Ej. Carlos Mendoza">
+    <main class="main-content" style="padding: 30px;">
+        
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(212,175,55,0.3) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-warning d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">
+                    ☰ MENÚ
+                </button>
+                <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">👑 Club La Esquina (VIP)</h4>
             </div>
-            <div style="flex: 1; min-width: 150px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Teléfono / WhatsApp</span>
-                <input type="text" id="cli-telefono" class="modal-input" placeholder="Ej. 999888777">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">PIN (4 dígitos)</span>
-                <input type="password" id="cli-pin" class="modal-input" placeholder="Ej. 1234" maxlength="4">
-            </div>
-            <button class="btn-mesa btn-abrir" style="background: #D4AF37; color: #000; padding: 16px 25px; height: 52px; font-weight: 900;" onclick="registrarCliente()">➕ AFILIAR SOCIO</button>
+            
+            <button class="btn btn-outline-warning fw-bold shadow-sm" onclick="abrirGestorBeneficios()">
+                ⚙️ CONFIGURAR BENEFICIOS
+            </button>
         </div>
 
-        <div style="background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr>
-                        <th style="padding: 16px 25px; background: #111; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Socio</th>
-                        <th style="padding: 16px 25px; background: #111; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Teléfono</th>
-                        <th style="padding: 16px 25px; background: #111; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Sellos Acumulados</th>
-                        <th style="padding: 16px 25px; background: #111; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Nivel Actual</th>
-                        <th style="padding: 16px 25px; background: #111; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Acción Rápida</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-clientes"></tbody>
-            </table>
-        </div>
-        <div id="modal-beneficios" class="modal-overlay" style="display: none; z-index: 99999; align-items: center; justify-content: center;">
-            <div class="modal-box" style="width: 100%; max-width: 500px; padding: 25px; background: #111; border: 1px solid #D4AF37;">
-                <h3 style="color: #D4AF37; margin-bottom: 20px; text-align: center;">⚙️ Gestor de Beneficios</h3>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <select id="ben-nivel" class="modal-input" style="width: 30%;">
-                        <option value="Bronce">Bronce</option>
-                        <option value="Plata">Plata</option>
-                        <option value="Oro">Oro</option>
-                    </select>
-                    <input type="text" id="ben-desc" class="modal-input" placeholder="Ej: 10% dcto en piqueos" style="width: 70%;">
+        <div class="caja-afiliacion p-4 rounded-4 mb-4">
+            <h6 class="text-warning fw-bold mb-3">➕ Inscribir Nuevo Socio</h6>
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">NOMBRE DEL SOCIO</label>
+                    <input type="text" id="cli-nombre" class="form-control bg-dark text-white border-warning" placeholder="Ej. Carlos Mendoza">
                 </div>
-                <button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: bold; width: 100%; margin-bottom: 20px;" onclick="guardarBeneficio()">➕ Agregar Beneficio</button>
-
-                <div style="max-height: 250px; overflow-y: auto; background: #0a0a0c; padding: 10px; border-radius: 8px; border: 1px solid #222;" id="lista-beneficios-admin">
-                    </div>
-
-                <button class="btn-modal btn-cancel" style="width: 100%; margin-top: 20px;" onclick="document.getElementById('modal-beneficios').style.display='none'">Cerrar Panel</button>
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">TELÉFONO (WhatsApp)</label>
+                    <input type="text" id="cli-telefono" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 999888777">
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">PIN DE SEGURIDAD (4 dígitos)</label>
+                    <input type="password" id="cli-pin" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 1234" maxlength="4">
+                </div>
+                <div class="col-12 col-md-3">
+                    <button class="btn btn-warning w-100 fw-bold shadow-sm py-2 text-dark" onclick="registrarCliente()">
+                        AFILIAR SOCIO
+                    </button>
+                </div>
             </div>
         </div>
+
+        <div class="mb-3">
+            <input type="text" id="buscador" class="form-control bg-dark text-white border-secondary shadow-sm" 
+                   placeholder="🔍 Buscar socio por nombre o teléfono..." onkeyup="filtrarClientes()">
+        </div>
+
+        <div class="card bg-dark shadow-lg" style="border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle" style="border-collapse: separate; border-spacing: 0;">
+                        <thead style="background: linear-gradient(145deg, #1a170b, #050505);">
+                            <tr>
+                                <th class="py-3 px-4 text-warning" style="border-bottom: 2px solid #D4AF37;">SOCIO</th>
+                                <th class="py-3 px-4 text-warning" style="border-bottom: 2px solid #D4AF37;">TELÉFONO</th>
+                                <th class="py-3 px-4 text-warning text-center" style="border-bottom: 2px solid #D4AF37;">SELLOS ACUMULADOS</th>
+                                <th class="py-3 px-4 text-warning text-center" style="border-bottom: 2px solid #D4AF37;">NIVEL ACTUAL</th>
+                                <th class="py-3 px-4 text-warning text-center" style="border-bottom: 2px solid #D4AF37;">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-clientes">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-beneficios" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark border-warning" style="border-width: 2px;">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title text-warning fw-bold">⚙️ Gestor de Beneficios</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex gap-2 mb-3">
+                            <select id="ben-nivel" class="form-select bg-black text-white border-secondary" style="width: 30%;">
+                                <option value="Bronce">Bronce</option>
+                                <option value="Plata">Plata</option>
+                                <option value="Oro">Oro</option>
+                            </select>
+                            <input type="text" id="ben-desc" class="form-control bg-black text-white border-secondary" placeholder="Ej: 10% dcto en piqueos" style="width: 70%;">
+                        </div>
+                        <button class="btn btn-warning w-100 fw-bold text-dark mb-4" onclick="guardarBeneficio()">➕ Agregar Beneficio</button>
+                        
+                        <div id="lista-beneficios-admin" class="bg-black p-2 rounded-3 border border-secondary" style="max-height: 250px; overflow-y: auto;">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/alertas.js"></script>
+    
     <script>
+        let listaClientesGlobal = [];
+
+        // --- SISTEMA DE MENÚ MÓVIL ---
+        function abrirMenuMovil() {
+            document.querySelector('.sidebar').classList.add('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.add('activo');
+        }
+        function cerrarMenuMovil() {
+            document.querySelector('.sidebar').classList.remove('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.remove('activo');
+        }
+
+        // --- GESTIÓN DE CLIENTES ---
+        async function cargarClientes() {
+            try {
+                const res = await fetch('/api/clientes');
+                listaClientesGlobal = await res.json();
+                pintarTabla(listaClientesGlobal);
+            } catch (error) { console.error("Error cargando CRM:", error); }
+        }
+
+        function pintarTabla(clientes) {
+            const tbody = document.getElementById('tabla-clientes');
+            tbody.innerHTML = '';
+
+            if(clientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No hay socios registrados o no coinciden con la búsqueda.</td></tr>';
+                return;
+            }
+
+            clientes.forEach(c => {
+                let claseNivel = 'nivel-bronce';
+                if(c.nivel.includes('Plata')) claseNivel = 'nivel-plata';
+                if(c.nivel.includes('Oro')) claseNivel = 'nivel-oro';
+
+                const canjeados = c.premios_canjeados || 0;
+                const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
+                
+                let btnCanje = '';
+                if (premiosDisponibles > 0) {
+                    btnCanje = `<button class="btn btn-sm btn-outline-warning fw-bold shadow-sm" onclick="canjearPremio(${c.id}, '${c.nombre}')">🎁 Canjear Hora (${premiosDisponibles})</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-white px-4">${c.nombre}</td>
+                        <td class="text-muted px-4">${c.telefono || '-'}</td>
+                        <td class="text-center px-4">
+                            <span class="fs-5 fw-bold text-white">${c.sellos}</span> 
+                        </td>
+                        <td class="text-center px-4">
+                            <span class="badge px-3 py-2 text-uppercase ${claseNivel}">${c.nivel}</span>
+                        </td>
+                        <td class="px-4">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-sm btn-warning fw-bold text-dark shadow-sm" onclick="sumarSello(${c.id}, '${c.nombre}')">⭐ +1 Sello</button>
+                                <button class="btn btn-sm btn-outline-success fw-bold shadow-sm" onclick="enviarPromo('${c.nombre}', '${c.telefono}')">📲 Promo</button>
+                                ${btnCanje} 
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filtrarClientes() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const filtrados = listaClientesGlobal.filter(c => 
+                c.nombre.toLowerCase().includes(txt) || 
+                (c.telefono && c.telefono.includes(txt))
+            );
+            pintarTabla(filtrados);
+        }
+
+        // --- ACCIONES CRUD ---
+        async function registrarCliente() {
+            const valNombre = document.getElementById('cli-nombre').value.trim();
+            const valTelefono = document.getElementById('cli-telefono').value.trim();
+            const valPin = document.getElementById('cli-pin').value.trim();
+
+            if (!valNombre) return mostrarAlerta("El nombre del socio es obligatorio.", "warning");
+            if (!valTelefono) return mostrarAlerta("El teléfono es obligatorio.", "warning");
+            if (!valPin || valPin.length !== 4) return mostrarAlerta("El PIN debe tener exactamente 4 dígitos.", "warning");
+
+            try {
+                const res = await fetch('/api/clientes/nuevo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre: valNombre, telefono: valTelefono, pin: valPin }) 
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    mostrarToast(`Socio ${valNombre} registrado con éxito.`);
+                    document.getElementById('cli-nombre').value = '';
+                    document.getElementById('cli-telefono').value = '';
+                    document.getElementById('cli-pin').value = '';
+                    cargarClientes(); 
+                } else {
+                    mostrarAlerta(data.error || "Error al registrar", "error");
+                }
+            } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+        }
+
+        async function sumarSello(id, nombre) {
+            const confirmado = await mostrarConfirmacion("⭐ Sumar Sello", `¿Añadir un (1) sello a la tarjeta de ${nombre}?`);
+            if (confirmado) {
+                try {
+                    const res = await fetch(`/api/clientes/${id}/sello`, { method: 'POST' });
+                    if (res.ok) {
+                        mostrarToast("✅ Sello añadido correctamente");
+                        cargarClientes(); 
+                    }
+                } catch (error) { mostrarAlerta("Error al sumar", "error"); }
+            }
+        }
+
+        async function canjearPremio(id, nombre) {
+            const confirmado = await mostrarConfirmacion("🎁 Canjear Recompensa", `¿Confirmas que le vas a dar 1 Hora Gratis a ${nombre}?`);
+            if (confirmado) {
+                try {
+                    const res = await fetch(`/api/clientes/${id}/canjear`, { method: 'POST' });
+                    if (res.ok) {
+                        mostrarToast("✅ Hora gratis aplicada.");
+                        cargarClientes();
+                    } else {
+                        const data = await res.json();
+                        mostrarAlerta(data.error || "No se pudo canjear.", "error");
+                    }
+                } catch (error) { mostrarAlerta("Error al conectar.", "error"); }
+            }
+        }
+
+        function enviarPromo(nombre, telefono) {
+            if (!telefono || telefono === '-') return mostrarAlerta("Este socio no tiene teléfono registrado.", "warning");
+            let numeroLimpio = telefono.replace(/\D/g, ''); 
+            if (numeroLimpio.length === 9 && numeroLimpio.startsWith('9')) numeroLimpio = '51' + numeroLimpio;
+
+            const mensaje = `¡Hola ${nombre}! 👑 Te extrañamos en La Esquina del Billar. Hoy tenemos una promo exclusiva para nuestros socios VIP. ¡Ven a sumar sellos a tu tarjeta digital! 🎱🍻`;
+            window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
+        }
+
+        // --- GESTIÓN DE BENEFICIOS (ADMIN) ---
         function abrirGestorBeneficios() {
-            document.getElementById('modal-beneficios').style.display = 'flex';
+            const modal = new bootstrap.Modal(document.getElementById('modal-beneficios'));
+            modal.show();
             cargarBeneficiosAdmin();
         }
 
@@ -103,12 +298,12 @@
                 beneficios.forEach(b => {
                     let color = b.nivel === 'Oro' ? '#D4AF37' : (b.nivel === 'Plata' ? '#c0c0c0' : '#cd7f32');
                     lista.innerHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222;">
+                        <div class="d-flex justify-content-between align-items-center p-2 border-bottom border-secondary">
                             <div>
-                                <span style="color: ${color}; font-weight: bold; font-size: 11px; text-transform: uppercase; border: 1px solid ${color}; padding: 2px 6px; border-radius: 4px; margin-right: 8px;">${b.nivel}</span>
-                                <span style="color: #ccc; font-size: 13px;">${b.descripcion}</span>
+                                <span class="badge" style="background: transparent; color: ${color}; border: 1px solid ${color};">${b.nivel}</span>
+                                <span class="text-light ms-2 small">${b.descripcion}</span>
                             </div>
-                            <button style="background: transparent; color: #ff4757; border: none; cursor: pointer; font-size: 16px;" onclick="eliminarBeneficio(${b.id})">🗑️</button>
+                            <button class="btn btn-sm text-danger" onclick="eliminarBeneficio(${b.id})">🗑️</button>
                         </div>
                     `;
                 });
@@ -129,150 +324,17 @@
                     document.getElementById('ben-desc').value = '';
                     cargarBeneficiosAdmin();
                 }
-            } catch (e) { mostrarAlerta("Error al guardar", "error"); }
+            } catch (e) { mostrarAlerta("Error", "error"); }
         }
 
         async function eliminarBeneficio(id) {
             try {
                 await fetch(`/api/beneficios/${id}`, { method: 'DELETE' });
                 cargarBeneficiosAdmin();
-            } catch (e) { mostrarAlerta("Error al eliminar", "error"); }
-        }
-        async function cargarClientes() {
-            try {
-                const res = await fetch('/api/clientes');
-                const clientes = await res.json();
-                const tbody = document.getElementById('tabla-clientes');
-                tbody.innerHTML = '';
-
-                if(clientes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#555;">No hay socios registrados aún.</td></tr>';
-                    return;
-                }
-
-                clientes.forEach(c => {
-                    let claseNivel = 'nivel-bronce';
-                    if(c.nivel.includes('Plata')) claseNivel = 'nivel-plata';
-                    if(c.nivel.includes('Oro')) claseNivel = 'nivel-oro';
-
-                    // Lógica para saber si mostrar el botón de canje
-                    const canjeados = c.premios_canjeados || 0;
-                    const premiosDisponibles = Math.floor(c.sellos / 10) - canjeados;
-                    
-                    let btnCanje = '';
-                    if (premiosDisponibles > 0) {
-                        btnCanje = `<button style="background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid #D4AF37; padding: 8px 15px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);" onclick="canjearPremio(${c.id}, '${c.nombre}')">🎁 Canjear Hora (${premiosDisponibles})</button>`;
-                    }
-
-                    tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #1f222b; transition: 0.2s;">
-                            <td style="padding: 16px 25px; font-weight: 800; color: white; font-size: 15px;">${c.nombre}</td>
-                            <td style="padding: 16px 25px; color: var(--text-muted);">${c.telefono || '-'}</td>
-                            <td style="padding: 16px 25px;">
-                                <span style="font-size: 18px; font-weight: 900; color: #fff;">${c.sellos}</span> 
-                            </td>
-                            <td style="padding: 16px 25px;">
-                                <span style="padding: 6px 12px; border-radius: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; ${claseNivel}">${c.nivel}</span>
-                            </td>
-                            <td style="padding: 16px 25px; display: flex; gap: 10px;">
-                                <button class="btn-sello" onclick="sumarSello(${c.id}, '${c.nombre}')">⭐ Sello</button>
-                                <button style="background: rgba(37, 211, 102, 0.1); color: #25D366; border: 1px solid rgba(37, 211, 102, 0.4); padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;" onclick="enviarPromo('${c.nombre}', '${c.telefono}')">📲 Promo</button>
-                                ${btnCanje} </td>
-                        </tr>
-                    `;
-
-                });
-            } catch (error) { console.error("Error cargando CRM:", error); }
+            } catch (e) { mostrarAlerta("Error", "error"); }
         }
 
-        async function canjearPremio(id, nombre) {
-            const confirmado = await mostrarConfirmacion("🎁 Canjear Recompensa", `¿Confirmas que le vas a dar 1 Hora de Billar Gratis a ${nombre}? El premio se descontará de su tarjeta digital, pero mantendrá su nivel VIP.`);
-            
-            if (confirmado) {
-                try {
-                    const res = await fetch(`/api/clientes/${id}/canjear`, { method: 'POST' });
-                    if (res.ok) {
-                        mostrarAlerta("¡Premio canjeado! Hora gratis aplicada.", "success");
-                        cargarClientes(); // Recargamos para que desaparezca el botón si ya no tiene premios
-                    } else {
-                        const data = await res.json();
-                        mostrarAlerta(data.error || "No se pudo canjear.", "error");
-                    }
-                } catch (error) { mostrarAlerta("Error al conectar.", "error"); }
-            }
-        }
-
-        function enviarPromo(nombre, telefono) {
-            if (!telefono || telefono === '-') return mostrarAlerta("Este socio no tiene teléfono registrado.", "warning");
-            
-            // Verificamos que tenga el código de país. Si empieza con 9, asumimos Perú (+51)
-            let numeroLimpio = telefono.replace(/\D/g, ''); 
-            if (numeroLimpio.length === 9 && numeroLimpio.startsWith('9')) numeroLimpio = '51' + numeroLimpio;
-
-            // Armamos un mensaje dinámico y atractivo
-            const mensaje = `¡Hola ${nombre}! 👑 Te extrañamos en La Esquina del Billar. Hoy tenemos una promo exclusiva para nuestros socios VIP: [ESCRIBE TU PROMO AQUÍ]. ¡Ven a sumar sellos a tu tarjeta digital! 🎱🍻`;
-            
-            // Codificamos el mensaje para que funcione en URLs
-            const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`;
-            
-            // Abrimos WhatsApp Web o la App en una pestaña nueva
-            window.open(urlWhatsApp, '_blank');
-        }
-        async function registrarCliente() {
-            // 1. Capturamos los valores exactos de los inputs del HTML
-            const valNombre = document.getElementById('cli-nombre').value.trim();
-            const valTelefono = document.getElementById('cli-telefono').value.trim();
-            const valPin = document.getElementById('cli-pin').value.trim();
-
-            // 2. Validaciones estrictas
-            if (!valNombre) return mostrarAlerta("El nombre del socio es obligatorio.", "warning");
-            if (!valTelefono) return mostrarAlerta("El teléfono es obligatorio.", "warning");
-            if (!valPin || valPin.length !== 4) return mostrarAlerta("El PIN debe tener exactamente 4 dígitos.", "warning");
-
-            try {
-                // 3. EMPAQUETADO BLINDADO (Aquí forzamos a que el PIN viaje sí o sí)
-                const paqueteDeDatos = {
-                    nombre: valNombre,
-                    telefono: valTelefono,
-                    pin: valPin
-                };
-
-                const res = await fetch('/api/clientes/nuevo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(paqueteDeDatos) 
-                });
-
-                const data = await res.json();
-                
-                if (res.ok) {
-                    mostrarAlerta(`Socio ${valNombre} registrado con éxito.`, "success");
-                    // Limpiamos las cajas de texto
-                    document.getElementById('cli-nombre').value = '';
-                    document.getElementById('cli-telefono').value = '';
-                    document.getElementById('cli-pin').value = '';
-                    cargarClientes(); // Recargamos la tabla
-                } else {
-                    mostrarAlerta(data.error || "Error al registrar", "error");
-                }
-            } catch (error) { 
-                mostrarAlerta("Error de conexión con el servidor", "error"); 
-            }
-        }
-
-        async function sumarSello(id, nombre) {
-            const confirmado = await mostrarConfirmacion("⭐ Sumar Sello", `¿Añadir un (1) sello de visita a la cuenta de ${nombre}?`);
-            if (confirmado) {
-                try {
-                    const res = await fetch(`/api/clientes/${id}/sello`, { method: 'POST' });
-                    if (res.ok) {
-                        mostrarAlerta("Sello añadido correctamente", "success");
-                        cargarClientes(); // Recargar para ver los nuevos puntos y nivel
-                    }
-                } catch (error) { mostrarAlerta("Error al sumar sello", "error"); }
-            }
-        }
-
+        // Inicializar
         cargarClientes();
     </script>
 </body>
