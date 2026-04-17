@@ -228,40 +228,45 @@ input[type=number] {
     background-color: var(--bs-warning);
     color: #000;
 }
+
 /* ============================================================
-   SIDEBAR DINÁMICO (ESTILO FRANQUICIA)
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - CORREGIDO
    ============================================================ */
 .sidebar {
-    width: 320px; /* Un poco más ancho para mejor legibilidad */
+    width: 320px;
     height: 100vh;
     position: fixed;
-    /* Deja solo 15px visibles como 'pestaña' o zona de activación */
     left: -305px; 
     top: 0;
     z-index: 3000;
     background: #050505;
-    /* Borde dorado que indica que el menú está ahí */
     border-right: 4px solid #D4AF37; 
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     flex-direction: column;
     padding: 2rem 1rem;
+    overflow-y: auto; /* ⬅️ LA SOLUCIÓN: Permite deslizar el menú */
 }
 
-/* El panel se desliza cuando pasas el mouse por la izquierda */
+/* Ocultar la barra de scroll del menú para que se vea limpio */
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
 .sidebar:hover {
     left: 0;
     box-shadow: 20px 0 60px rgba(0,0,0,0.9);
 }
 
 .main-content {
-    /* Dejamos un pequeño margen para que el trigger no tape las mesas */
+    /* Mantenemos el margen para la "pestaña" del menú */
     margin-left: 15px; 
     width: calc(100% - 15px);
-    transition: all 0.4s;
+    transition: filter 0.4s;
+    min-height: 100vh;
 }
 
-/* EFECTO DE ENFOQUE: Difumina ligeramente el fondo cuando el menú está abierto */
 .sidebar:hover ~ .main-content {
     filter: blur(2px) brightness(0.6);
 }
