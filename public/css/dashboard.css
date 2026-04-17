@@ -228,3 +228,38 @@ input[type=number] {
     background-color: var(--bs-warning);
     color: #000;
 }
+
+/* ==========================================
+   MENÚ LATERAL PREMIUM (SIDEBAR)
+   ========================================== */
+.sidebar {
+    background: linear-gradient(180deg, #0a0a0c 0%, #111115 100%);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.5); /* Sombra hacia la derecha */
+}
+
+.nav-item-vip {
+    display: block;
+    padding: 14px 20px;
+    color: #aaa;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+    letter-spacing: 0.5px;
+}
+
+.nav-item-vip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    transform: translateX(8px); /* Efecto de empuje suave a la derecha */
+}
+
+/* El botón de la página donde estás actualmente */
+.nav-item-vip.active {
+    background: rgba(212, 175, 55, 0.1); /* Fondo dorado transparente */
+    color: #D4AF37; /* Texto Dorado */
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-left: 4px solid #D4AF37; /* Línea gruesa a la izquierda */
+}

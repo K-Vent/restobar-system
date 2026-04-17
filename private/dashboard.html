@@ -15,22 +15,27 @@
     <div class="d-flex flex-column flex-md-row">
         <nav class="sidebar p-4 d-flex flex-column">
             <div class="text-center mb-4">
-                <img src="/logo.png" class="img-fluid px-3" alt="La Esquina">
+                <img src="/logo.png" class="img-fluid px-3 mb-3" alt="La Esquina">
+                <hr class="border-secondary m-0 opacity-50">
             </div>
-            <button class="btn btn-success w-100 fw-bold mb-4 shadow-sm" onclick="document.getElementById('modal-gasto').style.display='flex'">
-                💸 Registrar Gasto
+            
+            <button class="btn btn-success w-100 fw-bold mb-4 shadow-sm py-2" style="letter-spacing: 1px;" onclick="document.getElementById('modal-gasto').style.display='flex'">
+                💸 REGISTRAR GASTO
             </button>
-            <div class="d-flex flex-column gap-2 flex-grow-1">
-                <a href="/dashboard.html" class="btn btn-warning fw-bold text-dark text-start shadow-sm">🎱 Control de Mesas</a>
-                <a href="/cocina.html" class="btn btn-outline-light text-start border-0" target="_blank">👨‍🍳 Pantalla Cocina</a>
-                <a href="/inventario.html" class="btn btn-outline-light text-start border-0">📦 Inventario</a>
-                <a href="/clientes.html" class="btn btn-outline-light text-start border-0">👑 Club La Esquina</a>
-                <a href="/reportes.html" class="btn btn-outline-light text-start border-0">📈 Analytics (BI)</a>
-                <a href="/cierre_caja.html" class="btn btn-outline-light text-start border-0">🔒 Cerrar Caja</a>
-                <a href="/auditoria.html" class="btn btn-outline-danger text-start border-0">🕵️‍♂️ Auditoría</a>
-                <a href="/empleados.html" class="btn btn-outline-light text-start border-0">👥 Empleados</a>
+            
+            <div class="d-flex flex-column flex-grow-1">
+                <a href="/dashboard.html" class="nav-item-vip active">🎱 Control de Mesas</a>
+                <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
+                <a href="/inventario.html" class="nav-item-vip">📦 Inventario</a>
+                <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
+                <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
+                <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
+                <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
+                <a href="/empleados.html" class="nav-item-vip">👥 Empleados</a>
             </div>
-            <a href="/logout" class="btn btn-danger w-100 mt-4 fw-bold shadow-sm">🚪 Salir</a>
+            
+            <hr class="border-secondary mt-auto mb-3 opacity-50">
+            <a href="/logout" class="btn btn-outline-danger w-100 fw-bold shadow-sm py-2">🚪 CERRAR SESIÓN</a>
         </nav>
 
         <main class="main-content flex-grow-1">
