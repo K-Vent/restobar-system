@@ -140,6 +140,15 @@
     
     <script>
         let listaClientesGlobal = [];
+        // --- SISTEMA DE NOTIFICACIONES FLOTANTES ---
+        function mostrarToast(msg) { 
+            const t = document.getElementById("toast"); 
+            if(t) {
+                t.innerText = msg; 
+                t.className = "show"; 
+                setTimeout(() => t.className = t.className.replace("show", ""), 2500); 
+            }
+        }
 
         // --- SISTEMA DE MENÚ MÓVIL ---
         function abrirMenuMovil() {
@@ -246,7 +255,10 @@
                 } else {
                     mostrarAlerta(data.error || "Error al registrar", "error");
                 }
-            } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+            }   catch (error) { 
+                console.error("Error real de JS:", error); // Esto te dirá la verdad en la consola (F12)
+                mostrarAlerta("Error de conexión", "error"); 
+            }
         }
         
         // --- ELIMINAR SOCIO VIP ---
@@ -271,9 +283,11 @@
                         const data = await res.json();
                         mostrarAlerta(data.error || "No se pudo eliminar al socio.", "error");
                     }
-                } catch (error) { 
-                    mostrarAlerta("Error de conexión con el servidor.", "error"); 
-                }
+                }  catch (error) { 
+                console.error("Error real de JS:", error); // Esto te dirá la verdad en la consola (F12)
+                mostrarAlerta("Error de conexión", "error"); 
+            }
+                
             }
         }
 
