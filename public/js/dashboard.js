@@ -606,7 +606,7 @@ async function ejecutarCanjeAgora(idSocio, idMesa) {
         if (res.ok) {
             document.getElementById('modal-perfil-vip').style.display = 'none';
             document.getElementById('modal-cobro').style.display = 'none';
-            mostrarAlerta("🎁 ¡Descuento Agora aplicado! La cuenta ha sido recalculada.", "success");
+            mostrarAlerta("🎁 ¡Descuento  aplicado! La cuenta ha sido recalculada.", "success");
             
             // Recargamos el sistema para mostrar el nuevo total exacto
             await cargarMesas();

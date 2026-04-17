@@ -5,258 +5,320 @@
     <title>Cerrar Caja | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/dashboard.css?v=6">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="icon" href="/logo.png">
+    <style>
+        /* Estilos VIP para las métricas financieras */
+        .kpi-card {
+            background: linear-gradient(145deg, #111, #050505);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+        .kpi-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+        .kpi-value { font-size: 38px; font-weight: 900; }
+        .valor-dorado { color: #D4AF37; text-shadow: 0 0 15px rgba(212,175,55,0.3); }
+        .bg-black-premium { background-color: #050505 !important; }
+    </style>
 </head>
 <body class="text-light">
-    <div class="d-flex flex-column flex-md-row">
-        
-        <nav class="sidebar p-4 d-flex flex-column">
-            <div class="text-center mb-4">
-                <img src="/logo.png" class="img-fluid px-3" alt="La Esquina">
-            </div>
-            <div class="d-flex flex-column gap-2 flex-grow-1">
-                <a href="/dashboard.html" class="btn btn-outline-light text-start border-0">🎱 Mesas</a>
-                <a href="/inventario.html" class="btn btn-outline-light text-start border-0">📦 Inventario</a>
-                <a href="/clientes.html" class="btn btn-outline-light text-start border-0">👑 Club La Esquina</a>
-                <a href="/reportes.html" class="btn btn-outline-light text-start border-0">📈 Analytics (BI)</a>
-                <a href="#" class="btn btn-warning fw-bold text-dark text-start shadow-sm">🔒 Cerrar Caja</a>
-                <a href="/auditoria.html" class="btn btn-outline-danger text-start border-0">🕵️‍♂️ Auditoría</a>
-                <a href="/empleados.html" class="btn btn-outline-light text-start border-0">👥 Empleados</a>
-            </div>
-            <a href="/logout" class="btn btn-danger w-100 mt-4 fw-bold shadow-sm">🚪 Salir</a>
-        </nav>
+    
+    <div id="toast">✅ Acción realizada</div>
+    <div id="overlay-sidebar" class="overlay-mobile" onclick="cerrarMenuMovil()"></div>
 
-        <main class="main-content flex-grow-1">
-            <div class="mb-4 border-bottom border-secondary pb-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <nav class="sidebar">
+        <div class="text-center mb-4">
+            <img src="/logo.png" style="max-width: 150px;" alt="La Esquina">
+        </div>
+        <div class="d-flex flex-column flex-grow-1 mt-3">
+            <a href="/dashboard.html" class="nav-item-vip">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="nav-item-vip">📦 Inventario</a>
+            <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
+            <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
+            <a href="/cierre_caja.html" class="nav-item-vip active text-warning" style="border-left-color: #D4AF37;">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
+            <a href="/empleados.html" class="nav-item-vip">👥 Empleados</a>
+        </div>
+        <a href="/logout" class="btn-logout-sidebar mt-4">🚪 CERRAR SESIÓN</a>
+    </nav>
+
+    <main class="main-content" style="padding: 30px;">
+        
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(212,175,55,0.3) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-warning d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">☰ MENÚ</button>
                 <div>
-                    <h2 class="fw-bold mb-0">🔒 Cuadre y Cierre de Turno</h2>
-                    <p class="text-muted mb-0">Audita los ingresos y valida el efectivo antes de cerrar.</p>
+                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">🔒 Cuadre y Cierre de Turno</h4>
+                    <small class="text-muted">Audita los ingresos y valida el efectivo antes de cerrar.</small>
                 </div>
-                <button class="btn btn-warning text-dark fw-bold px-4 py-3 shadow-lg fs-5" onclick="pedirCierre()">
-                    ✅ CONFIRMAR Y CERRAR CAJA
+            </div>
+            
+            <div class="d-flex gap-3">
+                <button class="btn btn-outline-warning fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGasto">
+                    💸 REGISTRAR GASTO
+                </button>
+                <button class="btn btn-warning text-dark fw-bold px-4 shadow-lg" onclick="pedirCierre()">
+                    ✅ CONFIRMAR Y CERRAR
                 </button>
             </div>
+        </div>
 
-            <div class="row g-4 mb-4">
-                <div class="col-12 col-md-4">
-                    <div class="card bg-dark border-success shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-success fw-bold text-uppercase mb-2">Ingresos Brutos Totales</h6>
-                            <h2 class="text-white mb-0" id="lbl-total-ventas">S/ 0.00</h2>
-                        </div>
-                    </div>
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="kpi-card text-center h-100" style="border-bottom: 4px solid #25D366;">
+                    <div class="kpi-title">📈 Ingresos Brutos (Total)</div>
+                    <div class="kpi-value text-white" id="lbl-total-ventas">S/ 0.00</div>
+                    <small class="text-muted">Suma de todo lo vendido</small>
                 </div>
-                <div class="col-12 col-md-4">
-                    <div class="card bg-dark border-danger shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-danger fw-bold text-uppercase mb-2">Gastos Registrados</h6>
-                            <h2 class="text-white mb-0" id="lbl-gastos">S/ 0.00</h2>
-                        </div>
-                    </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="kpi-card text-center h-100" style="border-bottom: 4px solid #FF4757;">
+                    <div class="kpi-title">📉 Gastos Registrados</div>
+                    <div class="kpi-value text-danger" id="lbl-gastos">S/ 0.00</div>
+                    <small class="text-muted">Compras y retiros de caja</small>
                 </div>
-                <div class="col-12 col-md-4">
-                    <div class="card bg-black border-warning shadow-lg h-100" style="border-width: 2px;">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-warning fw-bold text-uppercase mb-2">💵 DINERO EN CAJÓN</h6>
-                            <h1 class="text-warning mb-0 fw-bold" id="lbl-en-cajon" style="text-shadow: 0 0 10px rgba(212,175,55,0.3);">S/ 0.00</h1>
-                            <small class="text-info mt-2 d-block fw-bold">Yape / Tarjeta: <span id="lbl-digital">S/ 0.00</span></small>
-                        </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="kpi-card text-center h-100 bg-black-premium border-warning" style="border-width: 2px;">
+                    <div class="kpi-title text-warning">💵 EFECTIVO EN CAJÓN (NETO)</div>
+                    <div class="kpi-value valor-dorado" id="lbl-en-cajon">S/ 0.00</div>
+                    <small class="text-warning fw-bold">Efectivo Físico Esperado</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-4">
+                <div class="card bg-dark border-secondary h-100 shadow-sm">
+                    <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
+                        📊 Desglose de Ventas
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                <div><span class="fs-4 me-2">🎱</span> <span class="fw-bold">Alquiler Mesas</span></div>
+                                <span class="badge bg-primary rounded-pill fs-6" id="lbl-stat-billar">S/ 0.00</span>
+                            </li>
+                            <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                <div><span class="fs-4 me-2">🍺</span> <span class="fw-bold">Consumo Barra</span></div>
+                                <span class="badge bg-success rounded-pill fs-6" id="lbl-stat-consumo">S/ 0.00</span>
+                            </li>
+                            <li class="list-group-item bg-dark text-info d-flex justify-content-between align-items-center border-secondary py-3 bg-black-premium">
+                                <div><span class="fs-4 me-2">📱</span> <span class="fw-bold">Yape / Plin / Tarjetas</span></div>
+                                <span class="fw-bold fs-5" id="lbl-digital">S/ 0.00</span>
+                            </li>
+                            <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
+                                <div><span class="fs-4 me-2">🧾</span> <span class="fw-bold">Tickets Emitidos</span></div>
+                                <span class="badge bg-secondary rounded-pill fs-6" id="lbl-stat-tickets">0</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-4">
-                
-                <div class="col-12 col-lg-4">
-                    <div class="card bg-dark border-secondary h-100 shadow-sm">
-                        <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
-                            📊 Desglose de Ventas
-                        </div>
-                        <div class="card-body p-0">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
-                                    <div>
-                                        <span class="fs-4 me-2">🎱</span> 
-                                        <span class="fw-bold">Alquiler de Mesas</span>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill fs-6" id="lbl-stat-billar">S/ 0.00</span>
-                                </li>
-                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
-                                    <div>
-                                        <span class="fs-4 me-2">🍺</span> 
-                                        <span class="fw-bold">Consumo (Barra)</span>
-                                    </div>
-                                    <span class="badge bg-success rounded-pill fs-6" id="lbl-stat-consumo">S/ 0.00</span>
-                                </li>
-                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center border-secondary py-3">
-                                    <div>
-                                        <span class="fs-4 me-2">🧾</span> 
-                                        <span class="fw-bold">Tickets Emitidos</span>
-                                    </div>
-                                    <span class="badge bg-secondary rounded-pill fs-6" id="lbl-stat-tickets">0</span>
-                                </li>
-                            </ul>
-                        </div>
+            <div class="col-12 col-lg-8">
+                <div class="card bg-dark border-secondary shadow-sm h-100">
+                    <div class="card-header border-secondary fw-bold text-muted bg-black fs-5 d-flex justify-content-between align-items-center">
+                        <span>📜 Detalle de Movimientos</span>
+                        <button class="btn btn-sm btn-outline-light" onclick="cargarDatos()">🔄</button>
                     </div>
-                </div>
-
-                <div class="col-12 col-lg-8">
-                    <div class="card bg-dark border-secondary shadow-sm h-100">
-                        <div class="card-header border-secondary fw-bold text-muted bg-black fs-5">
-                            📜 Detalle de Movimientos
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-dark table-hover mb-0 align-middle">
-                                <thead class="table-active">
-                                    <tr>
-                                        <th>Hora</th>
-                                        <th>Concepto</th>
-                                        <th>Método</th>
-                                        <th class="text-end">Monto</th>
-                                        <th class="text-center">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-ventas">
-                                    <tr><td colspan="5" class="text-center text-muted py-4">Cargando...</td></tr>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="table-active" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Concepto</th>
+                                    <th>Método</th>
+                                    <th class="text-end">Monto</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-ventas">
                                 </tbody>
-                            </table>
-                        </div>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </main>
-    </div>
-
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="modal-titulo">⚠️ Confirmación</div>
-            <div class="modal-body text-center fs-5 text-light" id="modal-texto">
-                ¿Estás seguro?
+        <div class="modal fade" id="modalGasto" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark border-warning" style="border-width: 2px;">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title text-warning fw-bold">💸 Registrar Gasto de Caja</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="text-light fw-bold mb-1">Descripción del Gasto</label>
+                            <input type="text" id="gasto-desc" class="form-control bg-black text-white border-secondary" placeholder="Ej. Pago proveedor, Limpieza...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="text-light fw-bold mb-1">Monto (S/)</label>
+                            <input type="number" id="gasto-monto" class="form-control bg-black text-white border-secondary" placeholder="Ej. 50.00" step="0.10">
+                        </div>
+                        <button class="btn btn-warning w-100 fw-bold text-dark" onclick="guardarGasto()" data-bs-dismiss="modal">REGISTRAR RETIRO</button>
+                    </div>
+                </div>
             </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal()">Cancelar</button>
-                <button class="btn-modal" id="btn-modal-ok" style="background: var(--danger); color: white;">CONFIRMAR</button>
+        </div>
+
+    </main>
+
+    <div id="modal-confirm" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-box" style="background:#111; padding:30px; border-radius:12px; border:2px solid #555; text-align:center; max-width:400px; width:90%;">
+            <h4 class="text-warning fw-bold mb-3" id="modal-titulo">⚠️ Confirmación</h4>
+            <p class="text-light mb-4 fs-5" id="modal-texto">¿Estás seguro?</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-outline-light w-50" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-danger w-50 fw-bold" id="btn-modal-ok">CONFIRMAR</button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/alertas.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
     <script>
-        let accionPendiente = null; 
+        const socket = io();
+        socket.on('actualizar_caja', () => cargarDatos());
+
+        function abrirMenuMovil() {
+            document.querySelector('.sidebar').classList.add('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.add('activo');
+        }
+        function cerrarMenuMovil() {
+            document.querySelector('.sidebar').classList.remove('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.remove('activo');
+        }
 
         async function cargarDatos() {
             try {
                 const res = await fetch('/api/caja/actual');
                 const data = await res.json();
 
-                // 1. Llenamos las tarjetas de arriba (Dinero Global)
                 document.getElementById('lbl-total-ventas').innerText = 'S/ ' + parseFloat(data.total_ventas || 0).toFixed(2);
                 document.getElementById('lbl-gastos').innerText = 'S/ ' + parseFloat(data.total_gastos || 0).toFixed(2);
                 
-                const digital = parseFloat(data.desglose?.digital || 0);
-                const tarjeta = parseFloat(data.desglose?.tarjeta || 0);
-                const totalDigital = digital + tarjeta;
-                document.getElementById('lbl-digital').innerText = 'S/ ' + totalDigital.toFixed(2);
-                
+                // Efectivo neto en cajón
                 document.getElementById('lbl-en-cajon').innerText = 'S/ ' + parseFloat(data.dinero_en_cajon || 0).toFixed(2);
 
-                // 2. Variables para las estadísticas desglosadas
+                const digital = parseFloat(data.desglose?.digital || 0);
+                const tarjeta = parseFloat(data.desglose?.tarjeta || 0);
+                document.getElementById('lbl-digital').innerText = 'S/ ' + (digital + tarjeta).toFixed(2);
+
                 let ingresosBillar = 0;
                 let ingresosConsumo = 0;
-                let cantidadTickets = 0;
-
                 const tbody = document.getElementById('tbody-ventas');
                 tbody.innerHTML = '';
 
                 if (data.lista && data.lista.length > 0) {
-                    cantidadTickets = data.lista.length;
+                    document.getElementById('lbl-stat-tickets').innerText = data.lista.length;
                     
                     data.lista.forEach(venta => {
-                        // EXTRACCIÓN BLINDADA: Aseguramos que sea número aunque llegue como texto o nulo
-                        const tiempoCobrado = parseFloat(venta.total_tiempo) || 0;
-                        const productosCobrados = parseFloat(venta.total_productos) || 0;
+                        // Verificamos si es GASTO o VENTA
+                        const esGasto = venta.total_final === undefined; 
                         
-                        ingresosBillar += tiempoCobrado;
-                        ingresosConsumo += productosCobrados;
+                        if(!esGasto) {
+                            ingresosBillar += parseFloat(venta.total_tiempo) || 0;
+                            ingresosConsumo += parseFloat(venta.total_productos) || 0;
+                        }
 
-                        let concepto = venta.tipo_mesa === 'BILLAR' ? '🎱 Billar' : '🛒 Consumo';
-                        let metodo = venta.metodo_pago || 'EFECTIVO';
+                        let concepto = esGasto ? `🔴 GASTO: ${venta.descripcion}` : (venta.tipo_mesa === 'BILLAR' ? '🎱 Mesa Billar' : '🛒 Consumo Barra');
+                        let idTxt = esGasto ? '' : `<span class="text-muted small ms-2">#${venta.id}</span>`;
+                        let metodo = esGasto ? 'RETIRO EFECTIVO' : (venta.metodo_pago || 'EFECTIVO');
+                        let monto = esGasto ? venta.monto : venta.total_final;
                         
-                        let borderClass = 'border-success text-success';
+                        let borderClass = esGasto ? 'border-danger text-danger' : 'border-success text-success';
                         if(metodo === 'YAPE' || metodo === 'PLIN') borderClass = 'border-info text-info';
                         if(metodo === 'TARJETA') borderClass = 'border-primary text-primary';
+
+                        let btnAccion = esGasto ? '-' : `<button class="btn btn-outline-danger btn-sm" onclick="pedirBorrar(${venta.id})">🗑️</button>`;
 
                         tbody.innerHTML += `
                             <tr>
                                 <td class="text-muted">${venta.hora || '--:--'}</td>
-                                <td class="fw-bold">${concepto} <span class="text-muted small ms-2">#${venta.id}</span></td>
+                                <td class="fw-bold">${concepto} ${idTxt}</td>
                                 <td><span class="badge border ${borderClass}">${metodo}</span></td>
-                                <td class="text-end text-white fw-bold">S/ ${parseFloat(venta.total_final).toFixed(2)}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="pedirBorrar(${venta.id})" title="Eliminar Venta">🗑️</button>
-                                </td>
+                                <td class="text-end text-white fw-bold">S/ ${parseFloat(monto).toFixed(2)}</td>
+                                <td class="text-center">${btnAccion}</td>
                             </tr>
                         `;
                     });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay ventas registradas en el turno actual.</td></tr>';
+                    document.getElementById('lbl-stat-tickets').innerText = "0";
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay movimientos registrados.</td></tr>';
                 }
 
-                // 3. Pintamos las estadísticas desglosadas (con blindaje de 2 decimales)
                 document.getElementById('lbl-stat-billar').innerText = 'S/ ' + ingresosBillar.toFixed(2);
                 document.getElementById('lbl-stat-consumo').innerText = 'S/ ' + ingresosConsumo.toFixed(2);
-                document.getElementById('lbl-stat-tickets').innerText = cantidadTickets;
 
-            } catch (e) { 
-                console.error("Error al procesar los datos de caja:", e); 
-            }
+            } catch (e) { console.error("Error cargando caja:", e); }
+        }
+
+        async function guardarGasto() {
+            const desc = document.getElementById('gasto-desc').value.trim();
+            const monto = parseFloat(document.getElementById('gasto-monto').value);
+            if (!desc || !monto || monto <= 0) return mostrarAlerta("Ingresa datos válidos.", "warning");
+
+            try {
+                const res = await fetch('/api/gastos/nuevo', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descripcion: desc, monto: monto })
+                });
+                if (res.ok) {
+                    document.getElementById('gasto-desc').value = '';
+                    document.getElementById('gasto-monto').value = '';
+                    mostrarToast("💸 Gasto Registrado");
+                    cargarDatos();
+                }
+            } catch (error) {}
         }
 
         function cerrarModal() { document.getElementById('modal-confirm').style.display = 'none'; }
 
         function pedirBorrar(id) {
-            document.getElementById('modal-titulo').innerText = "🗑️ Eliminar Venta";
-            document.getElementById('modal-texto').innerText = "¿Estás seguro de eliminar este cobro del reporte? Esto afectará el total en caja.";
+            document.getElementById('modal-titulo').innerText = "🗑️ Anular Venta";
+            document.getElementById('modal-texto').innerText = "¿Seguro que deseas anular este cobro? El monto se restará de la caja.";
             const btnOk = document.getElementById('btn-modal-ok');
-            btnOk.style.background = "#ff4757"; 
-            btnOk.innerText = "ELIMINAR";
-            btnOk.onclick = () => ejecutarBorrar(id);
+            btnOk.className = "btn btn-danger w-50 fw-bold";
+            btnOk.innerText = "ANULAR";
+            btnOk.onclick = async () => {
+                cerrarModal();
+                try {
+                    const res = await fetch(`/api/ventas/eliminar/${id}`, { method: 'DELETE' });
+                    if(res.ok) cargarDatos();
+                } catch (e) {}
+            };
             document.getElementById('modal-confirm').style.display = 'flex';
-        }
-
-        async function ejecutarBorrar(id) {
-            cerrarModal();
-            try {
-                const res = await fetch(`/api/ventas/eliminar/${id}`, { method: 'DELETE' });
-                if(res.ok) cargarDatos();
-                else mostrarAlerta("Error: Solo el administrador puede borrar ventas.", "error");
-            } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
         }
 
         function pedirCierre() {
-            document.getElementById('modal-titulo').innerText = "🔒 Cerrar Caja";
-            document.getElementById('modal-texto').innerText = "¿Confirmar cierre de turno? El dinero volverá a cero.";
+            document.getElementById('modal-titulo').innerText = "🔒 Confirmar Cierre";
+            document.getElementById('modal-texto').innerText = "¿Cuadraste el efectivo físico? La caja volverá a S/ 0.00.";
             const btnOk = document.getElementById('btn-modal-ok');
-            btnOk.style.background = "#2ecc71"; 
-            btnOk.style.color = "#000";
+            btnOk.className = "btn btn-success text-dark w-50 fw-bold";
             btnOk.innerText = "CERRAR TURNO";
-            btnOk.onclick = ejecutarCierre;
+            btnOk.onclick = async () => {
+                cerrarModal();
+                try {
+                    const res = await fetch('/api/caja/cerrar', { method: 'POST' });
+                    const data = await res.json();
+                    if(data.success) {
+                        mostrarToast("✅ CAJA CERRADA");
+                        setTimeout(() => window.location.href = '/reportes.html', 1500);
+                    }
+                } catch (e) {}
+            };
             document.getElementById('modal-confirm').style.display = 'flex';
         }
 
-        async function ejecutarCierre() {
-            cerrarModal();
-            try {
-                const res = await fetch('/api/caja/cerrar', { method: 'POST' });
-                const data = await res.json();
-                if(data.success) {
-                mostrarAlerta("✅ CAJA CERRADA CORRECTAMENTE", "success");
-                setTimeout(() => { window.location.href = '/reportes.html'; }, 1500);
-                }
-                else mostrarAlerta("Error al cerrar caja.", "error");
-            } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
+        function mostrarToast(msg) { 
+            const t = document.getElementById("toast"); 
+            if(t) { t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
         }
 
         cargarDatos();
