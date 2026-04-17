@@ -413,31 +413,59 @@ function calcularMixto() {
 }
 
 async function ejecutarCobroReal(metodo) {
-    let ef = 0; let dig = 0;
+    let ef = 0; 
+    let dig = 0;
     
+    // 1. DISTRIBUCIÓN MATEMÁTICA DEL DINERO
     if (metodo === 'MIXTO') {
         ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
         dig = parseFloat(document.getElementById('mixto-digital').value) || 0;
+        
         if ((ef + dig).toFixed(2) !== totalDeudaCobro.toFixed(2)) {
             return mostrarAlerta("Los montos no cuadran con el total exacto.");
         }
+    } else if (metodo === 'EFECTIVO') {
+        ef = totalDeudaCobro; // Todo al cajón físico
+        dig = 0;
+    } else {
+        // Si es YAPE, PLIN o TARJETA, todo el dinero va a la cuenta digital
+        ef = 0;
+        dig = totalDeudaCobro;
+    }
+
+    // 2. TRADUCTOR PARA LA BASE DE DATOS (El truco anti-Error 500)
+    // Si el método no es Efectivo ni Mixto, lo enviamos como 'DIGITAL' 
+    // para que PostgreSQL no lo rechace.
+    let metodoParaDB = metodo;
+    if (metodo === 'YAPE' || metodo === 'PLIN' || metodo === 'TARJETA') {
+        metodoParaDB = 'DIGITAL'; 
     }
 
     try {
         const res = await fetch(`/api/mesas/cerrar/${mesaAccionId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ metodo: metodo, pago_efectivo: ef, pago_digital: dig })
+            body: JSON.stringify({ 
+                metodo: metodoParaDB,  // Mandamos el nombre traducido
+                pago_efectivo: ef,     // Mandamos el monto en efectivo
+                pago_digital: dig      // Mandamos el monto digital
+            })
         });
         
         if (res.ok) {
             cerrarModal('modal-cobro');
             cerrarModal('modal-mixto');
-            mostrarToast("💳 Cobro Registrado y Finalizado");
+            mostrarToast(`💳 Cuenta cobrada con éxito`);
+            cargarMesas(); // Recarga el panel
+            if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); // Actualiza el dinero de arriba
         } else {
-            mostrarAlerta("Error en el servidor al intentar cobrar.");
+            // Leemos el error exacto que nos devuelve el servidor
+            const data = await res.json();
+            mostrarAlerta(data.error || "Error en la base de datos al registrar cobro.");
         }
-    } catch (e) { mostrarAlerta("Error de conexión al cobrar."); }
+    } catch (e) { 
+        mostrarAlerta("Error de conexión al procesar el cobro."); 
+    }
 }
 
 // ==========================================
