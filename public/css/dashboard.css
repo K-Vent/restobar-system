@@ -232,36 +232,50 @@ input[type=number] {
 /* ============================================================
    SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ANTI-TIC
    ============================================================ */
+/* ============================================================
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ULTRA ESTABLE
+   ============================================================ */
 .sidebar {
     width: 320px;
     height: 100vh;
     position: fixed;
-    left: -300px; /* PARCHE 1: Le dejamos 20px (un poco más) para agarrarlo más fácil */
     top: 0;
+    left: 0; /* ⬅️ MAGIA: Ahora SIEMPRE está pegado a la izquierda al 100% (cero huecos) */
+    transform: translateX(-305px); /* ⬅️ Lo escondemos usando la Tarjeta Gráfica (GPU) */
     z-index: 3000;
     background: #050505;
     border-right: 4px solid #D4AF37; 
-    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     flex-direction: column;
     padding: 2rem 1rem;
     overflow-y: auto; 
 }
 
-/* PARCHE 2: Si el ratón se sale por accidente, espera 0.15 segundos antes de cerrarse. 
-   Esto elimina el parpadeo. */
+/* Ocultar la barra de scroll del menú para que se vea limpio */
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+/* Retardo mínimo de seguridad para que no tiemble si el ratón resbala */
 .sidebar:not(:hover) {
     transition-delay: 0.15s; 
 }
 
-/* PARCHE 3: Un escudo invisible de 30px a la derecha. 
-   Aunque muevas el ratón súper rápido, este escudo atrapa el cursor para que no se cierre. */
+/* Al pasar el mouse, el panel regresa a su posición 0 perfecta */
+.sidebar:hover {
+    transform: translateX(0);
+    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+}
+
+/* Escudo magnético invisible a la derecha (atrapa el cursor si vas muy rápido) */
 .sidebar::after {
     content: '';
     position: absolute;
     top: 0;
-    right: -30px;
-    width: 30px;
+    right: -40px; /* Agrandamos el escudo de seguridad a 40px */
+    width: 40px;
     height: 100%;
     background: transparent;
 }
