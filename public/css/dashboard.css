@@ -228,38 +228,87 @@ input[type=number] {
     background-color: var(--bs-warning);
     color: #000;
 }
-
-/* ==========================================
-   MENÚ LATERAL PREMIUM (SIDEBAR)
-   ========================================== */
+/* ============================================================
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA)
+   ============================================================ */
 .sidebar {
-    background: linear-gradient(180deg, #0a0a0c 0%, #111115 100%);
-    box-shadow: 4px 0 15px rgba(0,0,0,0.5); /* Sombra hacia la derecha */
+    width: 320px; /* Un poco más ancho para mejor legibilidad */
+    height: 100vh;
+    position: fixed;
+    /* Deja solo 15px visibles como 'pestaña' o zona de activación */
+    left: -305px; 
+    top: 0;
+    z-index: 3000;
+    background: #050505;
+    /* Borde dorado que indica que el menú está ahí */
+    border-right: 4px solid #D4AF37; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
 }
 
+/* El panel se desliza cuando pasas el mouse por la izquierda */
+.sidebar:hover {
+    left: 0;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+}
+
+.main-content {
+    /* Dejamos un pequeño margen para que el trigger no tape las mesas */
+    margin-left: 15px; 
+    width: calc(100% - 15px);
+    transition: all 0.4s;
+}
+
+/* EFECTO DE ENFOQUE: Difumina ligeramente el fondo cuando el menú está abierto */
+.sidebar:hover ~ .main-content {
+    filter: blur(2px) brightness(0.6);
+}
+
+/* DISEÑO DE LINKS (COMO LAS TARJETAS DE LAS MESAS) */
 .nav-item-vip {
-    display: block;
-    padding: 14px 20px;
-    color: #aaa;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 8px;
+    color: #eee;
     text-decoration: none;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background: #111;
     font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    margin-bottom: 5px;
-    border: 1px solid transparent;
-    letter-spacing: 0.5px;
+    transition: 0.3s;
 }
 
 .nav-item-vip:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    transform: translateX(8px); /* Efecto de empuje suave a la derecha */
+    background: rgba(212, 175, 55, 0.1);
+    border-color: #D4AF37;
+    color: #D4AF37;
+    transform: translateX(10px);
 }
 
-/* El botón de la página donde estás actualmente */
 .nav-item-vip.active {
-    background: rgba(212, 175, 55, 0.1); /* Fondo dorado transparente */
-    color: #D4AF37; /* Texto Dorado */
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-left: 4px solid #D4AF37; /* Línea gruesa a la izquierda */
+    background: #D4AF37;
+    color: #000;
+    border-color: #D4AF37;
+}
+
+/* BOTÓN DE SALIDA (LOGOUT) */
+.btn-logout-sidebar {
+    margin-top: auto; /* Lo empuja al final del menú */
+    padding: 15px;
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.btn-logout-sidebar:hover {
+    background: #ff4757;
+    color: #fff;
 }
