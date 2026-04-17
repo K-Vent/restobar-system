@@ -63,12 +63,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser()); // Activa la lectura de cookies de alta velocidad
-app.use('/api/usuarios', require('./routes/usuarios.routes'));
 // 👇 CONEXIÓN DE MÓDULOS MVC 👇
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
 app.use('/api/productos', require('./routes/inventario.routes'));
 app.use('/api/mesas', require('./routes/mesas.routes'));
 app.use('/api', require('./routes/vip.routes')); // <-- Agrega esta línea
+const auditoriaRoutes = require('./routes/auditoria.routes');
+app.use('/api/auditoria', auditoriaRoutes);
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
 
