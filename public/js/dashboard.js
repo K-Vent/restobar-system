@@ -116,61 +116,56 @@ function filtrarMesas() {
     renderizarMesas(filtradas);
 }
 
-// Versión V3 Blindada
-// Versión V4 - Paleta de Colores Corporativa (Dorado y Grafito)
+// Versión V5 - Dark Premium Absoluto
 function renderizarMesas(mesas) {
     const grid = document.getElementById('grid-mesas');
-    
-    if (!grid) {
-        console.error("Falta el <div id='grid-mesas'> en tu HTML.");
-        return; 
-    }
+    if (!grid) return; 
     
     grid.innerHTML = '';
     grid.className = 'row g-3'; 
-    
     clearInterval(intervaloCronometros);
 
     mesas.forEach(mesa => {
         const isOcupada = mesa.estado === 'OCUPADA';
         
-        // ✨ EL NUEVO ESQUEMA DE COLORES PREMIUM ✨
-        // Ocupada = Dorado brillante | Libre = Gris oscuro apagado
-        const bgClass = isOcupada ? 'border-warning shadow-lg' : 'border-secondary opacity-75';
-        const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-secondary text-light';
+        // ✨ ADIÓS A LOS GRISES DE BOOTSTRAP ✨
+        const claseTarjeta = isOcupada ? 'card-mesa card-mesa-ocupada' : 'card-mesa card-mesa-libre';
+        const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-muted';
         const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
 
         grid.innerHTML += `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-            <div class="card bg-dark border-2 ${bgClass} h-100" style="border-radius: 12px; transition: 0.3s;">
+            <div class="card ${claseTarjeta} h-100">
                 <div class="card-body d-flex flex-column p-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0 text-white">${icono} MESA ${mesa.numero_mesa}</h6>
+                        <h6 class="fw-bold mb-0 text-white" style="letter-spacing: 0.5px;">${icono} MESA ${mesa.numero_mesa}</h6>
                         <span class="badge ${statusBadge} shadow-sm px-2 py-1">${mesa.estado}</span>
                     </div>
 
                     ${isOcupada ? `
-                        <div class="text-center py-3 bg-black rounded-3 mb-3 border border-warning" style="box-shadow: inset 0 0 15px rgba(212,175,55,0.1);">
+                        <div class="text-center py-3 rounded-3 mb-3" style="background: #000; border: 1px solid rgba(212,175,55,0.2);">
                             <h2 class="display-6 fw-bold mb-0 info-tiempo text-white" id="tiempo-${mesa.id}" 
-                                data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}">
+                                data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}"
+                                style="letter-spacing: 2px;">
                                 ${mesa.tipo === 'BILLAR' ? '00:00:00' : 'CONSUMO'}
                             </h2>
                             <p class="fs-4 fw-bold text-warning mb-0 mt-1" id="dinero-${mesa.id}">S/ 0.00</p>
                         </div>
                         <div class="mt-auto d-grid gap-2">
                             <div class="row g-2">
-                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button></div>
-                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
+                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button></div>
+                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2 shadow-sm" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
                             </div>
-                            <button class="btn btn-outline-secondary btn-sm text-light" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
+                            <button class="btn btn-dark border-secondary btn-sm text-light mt-1" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
                         </div>
                     ` : `
-                        <div class="text-center py-4 flex-grow-1">
-                            <p class="small text-muted mb-0">TARIFA: S/ ${parseFloat(mesa.precio_hora || 0).toFixed(2)}/hr</p>
+                        <div class="text-center py-4 flex-grow-1 d-flex flex-column justify-content-center">
+                            <p class="small text-muted mb-0 fw-bold" style="letter-spacing: 1px;">TARIFA BASE</p>
+                            <p class="fs-5 text-white opacity-50 mb-0">S/ ${parseFloat(mesa.precio_hora || 0).toFixed(2)} / hr</p>
                         </div>
                         <div class="mt-auto">
-                            <button class="btn btn-outline-light w-100 fw-bold py-3 opacity-50" onclick="abrirMesa(${mesa.id})">
-                                ▶ INICIAR
+                            <button class="btn btn-iniciar-mesa w-100 fw-bold py-3 text-uppercase" onclick="abrirMesa(${mesa.id})">
+                                ▶ Iniciar Mesa
                             </button>
                         </div>
                     `}

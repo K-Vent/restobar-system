@@ -364,3 +364,51 @@ input[type=number] {
     background: #ff4757;
     color: #fff;
 }
+
+/* ============================================================
+   PALETA PREMIUM: NEGRO PROFUNDO Y DORADO
+   ============================================================ */
+
+/* 1. Fondo general Negro Puro en lugar de gris */
+body, html, .main-content {
+    background-color: #050505 !important;
+}
+
+/* 2. Tarjeta Base */
+.card-mesa {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* 3. Diseño Mesa Libre: Negro carbón con bordes muy tenues */
+.card-mesa-libre {
+    background: linear-gradient(145deg, #111111, #0a0a0a) !important;
+    border: 1px solid #222 !important;
+    box-shadow: none !important;
+}
+.card-mesa-libre:hover {
+    border-color: #444 !important;
+    transform: translateY(-3px);
+}
+
+/* 4. Diseño Mesa Ocupada: Fondo ultra oscuro con un toque dorado en el borde */
+.card-mesa-ocupada {
+    background: linear-gradient(145deg, #1a170b, #050505) !important;
+    border: 1px solid #D4AF37 !important;
+    box-shadow: 0 10px 30px rgba(212,175,55,0.1) !important;
+}
+
+/* 5. Botón de Iniciar Mesa (Elegante hasta que pasas el mouse) */
+.btn-iniciar-mesa {
+    background: #000;
+    border: 1px solid #333;
+    color: #888;
+    transition: all 0.3s ease;
+}
+.btn-iniciar-mesa:hover {
+    background: #D4AF37;
+    color: #000;
+    border-color: #D4AF37;
+    box-shadow: 0 0 15px rgba(212,175,55,0.4);
+}
