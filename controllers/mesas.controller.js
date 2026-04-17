@@ -164,24 +164,26 @@ const cambiarMesa = async (req, res, next) => {
 };
 
 // ==========================================
-// MÓDULO DE INFRAESTRUCTURA (Añadir/Quitar Mesas)
+// MÓDULO DE INFRAESTRUCTURA (Añadir/Quitar Mesas) - VERSIÓN POSTGRESQL
 // ==========================================
 
-const crearMesa = async (req, res) => {
-    const { tipo } = req.body; // Recibe 'BILLAR' o 'CONSUMO' desde el panel
+const crearMesa = async (req, res, next) => {
+    const { tipo } = req.body; 
     
     try {
-        // 1. Buscamos cuál es el número de la última mesa para seguir el orden (ej. si hay 10, la nueva será la 11)
-        const [ultimaMesa] = await pool.query('SELECT numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        // 1. Buscamos el último número usando r.rows (Estilo PostgreSQL)
+        const r = await pool.query('SELECT numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
         let nuevoNumero = 1;
         
-        if (ultimaMesa.length > 0) {
-            nuevoNumero = ultimaMesa[0].numero_mesa + 1;
+        if (r.rows.length > 0) {
+            nuevoNumero = r.rows[0].numero_mesa + 1;
         }
 
-        // 2. Insertamos la mesa en la base de datos
-        // Por defecto, toda mesa nueva nace en estado 'LIBRE'
-        await pool.query('INSERT INTO mesas (numero_mesa, tipo, estado) VALUES (?, ?, ?)', [nuevoNumero, tipo, 'LIBRE']);
+        // 2. Insertamos la mesa (PostgreSQL usa $1, $2, $3 en lugar de ?, ?, ?)
+        await pool.query(
+            'INSERT INTO mesas (numero_mesa, tipo, estado) VALUES ($1, $2, $3)', 
+            [nuevoNumero, tipo, 'LIBRE']
+        );
         
         res.status(200).json({ message: 'Infraestructura actualizada: Mesa creada.' });
     } catch (error) {
@@ -190,22 +192,24 @@ const crearMesa = async (req, res) => {
     }
 };
 
-const eliminarUltimaMesa = async (req, res) => {
+const eliminarUltimaMesa = async (req, res, next) => {
     try {
         // 1. Buscamos la mesa con el número más alto
-        const [ultimaMesa] = await pool.query('SELECT id, estado, numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        const r = await pool.query('SELECT id, estado, numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
         
-        if (ultimaMesa.length === 0) {
+        if (r.rows.length === 0) {
             return res.status(400).json({ error: 'No hay mesas registradas en el sistema.' });
         }
 
-        // 2. SEGURIDAD DE LA FRANQUICIA: Nunca borrar una mesa que está generando dinero
-        if (ultimaMesa[0].estado !== 'LIBRE') {
+        const ultimaMesa = r.rows[0];
+
+        // 2. SEGURIDAD: Nunca borrar una mesa ocupada
+        if (ultimaMesa.estado !== 'LIBRE') {
             return res.status(400).json({ error: 'Operación denegada: La última mesa está OCUPADA. Ciérrela primero.' });
         }
 
-        // 3. Si está libre, la eliminamos de la base de datos
-        await pool.query('DELETE FROM mesas WHERE id = ?', [ultimaMesa[0].id]);
+        // 3. Eliminamos usando $1
+        await pool.query('DELETE FROM mesas WHERE id = $1', [ultimaMesa.id]);
         
         res.status(200).json({ message: 'Infraestructura actualizada: Mesa retirada.' });
     } catch (error) {
