@@ -5,10 +5,11 @@
     <title>Panel de Control | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/dashboard.css?v=6">
+    <link rel="stylesheet" href="/css/dashboard.css?v=11">
     <link rel="icon" href="/logo.png">
 </head>
 <body class="text-light">
+    
     <div id="toast">✅ Acción realizada</div>
 
     <nav class="sidebar">
@@ -27,7 +28,7 @@
             <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
             <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
             <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="nav-item-vip text-danger">🕵️‍♂️ Auditoría</a>
+            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
             <a href="/empleados.html" class="nav-item-vip">👥 Empleados</a>
         </div>
         
@@ -36,65 +37,54 @@
         </a>
     </nav>
 
-    <main class="main-content">
-        ...
-    </main>
-
-    ...
-</body>
-
-<main class="main-content">
-    </main>
-
-        <main class="main-content flex-grow-1">
-            
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-md-4">
-                    <div class="card bg-dark border-secondary shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-muted fw-bold mb-2">💰 VENTAS TOTALES</h6>
-                            <h3 class="text-white mb-0" id="total-ventas">S/ 0.00</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="card bg-dark border-secondary shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-muted fw-bold mb-2">📉 GASTOS (SALIDAS)</h6>
-                            <h3 class="text-white mb-0" id="total-gastos">S/ 0.00</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="card bg-black border-warning shadow h-100" style="border-width: 2px;">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h6 class="text-warning fw-bold mb-2">💵 EFECTIVO EN CAJA</h6>
-                            <h2 class="text-warning mb-0 fw-bold" id="total-real" style="text-shadow: 0 0 10px rgba(212,175,55,0.3);">S/ 0.00</h2>
-                        </div>
+    <main class="main-content" style="padding: 30px;">
+        
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="card bg-dark border-secondary shadow-sm h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h6 class="text-muted fw-bold mb-2">💰 VENTAS TOTALES</h6>
+                        <h3 class="text-white mb-0" id="total-ventas">S/ 0.00</h3>
                     </div>
                 </div>
             </div>
-            
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom border-secondary pb-3">
-    <h4 class="fw-bold mb-0 text-white">🎱 Mesas y Consumo</h4>
-    
-    <div class="d-flex gap-2 flex-wrap">
-        <input type="text" id="busqueda-mesa" class="form-control bg-black text-white border-secondary" 
-               placeholder="🔍 Buscar mesa..." style="width: 150px;" onkeyup="filtrarMesas()">
-        
-        <div class="btn-group shadow-sm">
-            <button class="btn btn-outline-warning btn-sm active" onclick="setFiltro('TODAS', this)">Todas</button>
-            <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('OCUPADA', this)">Ocupadas</button>
-            <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('BILLAR', this)">Solo Billar</button>
+            <div class="col-12 col-md-4">
+                <div class="card bg-dark border-secondary shadow-sm h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h6 class="text-muted fw-bold mb-2">📉 GASTOS (SALIDAS)</h6>
+                        <h3 class="text-white mb-0" id="total-gastos">S/ 0.00</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card bg-black border-warning shadow h-100" style="border-width: 2px;">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h6 class="text-warning fw-bold mb-2">💵 EFECTIVO EN CAJA</h6>
+                        <h2 class="text-warning mb-0 fw-bold" id="total-real" style="text-shadow: 0 0 10px rgba(212,175,55,0.3);">S/ 0.00</h2>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-<div id="grid-mesas" class="row g-3">
-    </div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom border-secondary pb-3">
+            <h4 class="fw-bold mb-0 text-white">🎱 Mesas y Consumo</h4>
+            
+            <div class="d-flex gap-2 flex-wrap">
+                <input type="text" id="busqueda-mesa" class="form-control bg-black text-white border-secondary" 
+                       placeholder="🔍 Buscar mesa..." style="width: 150px;" onkeyup="filtrarMesas()">
+                
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-outline-warning btn-sm active" onclick="setFiltro('TODAS', this)">Todas</button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('OCUPADA', this)">Ocupadas</button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('BILLAR', this)">Solo Billar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="grid-mesas" class="row g-3">
+            </div>
 
-        </main>
-    </div>
+    </main>
 
     <div id="modal-gasto" class="modal-overlay">
         <div class="modal-box">
