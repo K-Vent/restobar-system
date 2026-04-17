@@ -117,10 +117,10 @@ function filtrarMesas() {
 }
 
 // Versión V3 Blindada
+// Versión V4 - Paleta de Colores Corporativa (Dorado y Grafito)
 function renderizarMesas(mesas) {
     const grid = document.getElementById('grid-mesas');
     
-    // Si borraste el grid sin querer, te avisará en vez de romper la página
     if (!grid) {
         console.error("Falta el <div id='grid-mesas'> en tu HTML.");
         return; 
@@ -133,40 +133,43 @@ function renderizarMesas(mesas) {
 
     mesas.forEach(mesa => {
         const isOcupada = mesa.estado === 'OCUPADA';
-        const bgClass = isOcupada ? 'border-danger' : 'border-success';
-        const statusBadge = isOcupada ? 'bg-danger' : 'bg-success';
+        
+        // ✨ EL NUEVO ESQUEMA DE COLORES PREMIUM ✨
+        // Ocupada = Dorado brillante | Libre = Gris oscuro apagado
+        const bgClass = isOcupada ? 'border-warning shadow-lg' : 'border-secondary opacity-75';
+        const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-secondary text-light';
         const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
 
         grid.innerHTML += `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-            <div class="card bg-dark border-2 ${bgClass} shadow-lg h-100" style="border-radius: 12px;">
+            <div class="card bg-dark border-2 ${bgClass} h-100" style="border-radius: 12px; transition: 0.3s;">
                 <div class="card-body d-flex flex-column p-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold mb-0 text-white">${icono} MESA ${mesa.numero_mesa}</h6>
-                        <span class="badge ${statusBadge} shadow-sm">${mesa.estado}</span>
+                        <span class="badge ${statusBadge} shadow-sm px-2 py-1">${mesa.estado}</span>
                     </div>
 
                     ${isOcupada ? `
-                        <div class="text-center py-3 bg-black rounded-3 mb-3 border border-secondary">
+                        <div class="text-center py-3 bg-black rounded-3 mb-3 border border-warning" style="box-shadow: inset 0 0 15px rgba(212,175,55,0.1);">
                             <h2 class="display-6 fw-bold mb-0 info-tiempo text-white" id="tiempo-${mesa.id}" 
                                 data-segundos="${mesa.segundos}" data-tipo="${mesa.tipo}" data-precio="${mesa.precio_hora}">
                                 ${mesa.tipo === 'BILLAR' ? '00:00:00' : 'CONSUMO'}
                             </h2>
-                            <p class="fs-4 fw-bold text-warning mb-0" id="dinero-${mesa.id}">S/ 0.00</p>
+                            <p class="fs-4 fw-bold text-warning mb-0 mt-1" id="dinero-${mesa.id}">S/ 0.00</p>
                         </div>
                         <div class="mt-auto d-grid gap-2">
                             <div class="row g-2">
                                 <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button></div>
-                                <div class="col-6"><button class="btn btn-light fw-bold w-100 py-2" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
+                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
                             </div>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
+                            <button class="btn btn-outline-secondary btn-sm text-light" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
                         </div>
                     ` : `
                         <div class="text-center py-4 flex-grow-1">
                             <p class="small text-muted mb-0">TARIFA: S/ ${parseFloat(mesa.precio_hora || 0).toFixed(2)}/hr</p>
                         </div>
                         <div class="mt-auto">
-                            <button class="btn btn-outline-success w-100 fw-bold py-3" onclick="abrirMesa(${mesa.id})">
+                            <button class="btn btn-outline-light w-100 fw-bold py-3 opacity-50" onclick="abrirMesa(${mesa.id})">
                                 ▶ INICIAR
                             </button>
                         </div>
@@ -179,6 +182,7 @@ function renderizarMesas(mesas) {
 
     iniciarCronometros();
 }
+
 // ==========================================
 // 5. ACCIONES DE MUDANZA (NUEVO)
 // ==========================================
