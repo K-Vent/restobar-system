@@ -213,3 +213,18 @@ input[type=number] {
     border-color: #D4AF37 !important; /* Brillo dorado al hacer clic */
     outline: none;
 }
+
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Se eleva un poco al pasar el mouse */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
+}
+
+/* Estilo para los filtros activos */
+.btn-group .btn.active {
+    background-color: var(--bs-warning);
+    color: #000;
+}

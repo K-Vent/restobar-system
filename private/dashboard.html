@@ -62,10 +62,19 @@
                 </div>
             </div>
             
-            <h4 class="fw-bold mb-4 text-white border-bottom border-secondary pb-2">Control de Mesas y Consumo</h4>
-            
-            <div id="grid-mesas" class="row g-3">
-                </div>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom border-secondary pb-3">
+    <h4 class="fw-bold mb-0 text-white">🎱 Mesas y Consumo</h4>
+    <div class="d-flex gap-2 flex-wrap">
+        <input type="text" id="busqueda-mesa" class="form-control bg-black text-white border-secondary" 
+               placeholder="🔍 Buscar mesa..." style="width: 150px;" onkeyup="filtrarMesas()">
+        <div class="btn-group shadow-sm">
+            <button class="btn btn-outline-warning btn-sm active" onclick="setFiltro('TODAS', this)">Todas</button>
+            <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('OCUPADA', this)">Ocupadas</button>
+            <button class="btn btn-outline-warning btn-sm" onclick="setFiltro('BILLAR', this)">Solo Billar</button>
+        </div>
+    </div>
+</div>
+<div id="grid-mesas" class="row g-3"></div>
 
         </main>
     </div>
