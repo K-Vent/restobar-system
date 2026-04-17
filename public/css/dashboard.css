@@ -412,3 +412,28 @@ body, html, .main-content {
     border-color: #D4AF37;
     box-shadow: 0 0 15px rgba(212,175,55,0.4);
 }
+
+/* ============================================================
+   FORZAR EL DORADO "LA ESQUINA" SOBRE EL NARANJA BOOTSTRAP
+   ============================================================ */
+
+/* Textos y fondos */
+.text-warning { color: #D4AF37 !important; }
+.bg-warning { background-color: #D4AF37 !important; }
+.border-warning { border-color: #D4AF37 !important; }
+
+/* Botones principales (PEDIR, MENÚ celular, etc.) */
+.btn-warning {
+    background-color: #D4AF37 !important;
+    border-color: #D4AF37 !important;
+    color: #000 !important; /* Letras negras para máximo contraste */
+    transition: all 0.3s ease;
+}
+
+/* Efecto al pasar el mouse por los botones dorados */
+.btn-warning:hover {
+    background-color: #c5a033 !important; /* Un dorado ligeramente más oscuro */
+    border-color: #c5a033 !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(212,175,55,0.5) !important;
+}
