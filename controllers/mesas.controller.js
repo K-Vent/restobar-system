@@ -59,6 +59,7 @@ const obtenerMesas = async (req, res, next) => {
             precio_hora: precio, 
             segundos: (m.estado === 'OCUPADA' && m.tipo === 'BILLAR') ? parseFloat(m.segundos_transcurridos) : 0 
         })); 
+        
         res.json(mesas); 
     } catch (e) { next(e); } 
 };
@@ -68,7 +69,10 @@ const abrirMesa = async (req, res, next) => {
         const id = z.coerce.number().int().parse(req.params.id); 
         const val = abrirMesaSchema.parse(req.body); 
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NOW(), tiempo_limite = $2 WHERE id = $3', ['OCUPADA', val.minutos, id]); 
-        
+        await pool.query(
+    "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'INICIO MESA', 'Abrió la Mesa ' || $2)", 
+    [req.usuario.id, numero_mesa]
+);
         res.json({ success: true }); 
         
         // Emisión de Sockets vía req.app
@@ -132,7 +136,10 @@ const cerrarMesa = async (req, res, next) => {
         await pool.query('INSERT INTO ventas (mesa_id, tipo_mesa, total_tiempo, total_productos, total_final, fecha, metodo_pago, pago_efectivo, pago_digital) VALUES ($1, $2, $3, $4, $5, NOW(), $6, $7, $8)', [id, mesa.tipo, totalT, totalC, totalF, val.metodo, efectivo, digital]); 
         await pool.query('UPDATE pedidos_mesa SET pagado = TRUE WHERE mesa_id = $1', [id]); 
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL, tiempo_limite = 0 WHERE id = $2', ['LIBRE', id]); 
-        
+        await pool.query(
+    "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'COBRO MESA', 'Cobró la Mesa ' || $2 || ' por un total de S/ ' || $3)", 
+    [req.usuario.id, numero_mesa, total_final]
+);
         res.json({ success: true }); 
         
         const io = req.app.get('socketio');

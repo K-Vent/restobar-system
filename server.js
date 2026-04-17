@@ -249,6 +249,12 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         const val = pedidoSchema.parse(req.body); 
         await pool.query('INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion, entregado) VALUES ($1, $2, $3, NOW(), FALSE)', [val.mesa_id, val.producto_id, val.cantidad]); 
         await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [val.cantidad, val.producto_id]); 
+        const mesaDb = await pool.query('SELECT numero_mesa FROM mesas WHERE id = $1', [val.mesa_id]);
+        const prodDb = await pool.query('SELECT nombre FROM productos WHERE id = $1', [val.producto_id]);
+        await pool.query(
+            "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO PEDIDO', 'Añadió ' || $2 || 'x ' || $3 || ' a Mesa ' || $4)", 
+            [req.usuario.id, val.cantidad, prodDb.rows[0].nombre, mesaDb.rows[0].numero_mesa]
+        );
         res.json({ success: true }); 
         io.emit('actualizar_mesas'); 
         io.emit('campana_cocina'); 
@@ -365,7 +371,14 @@ app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) 
 });
 app.delete('/api/ventas/eliminar/:id', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { 
-        const id = z.coerce.number().int().parse(req.params.id); 
+        const id = z.coerce.number().int().parse(req.params.id)
+        const ventaDb = await pool.query('SELECT total_final FROM ventas WHERE id = $1', [id]);
+        if(ventaDb.rows.length > 0) {
+            await pool.query(
+                "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'ELIMINAR VENTA', 'Borró del sistema una venta de S/ ' || $2)", 
+                [req.usuario.id, ventaDb.rows[0].total_final]
+            );
+        } 
         await pool.query('DELETE FROM ventas WHERE id = $1', [id]); 
         res.json({ success: true }); io.emit('actualizar_caja'); 
     } catch (e) { next(e); } 
