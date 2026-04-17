@@ -89,8 +89,20 @@
         async function cargarAuditoria() {
             try {
                 const res = await fetch('/api/auditoria');
-                listaAuditoria = await res.json();
-                pintarTabla(listaAuditoria);
+                const data = await res.json();
+                
+                // Si la respuesta es OK y es una lista, pintamos la tabla
+                if (res.ok && Array.isArray(data)) {
+                    listaAuditoria = data;
+                    pintarTabla(listaAuditoria);
+                } else {
+                    // Si hay Error 500, mostramos el error sin romper la página
+                    document.getElementById('tabla-auditoria').innerHTML = `
+                        <tr><td colspan="4" class="text-center py-4 text-danger fw-bold">
+                            ⚠️ Error del servidor: ${data.error || 'La tabla de auditoría se está inicializando...'}
+                        </td></tr>
+                    `;
+                }
             } catch (error) { console.error("Error cargando auditoría", error); }
         }
 
