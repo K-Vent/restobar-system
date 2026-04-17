@@ -172,7 +172,7 @@ const crearMesa = async (req, res) => {
     
     try {
         // 1. Buscamos cuál es el número de la última mesa para seguir el orden (ej. si hay 10, la nueva será la 11)
-        const [ultimaMesa] = await db.query('SELECT numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        const [ultimaMesa] = await pool.query('SELECT numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
         let nuevoNumero = 1;
         
         if (ultimaMesa.length > 0) {
@@ -181,7 +181,7 @@ const crearMesa = async (req, res) => {
 
         // 2. Insertamos la mesa en la base de datos
         // Por defecto, toda mesa nueva nace en estado 'LIBRE'
-        await db.query('INSERT INTO mesas (numero_mesa, tipo, estado) VALUES (?, ?, ?)', [nuevoNumero, tipo, 'LIBRE']);
+        await pool.query('INSERT INTO mesas (numero_mesa, tipo, estado) VALUES (?, ?, ?)', [nuevoNumero, tipo, 'LIBRE']);
         
         res.status(200).json({ message: 'Infraestructura actualizada: Mesa creada.' });
     } catch (error) {
@@ -193,7 +193,7 @@ const crearMesa = async (req, res) => {
 const eliminarUltimaMesa = async (req, res) => {
     try {
         // 1. Buscamos la mesa con el número más alto
-        const [ultimaMesa] = await db.query('SELECT id, estado, numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
+        const [ultimaMesa] = await pool.query('SELECT id, estado, numero_mesa FROM mesas ORDER BY numero_mesa DESC LIMIT 1');
         
         if (ultimaMesa.length === 0) {
             return res.status(400).json({ error: 'No hay mesas registradas en el sistema.' });
@@ -205,7 +205,7 @@ const eliminarUltimaMesa = async (req, res) => {
         }
 
         // 3. Si está libre, la eliminamos de la base de datos
-        await db.query('DELETE FROM mesas WHERE id = ?', [ultimaMesa[0].id]);
+        await pool.query('DELETE FROM mesas WHERE id = ?', [ultimaMesa[0].id]);
         
         res.status(200).json({ message: 'Infraestructura actualizada: Mesa retirada.' });
     } catch (error) {
