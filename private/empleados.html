@@ -2,133 +2,236 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Empleados - La Esquina</title>
+    <title>Gestión de Personal | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/css/dashboard.css?v=2">
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="icon" href="/logo.png">
+    <style>
+        .card-premium {
+            background: linear-gradient(145deg, #111, #050505);
+            border: 1px solid #333;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+        /* Insignias de Roles */
+        .badge-admin { background-color: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid #dc3545; }
+        .badge-mozo { background-color: rgba(13, 202, 240, 0.2); color: #0dcaf0; border: 1px solid #0dcaf0; }
+        .badge-cocina { background-color: rgba(25, 135, 84, 0.2); color: #198754; border: 1px solid #198754; }
+    </style>
 </head>
-<body>
+<body class="text-light">
+    
+    <div id="toast">✅ Acción realizada</div>
+    <div id="overlay-sidebar" class="overlay-mobile" onclick="cerrarMenuMovil()"></div>
+
+    <!-- SIDEBAR CORPORATIVO -->
     <nav class="sidebar">
-        <div class="sidebar-header"><img src="/logo.png" class="logo-img"></div>
-        <div class="menu">
-            <a href="/dashboard.html" class="menu-link">🎱 Control de Mesas</a>
-            <a href="/inventario.html" class="menu-link">📦 Inventario</a>
-            <a href="/clientes.html" class="menu-link">👑 Club La Esquina</a>
-            <a href="/reportes.html" class="menu-link">📅 Historial</a>
-            <a href="#" class="menu-link active">👥 Empleados</a>
-            <a href="/cierre_caja.html" class="menu-link">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="menu-link" style="color: var(--danger);">🕵️‍♂️ Auditoría</a>
+        <div class="text-center mb-4">
+            <img src="/logo.png" style="max-width: 150px;" alt="La Esquina">
         </div>
-        <a href="/logout" class="menu-link link-logout-pc">🚪 Salir</a>
+        <div class="d-flex flex-column flex-grow-1 mt-3">
+            <a href="/dashboard.html" class="nav-item-vip">🎱 Control de Mesas</a>
+            <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
+            <a href="/inventario.html" class="nav-item-vip">📦 Inventario</a>
+            <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
+            <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
+            <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
+            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
+            <a href="/empleados.html" class="nav-item-vip active text-info" style="border-left-color: #0dcaf0;">👥 Empleados</a>
+        </div>
+        <a href="/logout" class="btn-logout-sidebar mt-4">🚪 CERRAR SESIÓN</a>
     </nav>
 
-    <main class="main-content">
-        <div class="page-title">👥 Gestión del Personal</div>
-
-        <div style="background: var(--bg-card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <div style="flex: 1; min-width: 150px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Usuario (Login)</span>
-                <input type="text" id="newUsername" class="modal-input" placeholder="Ej. mozo_juan">
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content" style="padding: 30px;">
+        
+        <!-- BARRA SUPERIOR -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(13, 202, 240, 0.3) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-info d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">☰ MENÚ</button>
+                <div>
+                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">👥 Gestión del Personal</h4>
+                    <small class="text-muted">Controla los accesos, cuentas y roles del sistema.</small>
+                </div>
             </div>
-            <div style="flex: 1; min-width: 150px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Contraseña</span>
-                <input type="password" id="newPassword" class="modal-input" placeholder="Mínimo 4 caracteres">
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-                <span style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Rol del Sistema</span>
-                <select id="newRol" class="modal-input">
-                    <option value="mozo">Mozo (Solo Mesas y Pedidos)</option>
-                    <option value="cocina">Cocina (Solo Pantalla Cocina)</option>
-                    <option value="admin" style="color: var(--danger); font-weight: bold;">Administrador (Acceso Total)</option>
-                </select>
-            </div>
-            <button class="btn-mesa btn-abrir" style="padding: 16px 25px; height: 52px;" onclick="crearUsuario()">+ CREAR USUARIO</button>
+            <button class="btn btn-outline-light fw-bold shadow-sm px-4 opacity-75" onclick="cargarEmpleados()">
+                🔄 ACTUALIZAR LISTA
+            </button>
         </div>
 
-        <div style="background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr>
-                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">ID</th>
-                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Usuario</th>
-                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Nivel de Acceso</th>
-                        <th style="padding: 16px 25px; background: #151515; color: var(--text-muted); text-transform: uppercase; font-size: 12px;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-usuarios"></tbody>
-            </table>
+        <!-- FORMULARIO NUEVO EMPLEADO -->
+        <div class="card-premium p-4 mb-5 border-info" style="border-width: 2px;">
+            <h6 class="text-info fw-bold mb-3 text-uppercase">➕ Registrar Nuevo Usuario</h6>
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">USUARIO (LOGIN)</label>
+                    <input type="text" id="emp-usuario" class="form-control bg-black text-white border-secondary" placeholder="Ej. juan_mozo">
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">CONTRASEÑA</label>
+                    <input type="password" id="emp-pass" class="form-control bg-black text-white border-secondary" placeholder="Mínimo 4 caracteres">
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="text-muted small fw-bold mb-1">ROL DEL SISTEMA</label>
+                    <select id="emp-rol" class="form-select bg-black text-white border-secondary">
+                        <option value="mozo">Mozo (Solo Mesas y Pedidos)</option>
+                        <option value="cocina">Cocina (Solo KDS)</option>
+                        <option value="admin">Administrador (Acceso Total)</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button class="btn btn-info w-100 fw-bold shadow-sm py-2 text-dark" onclick="crearEmpleado()">
+                        CREAR USUARIO
+                    </button>
+                </div>
+            </div>
         </div>
+
+        <!-- TABLA DE EMPLEADOS -->
+        <div class="card bg-dark shadow-lg" style="border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead style="background: linear-gradient(145deg, #0a192f, #050505);">
+                        <tr>
+                            <th class="py-3 px-4 text-info">ID</th>
+                            <th class="py-3 px-4 text-info">USUARIO</th>
+                            <th class="py-3 px-4 text-center text-info">NIVEL DE ACCESO</th>
+                            <th class="py-3 px-4 text-center text-info">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-empleados">
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Cargando personal...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 
+    <!-- MODAL CONFIRMACIÓN -->
+    <div id="modal-confirm" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-box" style="background:#111; padding:30px; border-radius:12px; border:2px solid #555; text-align:center; max-width:400px; width:90%;">
+            <h4 class="text-danger fw-bold mb-3">⚠️ Revocar Acceso</h4>
+            <p class="text-light mb-4 fs-5" id="modal-texto">¿Estás seguro de eliminar a este empleado?</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-outline-light w-50" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-danger w-50 fw-bold" id="btn-modal-ok">ELIMINAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/alertas.js"></script>
+    
     <script>
-        async function cargarUsuarios() {
+        function abrirMenuMovil() {
+            document.querySelector('.sidebar').classList.add('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.add('activo');
+        }
+        function cerrarMenuMovil() {
+            document.querySelector('.sidebar').classList.remove('abierto-movil');
+            document.getElementById('overlay-sidebar').classList.remove('activo');
+        }
+
+        async function cargarEmpleados() {
             try {
+                // Asegúrate de que esta ruta coincida con tu backend (suele ser /api/usuarios)
                 const res = await fetch('/api/usuarios');
-                const usuarios = await res.json();
-                const tbody = document.getElementById('tabla-usuarios');
+                const data = await res.json();
+                
+                const tbody = document.getElementById('tabla-empleados');
                 tbody.innerHTML = '';
 
-                usuarios.forEach(u => {
-                    let rolColor = u.rol === 'admin' ? 'var(--danger)' : (u.rol === 'cocina' ? 'var(--gold)' : '#3498db');
-                    let rolEtiqueta = u.rol.toUpperCase();
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay empleados registrados.</td></tr>';
+                    return;
+                }
+
+                data.forEach(emp => {
+                    let badgeClass = 'badge-mozo';
+                    let rolTexto = emp.rol ? emp.rol.toUpperCase() : 'MOZO';
+                    
+                    if (rolTexto === 'ADMIN') badgeClass = 'badge-admin';
+                    if (rolTexto === 'COCINA') badgeClass = 'badge-cocina';
 
                     tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #1f222b;">
-                            <td style="padding: 16px 25px; color: var(--text-muted);">#${u.id}</td>
-                            <td style="padding: 16px 25px; font-weight: 800; color: white; font-size: 16px;">${u.username}</td>
-                            <td style="padding: 16px 25px;"><span style="background: rgba(255,255,255,0.05); color: ${rolColor}; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; border: 1px solid ${rolColor}40;">${rolEtiqueta}</span></td>
-                            <td style="padding: 16px 25px;">
-                                <button style="background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="eliminarUsuario(${u.id}, '${u.username}')" title="Revocar Acceso">🗑️ Eliminar</button>
+                        <tr>
+                            <td class="text-muted px-4 fw-bold">#${emp.id}</td>
+                            <td class="fw-bold text-white px-4 fs-5">👤 ${emp.username}</td>
+                            <td class="text-center px-4">
+                                <span class="badge px-3 py-2 fs-6 ${badgeClass}">${rolTexto}</span>
+                            </td>
+                            <td class="text-center px-4">
+                                <button class="btn btn-outline-danger btn-sm fw-bold px-3 shadow-sm border-0" onclick="pedirEliminar(${emp.id}, '${emp.username}')" title="Eliminar Acceso">
+                                    🗑️ Revocar
+                                </button>
                             </td>
                         </tr>
                     `;
                 });
-            } catch (error) { console.error("Error cargando usuarios", error); }
+            } catch (error) { 
+                console.error("Error cargando empleados:", error); 
+                document.getElementById('tabla-empleados').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error de conexión al cargar empleados.</td></tr>';
+            }
         }
 
-        async function crearUsuario() {
-            const user = document.getElementById('newUsername').value.trim();
-            const pass = document.getElementById('newPassword').value.trim();
-            const rol = document.getElementById('newRol').value;
+        async function crearEmpleado() {
+            const username = document.getElementById('emp-usuario').value.trim();
+            const password = document.getElementById('emp-pass').value.trim();
+            const rol = document.getElementById('emp-rol').value;
 
-            if (!user || !pass) return mostrarAlerta("Debes ingresar usuario y contraseña", "warning");
+            if (!username || password.length < 4) {
+                return mostrarAlerta("El usuario es obligatorio y la contraseña debe tener al menos 4 caracteres.", "warning");
+            }
 
             try {
-                const res = await fetch('/api/usuarios/nuevo', {
+                const res = await fetch('/api/usuarios', { // Ajusta la ruta si en tu backend es diferente (ej. /api/usuarios/registro)
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, password: pass, rol: rol })
+                    body: JSON.stringify({ username, password, rol })
                 });
 
                 const data = await res.json();
-                if (res.ok) {
-                    mostrarAlerta(`Usuario ${user} creado con éxito.`, "success");
-                    document.getElementById('newUsername').value = '';
-                    document.getElementById('newPassword').value = '';
-                    cargarUsuarios();
+
+                if (res.ok || data.success) {
+                    mostrarToast("✅ Empleado registrado con éxito");
+                    document.getElementById('emp-usuario').value = '';
+                    document.getElementById('emp-pass').value = '';
+                    cargarEmpleados();
                 } else {
-                    mostrarAlerta(data.error || "Error al crear usuario", "error");
+                    mostrarAlerta(data.error || "Error al crear empleado", "error");
                 }
             } catch (error) { mostrarAlerta("Error de conexión", "error"); }
         }
 
-        async function eliminarUsuario(id, nombre) {
-            const confirmado = await mostrarConfirmacion("⚠️ Revocar Acceso", `¿Estás seguro de eliminar permanentemente al empleado "${nombre}"? Ya no podrá ingresar al sistema.`);
-            if (confirmado) {
+        function cerrarModal() { document.getElementById('modal-confirm').style.display = 'none'; }
+
+        function pedirEliminar(id, nombre) {
+            document.getElementById('modal-texto').innerText = `¿Revocar acceso permanentemente a ${nombre}?`;
+            const btnOk = document.getElementById('btn-modal-ok');
+            btnOk.onclick = async () => {
+                cerrarModal();
                 try {
-                    const res = await fetch(`/api/usuarios/eliminar/${id}`, { method: 'DELETE' });
-                    const data = await res.json();
-                    if (res.ok) {
-                        mostrarAlerta("Usuario eliminado del sistema.", "success");
-                        cargarUsuarios();
+                    const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        mostrarToast("🗑️ Acceso revocado");
+                        cargarEmpleados();
                     } else {
-                        mostrarAlerta(data.error || "No se pudo eliminar el usuario", "error");
+                        mostrarAlerta("No se pudo eliminar al empleado.", "error");
                     }
-                } catch (error) { mostrarAlerta("Error de conexión", "error"); }
-            }
+                } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
+            };
+            document.getElementById('modal-confirm').style.display = 'flex';
         }
 
-        cargarUsuarios();
+        function mostrarToast(msg) { 
+            const t = document.getElementById("toast"); 
+            if(t) { t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
+        }
+
+        // Iniciar
+        cargarEmpleados();
     </script>
 </body>
 </html>
