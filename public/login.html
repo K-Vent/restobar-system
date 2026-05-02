@@ -209,8 +209,29 @@
     </div>
 
     <script>
+        // ==========================================
+        // 1. Despertar Servidor (Render Sleep Prevent)
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/config').catch(e => console.log('Despertando servidor...'));
+        });
+
+        // ==========================================
+        // 2. Registro de Service Worker (PWA)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ Modo App Móvil Activado', reg.scope))
+                .catch(err => console.error('❌ Error en Service Worker', err));
+            });
+        }
+
+        // ==========================================
+        // 3. Lógica de Login Premium
+        // ==========================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que la página recargue por defecto
+            e.preventDefault(); 
             
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
@@ -219,7 +240,6 @@
             const btnSpinner = document.getElementById('btnSpinner');
             const btnSubmit = document.getElementById('btnSubmit');
 
-            // Estado de carga (Loading)
             errorDiv.classList.remove('show-error');
             btnText.style.display = 'none';
             btnSpinner.style.display = 'block';
@@ -235,11 +255,8 @@
                 const data = await res.json();
 
                 if (res.ok && data.success) {
-                    // Si entra Kevin (Admin), va al Dashboard con todos los permisos
-                    // Si entra Dubraska (Mozo), el sistema backend la limitará
                     window.location.href = '/dashboard.html';
                 } else {
-                    // Mostrar error y resetear botón
                     errorDiv.innerText = data.error || 'Credenciales incorrectas';
                     errorDiv.classList.add('show-error');
                     

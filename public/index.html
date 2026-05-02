@@ -1,56 +1,156 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="/logo.png">
     <meta charset="UTF-8">
-    <title>Login - La Esquina del Billar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Esquina del Billar | Restobar & Club</title>
+    <!-- Motor Base Oscuro -->
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/logo.png">
+    
     <style>
-        body { background: #0c0c0c; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; }
-        .login-box { background: #181818; padding: 40px; border-radius: 10px; border: 1px solid #333; text-align: center; width: 300px; }
-        h2 { color: #f1c40f; margin-bottom: 20px; }
-        input { width: 90%; padding: 10px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background: #c0392b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #e74c3c; }
+        /* Estilos Premium para la Web Pública */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #050505; }
+        
+        /* Navbar Transparente */
+        .navbar-public { background: rgba(5, 5, 5, 0.9) !important; backdrop-filter: blur(10px); border-bottom: 1px solid #333; }
+        
+        /* Hero Section (Impacto Visual) */
+        .hero-section {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1579624513837-77fb274ebfce?q=80&w=2000&auto=format&fit=crop') center/cover;
+            position: relative;
+        }
+        .hero-title { font-size: 4rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .hero-subtitle { font-size: 1.5rem; color: #D4AF37; font-weight: 600; margin-bottom: 30px; letter-spacing: 1px;}
+        
+        /* Botones Premium */
+        .btn-gold { background: linear-gradient(145deg, #D4AF37, #AA8222); border: none; color: #000; font-weight: 800; padding: 15px 40px; text-transform: uppercase; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(212,175,55,0.4); color: #000; }
+        .btn-outline-gold { border: 2px solid #D4AF37; color: #D4AF37; font-weight: 800; padding: 15px 40px; text-transform: uppercase; transition: all 0.2s; }
+        .btn-outline-gold:hover { background: #D4AF37; color: #000; }
+
+        /* Sección Carta Digital */
+        .section-title { font-size: 2.5rem; font-weight: 900; color: #fff; text-align: center; margin-bottom: 50px; text-transform: uppercase;}
+        .section-title span { color: #D4AF37; }
+        
+        .menu-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center; transition: transform 0.3s;}
+        .menu-card:hover { transform: translateY(-5px); border-color: #D4AF37; }
+        .menu-price { color: #25D366; font-size: 1.5rem; font-weight: 900; margin-top: 10px; }
+
+        /* Footer */
+        .footer-premium { background: #000; padding: 40px 0; border-top: 1px solid #333; text-align: center; color: #888; }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>🎱 Acceso Personal</h2>
-        <input type="text" id="user" placeholder="Usuario">
-        <input type="password" id="pass" placeholder="Contraseña">
-        <button onclick="login()">ENTRAR</button>
-    </div>
 
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-public fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+                <img src="/logo.png" alt="La Esquina" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center gap-3">
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#carta">CARTA DIGITAL</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#ubicacion">UBICACIÓN</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-warning fw-bold text-dark px-4 rounded-pill shadow-sm" href="/login.html">
+                            👑 PORTAL VIP
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container px-4">
+            <h1 class="hero-title">LA ESQUINA<br>DEL BILLAR</h1>
+            <p class="hero-subtitle">El mejor ambiente, tragos premium y mesas profesionales.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                <a href="#carta" class="btn btn-gold rounded-pill">Ver la Carta</a>
+                <a href="/login.html" class="btn btn-outline-gold rounded-pill">Únete al Club</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección: La Carta (Conectada al Backend) -->
+    <section id="carta" class="py-5" style="background-color: #0a0a0a;">
+        <div class="container py-5">
+            <h2 class="section-title">Nuestra <span>Carta</span></h2>
+            
+            <div class="row g-4 justify-content-center" id="menu-publico">
+                <!-- Mientras carga, mostramos un mensaje -->
+                <div class="col-12 text-center text-muted">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <p class="mt-2">Cargando menú en vivo...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección: Footer -->
+    <footer id="ubicacion" class="footer-premium">
+        <div class="container">
+            <img src="/logo.png" alt="La Esquina" height="60" class="mb-4 opacity-75">
+            <h5 class="text-white fw-bold">📍 Santa Anita, Lima - Perú</h5>
+            <p class="mb-1">Abierto de Lunes a Domingo</p>
+            <p class="mt-4 small text-muted">&copy; 2026 La Esquina del Billar. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-    // Hace una petición ligera invisible para que Render y Supabase se conecten
-    fetch('/api/config').catch(e => console.log('Despertando servidor...'));
-});
-        async function login() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username: u, password: p })
-            });
-            const data = await res.json();
-            if(data.success) {
-                window.location.href = '/dashboard.html'; // Redirección directa SIN ALERTAS
-            } else {
-                alert("Usuario o clave incorrectos");
+        // Lógica para cargar el menú en vivo desde tu inventario
+        async function cargarMenuPublico() {
+            try {
+                // Aquí usamos tu API existente para traer los productos
+                const res = await fetch('/api/productos');
+                const productos = await res.json();
+                
+                const contenedorMenu = document.getElementById('menu-publico');
+                contenedorMenu.innerHTML = '';
+
+                // Filtramos solo los que tienen stock y no son ingredientes ocultos
+                const disponibles = productos.filter(p => p.stock > 0);
+
+                if (disponibles.length === 0) {
+                    contenedorMenu.innerHTML = '<p class="text-center text-muted">El menú se está actualizando. Vuelve pronto.</p>';
+                    return;
+                }
+
+                // Pintamos solo los primeros 8 productos para no saturar la portada
+                disponibles.slice(0, 8).forEach(prod => {
+                    let icono = '🍺';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('piqueo')) icono = '🍟';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('trago')) icono = '🍹';
+
+                    contenedorMenu.innerHTML += `
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="menu-card h-100">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">${icono}</div>
+                                <h5 class="text-white fw-bold">${prod.nombre}</h5>
+                                <div class="menu-price">S/ ${parseFloat(prod.precio_venta).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error cargando carta digital:", error);
             }
         }
-        // --- REGISTRO DEL SERVICE WORKER (PWA) ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('✅ Modo Resiliencia Activado', reg.scope))
-                .catch(err => console.error('❌ Error en Service Worker', err));
-            });
-        }
+
+        document.addEventListener('DOMContentLoaded', cargarMenuPublico);
     </script>
 </body>
 </html>
