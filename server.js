@@ -282,6 +282,16 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
     try { 
         const val = gastoSchema.parse(req.body); 
         await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [val.descripcion, val.monto]); 
+        
+        // 🔥 ESPÍA BLINDADO (GASTOS) 🔥
+        try {
+            await pool.query(
+                "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO GASTO', 'Retiró S/ ' || $2 || ' de la caja. Motivo: ' || $3)", 
+                [req.usuario.id, val.monto.toFixed(2), val.descripcion]
+            );
+        } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
+        // 🔥 FIN DEL ESPÍA 🔥
+
         res.json({ success: true }); 
         io.emit('actualizar_caja'); 
     } catch (e) { next(e); } 
@@ -346,6 +356,13 @@ app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) 
 
         // 1. Guardar en Base de Datos
         await pool.query('INSERT INTO cierres (total_ventas, total_gastos, cantidad_mesas, fecha_cierre) VALUES ($1, $2, $3, NOW())', [totalVentas, totalGastos, cantidadMesas]); 
+       
+        try {
+            await pool.query(
+                "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'CIERRE DE CAJA', 'Ejecutó el cierre. Ventas: S/ ' || $2 || ' | Gastos: S/ ' || $3)", 
+                [req.usuario.id, totalVentas.toFixed(2), totalGastos.toFixed(2)]
+            );
+        } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
         
         // 2. DISPARADOR AUTOMÁTICO HACIA n8n
         try {
@@ -389,10 +406,21 @@ app.post('/api/productos/agregar-stock', verificarSesion, soloAdmin, async (req,
     try { 
         const val = stockSchema.parse(req.body); 
         await pool.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [val.cantidad, val.id]); 
+        
         if (val.costo && val.costo > 0) { 
             await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [`Compra Inv: ${val.nombre} (+${val.cantidad})`, val.costo]); 
             io.emit('actualizar_caja'); 
         } 
+
+        
+        try {
+            await pool.query(
+                "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'MODIFICÓ STOCK', 'Añadió ' || $2 || ' unidades al producto: ' || $3)", 
+                [req.usuario.id, val.cantidad, val.nombre]
+            );
+        } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
+        
+
         res.json({success:true}); 
     } catch(e){ next(e); } 
 });
