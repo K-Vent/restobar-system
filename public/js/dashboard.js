@@ -718,3 +718,51 @@ async function eliminarUltimaMesaDB() {
         mostrarAlerta("Error de conexión al servidor.");
     }
 }
+
+        // ==========================================
+        // 🔥 SISTEMA DE PERMISOS VISUALES (UI) 🔥
+        // ==========================================
+        async function aplicarPermisosUI() {
+            try {
+                // Le preguntamos al servidor quién es el usuario actual
+                const res = await fetch('/api/usuario/actual');
+                if (res.ok) {
+                    const usuario = await res.json();
+                    
+                    // Si NO es administrador, sacamos la tijera y ocultamos los botones privados
+                    if (usuario.rol !== 'admin') {
+                        // Lista de páginas prohibidas para mozos y cocineros
+                        const rutasProhibidas = [
+                            '/inventario.html', 
+                            '/clientes.html', 
+                            '/reportes.html', 
+                            '/cierre_caja.html', 
+                            '/auditoria.html', 
+                            '/empleados.html'
+                        ];
+
+                        // Buscamos todos los links del menú lateral
+                        const linksMenu = document.querySelectorAll('.sidebar a');
+                        
+                        linksMenu.forEach(link => {
+                            // Extraemos solo el final del link (ej. /inventario.html)
+                            const href = link.getAttribute('href');
+                            
+                            // Si el link está en la lista negra, lo desaparecemos de la pantalla
+                            if (rutasProhibidas.includes(href)) {
+                                link.style.display = 'none';
+                            }
+                        });
+                        
+                        // REGLA EXTRA PARA COCINA: Si es cocinero, ocultamos también las mesas
+                        if(usuario.rol === 'cocina') {
+                            const btnMesas = document.querySelector('.sidebar a[href="/dashboard.html"]');
+                            if(btnMesas) btnMesas.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) { console.error("Error verificando permisos visuales:", error); }
+        }
+
+        // Ejecutamos la revisión de seguridad apenas carga la página
+        document.addEventListener('DOMContentLoaded', aplicarPermisosUI);
