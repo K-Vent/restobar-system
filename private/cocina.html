@@ -2,301 +2,242 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>📺 Monitor de Barra/Cocina - La Esquina</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0c">
+    <title>KDS Cocina/Barra | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Motor Base Oscuro -->
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/logo.png">
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="La Esquina KDS">
-    <link rel="apple-touch-icon" href="/logo.png">
     <style>
-        :root {
-            --bg-main: #0a0a0c;
-            --bg-card: #1c1c1e;
-            --gold: #f1c40f;
-            --success: #2ed573;
-            --border: #2f3542;
-            --text-muted: #a4b0be;
+        /* Estilos KDS Optimizados para Pantalla Táctil/Tablet */
+        body { background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        
+        .kds-header { background: #111; border-bottom: 3px solid #ff4757; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
+        .kds-title { font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 1px; margin: 0;}
+        .kds-clock { font-size: 20px; font-weight: 700; color: #aaa; font-variant-numeric: tabular-nums; }
+        
+        /* Contenedor de Comandas */
+        .comandas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; align-items: start;}
+        
+        /* Tarjeta de Pedido (Comanda) */
+        .comanda-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            animation: fadeIn 0.5s ease-in-out;
         }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        body { 
-            background: var(--bg-main); 
-            color: white; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            padding: 30px; 
-            margin: 0; 
-            min-height: 100vh; 
-            box-sizing: border-box;
-        }
-
-        .header-cocina { 
+        /* Cabecera de la Comanda (Rojo para alerta) */
+        .comanda-header { background: #ff4757; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .mesa-numero { font-size: 28px; font-weight: 900; }
+        .tiempo-pedido { font-size: 16px; font-weight: 700; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 6px; }
+        
+        /* Lista de Productos */
+        .comanda-body { padding: 0; background: #fff; }
+        .producto-item { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #ddd; 
             display: flex; 
-            justify-content: space-between; 
             align-items: center; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 20px; 
-            margin-bottom: 30px; 
+            color: #000;
+            font-size: 20px;
+            font-weight: 700;
         }
-
-        .titulo { 
-            color: var(--gold); 
-            font-size: 32px; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            font-weight: 900; 
-            margin: 0; 
-            text-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
-        }
-
-        .reloj { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: var(--text-muted); 
-            font-family: 'Courier New', Courier, monospace; 
-            background: #151515;
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
+        .producto-item:last-child { border-bottom: none; }
         
-        .grid-pedidos { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-            gap: 25px; 
-        }
-        
-        .ticket { 
-            background: var(--bg-card); 
-            border-radius: 16px; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: popIn 0.4s ease-out;
-        }
-
-        @keyframes popIn { 
-            0% { opacity: 0; transform: scale(0.9) translateY(20px); } 
-            100% { opacity: 1; transform: scale(1) translateY(0); } 
-        }
-
-        .ticket:active { transform: scale(0.96); }
-        
-        /* Efecto Neón por Categorías */
-        .ticket::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; }
-        .ticket.comida::before { background: #e67e22; box-shadow: 0 0 20px #e67e22; }
-        .ticket.tragos::before { background: #9b59b6; box-shadow: 0 0 20px #9b59b6; }
-        .ticket.cervezas::before { background: var(--gold); box-shadow: 0 0 20px var(--gold); }
-        .ticket.otros::before { background: #3498db; box-shadow: 0 0 20px #3498db; }
-
-        .ticket-header { 
-            background: #151515; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--border); 
-        }
-        
-        .mesa { font-size: 26px; font-weight: 900; color: white; letter-spacing: -1px; }
-        .hora { 
-            font-size: 15px; 
-            color: var(--text-muted); 
-            background: #0a0a0c; 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            border: 1px solid var(--border); 
-        }
-
-        .ticket-body { padding: 35px 20px; flex-grow: 1; text-align: center; }
-        .cantidad { 
-            font-size: 55px; 
-            font-weight: 900; 
-            color: var(--success); 
-            display: block; 
-            line-height: 1; 
-            margin-bottom: 15px; 
-            text-shadow: 0 0 25px rgba(46, 213, 115, 0.4); 
-        }
-        .producto { font-size: 24px; color: white; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
-
-        .btn-listo { 
-            width: 100%; 
-            padding: 22px; 
-            background: rgba(46, 213, 115, 0.05); 
-            color: var(--success); 
-            border: none; 
-            border-top: 1px solid rgba(46, 213, 115, 0.3); 
-            font-weight: 900; 
+        .cantidad-badge { 
+            background: #000; 
+            color: #fff; 
             font-size: 22px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-        }
-        
-        .btn-listo:hover, .btn-listo:active { 
-            background: var(--success); 
-            color: #000; 
-            box-shadow: 0 0 30px rgba(46, 213, 115, 0.5); 
+            font-weight: 900; 
+            min-width: 45px; 
+            height: 45px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 8px; 
+            margin-right: 15px; 
         }
 
-        .vacio { 
-            grid-column: 1 / -1; 
-            text-align: center; 
-            padding: 100px 20px; 
-            color: var(--text-muted); 
-            font-size: 28px; 
-            border: 2px dashed var(--border); 
-            border-radius: 20px; 
-            font-weight: 700; 
-            letter-spacing: 1px;
-        }
+        .producto-nombre { flex-grow: 1; line-height: 1.2; }
+        .producto-categoria { display: block; font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; margin-top: 4px;}
 
-        @media (max-width: 600px) {
-            .header-cocina { flex-direction: column; gap: 15px; text-align: center; }
-            .grid-pedidos { grid-template-columns: 1fr; }
+        /* Botón de Despacho */
+        .btn-despachar { 
+            width: 100%; 
+            padding: 15px; 
+            font-size: 20px; 
+            font-weight: 800; 
+            border: none; 
+            background: #25D366; 
+            color: black; 
+            text-transform: uppercase;
+            transition: background 0.2s;
+            cursor: pointer;
         }
+        .btn-despachar:active { background: #1da851; }
+
+        /* Estado Vacío */
+        .empty-state { text-align: center; padding: 100px 20px; color: #555; grid-column: 1 / -1; }
+        .empty-icon { font-size: 80px; margin-bottom: 20px; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <div class="header-cocina">
-        <div class="titulo">👨‍🍳 Monitor de Barra y Cocina</div>
-        <div class="reloj" id="reloj-vivo">00:00:00</div>
-    </div>
-    
-    <div id="grid" class="grid-pedidos">
-        <div class="vacio">Cargando sistema...</div>
-    </div>
+    <!-- Sonido de Alerta (Campana) -->
+    <audio id="campana" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <!-- Barra Superior -->
+    <header class="kds-header">
+        <h1 class="kds-title">👨‍🍳 KDS | LA ESQUINA</h1>
+        <div class="d-flex align-items-center gap-4">
+            <div class="kds-clock" id="reloj">00:00:00</div>
+            <button class="btn btn-outline-light btn-sm" onclick="probarSonido()">🔊 Probar Sonido</button>
+            <a href="/logout" class="btn btn-danger btn-sm fw-bold">Salir</a>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de Pedidos -->
+    <main class="comandas-grid" id="contenedor-kds">
+        <div class="empty-state">
+            <div class="empty-icon">🍽️</div>
+            <h2>SIN PEDIDOS PENDIENTES</h2>
+            <p>La cocina y la barra están al día.</p>
+        </div>
+    </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Reloj en vivo
-        function actualizarReloj() {
-            const ahora = new Date();
-            document.getElementById('reloj-vivo').innerText = ahora.toLocaleTimeString('es-PE', { hour12: true });
+        // Reloj en tiempo real
+        setInterval(() => {
+            document.getElementById('reloj').innerText = new Date().toLocaleTimeString('es-PE');
+        }, 1000);
+
+        // Variables de Control
+        let cantidadPedidosAnteriores = 0;
+        const sonidoCampana = document.getElementById('campana');
+
+        function probarSonido() {
+            sonidoCampana.play().catch(e => alert("Tu navegador bloquea el sonido automático. Haz clic aquí una vez para habilitarlo."));
         }
-        setInterval(actualizarReloj, 1000);
-        actualizarReloj();
 
+        // Conexión WebSockets
         const socket = io();
-        const campana = new Audio('https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg');
-
+        socket.on('actualizar_cocina', () => cargarKDS());
         socket.on('campana_cocina', () => {
-            cargarPendientes(); 
-            campana.play().catch(e => console.log("Clic previo requerido para audio"));
-            
-            // Alerta visual de nuevo pedido
-            document.body.style.backgroundColor = "#3a0000"; 
-            setTimeout(() => document.body.style.backgroundColor = "#0a0a0c", 400);
+            sonidoCampana.currentTime = 0;
+            sonidoCampana.play().catch(e => console.log("Sonido bloqueado por el navegador", e));
         });
 
-        socket.on('actualizar_cocina', () => { cargarPendientes(); });
-    
-        cargarPendientes();
+        // Agrupar pedidos por Mesa
+        function agruparPorMesa(pedidos) {
+            const agrupado = {};
+            pedidos.forEach(p => {
+                if (!agrupado[p.numero_mesa]) {
+                    agrupado[p.numero_mesa] = {
+                        mesa: p.numero_mesa,
+                        horaMinima: p.hora, // Tomamos la hora del pedido más antiguo
+                        items: []
+                    };
+                }
+                agrupado[p.numero_mesa].items.push(p);
+            });
+            // Convertir a Array y ordenar por número de mesa
+            return Object.values(agrupado).sort((a, b) => a.mesa - b.mesa);
+        }
 
-        async function cargarPendientes() {
+        async function cargarKDS() {
             try {
                 const res = await fetch('/api/kds/pendientes');
-                const pedidos = await res.json();
-                const grid = document.getElementById('grid');
+                const pedidosRaw = await res.json();
                 
-                if(pedidos.length === 0) {
-                    grid.innerHTML = '<div class="vacio">✨ Todo entregado. Barra limpia.</div>';
+                const contenedor = document.getElementById('contenedor-kds');
+                contenedor.innerHTML = '';
+
+                // Si no hay pedidos
+                if (pedidosRaw.length === 0) {
+                    cantidadPedidosAnteriores = 0;
+                    contenedor.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <h2>TODO DESPACHADO</h2>
+                            <p>Esperando nuevas órdenes...</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                grid.innerHTML = ''; 
+                // Agrupamos la data cruda en bloques por mesa
+                const comandas = agruparPorMesa(pedidosRaw);
 
-                pedidos.forEach(p => {
-                    let tipo = 'otros';
-                    if(p.categoria === 'Comida') tipo = 'comida';
-                    else if(p.categoria === 'Tragos' || p.categoria === 'Cócteles') tipo = 'tragos';
-                    else if(p.categoria === 'Cervezas') tipo = 'cervezas';
+                // Pintar cada comanda (Tarjeta)
+                comandas.forEach(comanda => {
+                    let itemsHtml = '';
+                    
+                    // Pintar los productos dentro de la comanda
+                    comanda.items.forEach(item => {
+                        let cat = item.categoria ? item.categoria.toUpperCase() : 'GENERAL';
+                        let colorCat = cat.includes('CERVEZA') || cat.includes('TRAGO') ? 'color: #0dcaf0;' : 'color: #ff4757;';
 
-                    grid.innerHTML += `
-                        <div class="ticket ${tipo}">
-                            <div class="ticket-header">
-                                <span class="mesa">Mesa ${p.numero_mesa}</span>
-                                <span class="hora">⏳ ${p.hora}</span>
+                        itemsHtml += `
+                            <div class="producto-item">
+                                <div class="cantidad-badge">${item.cantidad}</div>
+                                <div class="producto-nombre">
+                                    ${item.nombre}
+                                    <span class="producto-categoria" style="${colorCat}">${cat}</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary px-3 py-2 fw-bold" onclick="marcarEntregado(${item.id})">✔️</button>
                             </div>
-                            <div class="ticket-body">
-                                <span class="cantidad">${p.cantidad}</span>
-                                <span class="producto">${p.nombre}</span>
+                        `;
+                    });
+
+                    // Construir la tarjeta completa
+                    contenedor.innerHTML += `
+                        <div class="comanda-card">
+                            <div class="comanda-header">
+                                <div class="mesa-numero">Mesa ${comanda.mesa}</div>
+                                <div class="tiempo-pedido">⏱️ ${comanda.horaMinima}</div>
                             </div>
-                            <button class="btn-listo" onclick="marcarListo(${p.id}, this)">✔️ LISTO</button>
+                            <div class="comanda-body">
+                                ${itemsHtml}
+                            </div>
+                            <button class="btn-despachar" onclick="despacharMesa Completa(${comanda.mesa})">
+                                🛎️ DESPACHAR TODO
+                            </button>
                         </div>
                     `;
                 });
-            } catch(e) { console.error("Error conexión KDS", e); }
+
+                // Actualizar contador para evitar que suene la campana si solo recargó la página
+                cantidadPedidosAnteriores = pedidosRaw.length;
+
+            } catch (error) {
+                console.error("Error cargando KDS:", error);
+            }
         }
 
-        async function marcarListo(id, btnElement) {
+        // Marcar un solo producto como entregado
+        async function marcarEntregado(idPedido) {
             try {
-                // Animación de salida al entregar
-                const ticket = btnElement.parentElement;
-                ticket.style.transform = 'scale(0.8) translateY(50px)';
-                ticket.style.opacity = '0';
-                
-                await fetch(`/api/kds/entregar/${id}`, { method: 'POST' });
-                setTimeout(cargarPendientes, 250);
-            } catch(e) { alert("Error al despachar"); }
+                await fetch(`/api/kds/entregar/${idPedido}`, { method: 'POST' });
+                // El WebSocket de tu server avisará a todos que recarguen
+            } catch (e) { alert("Error al entregar pedido"); }
         }
 
-        // ==========================================
-        // 🔥 SISTEMA DE PERMISOS VISUALES (UI) 🔥
-        // ==========================================
-        async function aplicarPermisosUI() {
-            try {
-                // Le preguntamos al servidor quién es el usuario actual
-                const res = await fetch('/api/usuario/actual');
-                if (res.ok) {
-                    const usuario = await res.json();
-                    
-                    // Si NO es administrador, sacamos la tijera y ocultamos los botones privados
-                    if (usuario.rol !== 'admin') {
-                        // Lista de páginas prohibidas para mozos y cocineros
-                        const rutasProhibidas = [
-                            '/inventario.html', 
-                            '/clientes.html', 
-                            '/reportes.html', 
-                            '/cierre_caja.html', 
-                            '/auditoria.html', 
-                            '/empleados.html'
-                        ];
-
-                        // Buscamos todos los links del menú lateral
-                        const linksMenu = document.querySelectorAll('.sidebar a');
-                        
-                        linksMenu.forEach(link => {
-                            // Extraemos solo el final del link (ej. /inventario.html)
-                            const href = link.getAttribute('href');
-                            
-                            // Si el link está en la lista negra, lo desaparecemos de la pantalla
-                            if (rutasProhibidas.includes(href)) {
-                                link.style.display = 'none';
-                            }
-                        });
-                        
-                        // REGLA EXTRA PARA COCINA: Si es cocinero, ocultamos también las mesas
-                        if(usuario.rol === 'cocina') {
-                            const btnMesas = document.querySelector('.sidebar a[href="/dashboard.html"]');
-                            if(btnMesas) btnMesas.style.display = 'none';
-                        }
-                    }
-                }
-            } catch (error) { console.error("Error verificando permisos visuales:", error); }
+        // (Opcional Futuro) Despachar toda la mesa de golpe
+        function despacharMesaCompleta(numeroMesa) {
+            alert(`Función en desarrollo. Por ahora, marca con ✔️ cada producto de la Mesa ${numeroMesa}.`);
         }
 
-        // Ejecutamos la revisión de seguridad apenas carga la página
-        document.addEventListener('DOMContentLoaded', aplicarPermisosUI);
-    </script> 
+        // Iniciar
+        cargarKDS();
+
+        // Autorefresco por si el WebSocket falla
+        setInterval(cargarKDS, 10000); 
+    </script>
 </body>
 </html>
