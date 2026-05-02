@@ -205,7 +205,7 @@
                             <div class="comanda-body">
                                 ${itemsHtml}
                             </div>
-                            <button class="btn-despachar" onclick="despacharMesa Completa(${comanda.mesa})">
+                            <button class="btn-despachar" onclick="despacharMesaCompleta([${comanda.items.map(item => item.id).join(',')}])">
                                 🛎️ DESPACHAR TODO
                             </button>
                         </div>
@@ -229,8 +229,20 @@
         }
 
         // (Opcional Futuro) Despachar toda la mesa de golpe
-        function despacharMesaCompleta(numeroMesa) {
-            alert(`Función en desarrollo. Por ahora, marca con ✔️ cada producto de la Mesa ${numeroMesa}.`);
+        // Despachar toda la mesa de golpe (Ahora sí funciona)
+        async function despacharMesaCompleta(idsPedidos) {
+            try {
+                // Desactivar temporalmente el botón para no hacer doble clic
+                // Recorremos la lista de IDs y hacemos la petición por cada uno
+                const promesas = idsPedidos.map(id => fetch(`/api/kds/entregar/${id}`, { method: 'POST' }));
+                await Promise.all(promesas);
+                
+                // Recargamos la pantalla para que la tarjeta desaparezca
+                cargarKDS();
+            } catch (error) {
+                console.error("Error al despachar la mesa completa:", error);
+                alert("Hubo un error de conexión al intentar despachar toda la mesa.");
+            }
         }
 
         // Iniciar
