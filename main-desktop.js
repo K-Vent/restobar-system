@@ -24,7 +24,7 @@ function createWindow() {
 
     // [MUY IMPORTANTE] Cargamos tu sistema desde la nube (Render)
     // Así los datos del celular y de la PC estarán siempre sincronizados.
-    mainWindow.loadURL('https://la-esquina-app.onrender.com/dashboard.html');
+    mainWindow.loadURL('https://la-esquina-app.onrender.com/login.html');
 
     // Si la página no carga (no hay internet), mostramos un error
     mainWindow.webContents.on('did-fail-load', () => {
