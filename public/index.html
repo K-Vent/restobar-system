@@ -151,49 +151,40 @@
                                             <option value="Local Completo">Más de 40 (Local Completo)</option>
                                         </select>
                                     </div>
+                                    
+                                    <!-- Selector de Tipo de Evento -->
+                                    <div class="col-12 mt-3">
+                                        <label class="form-label text-muted small text-uppercase">Motivo del Evento</label>
+                                        <select class="form-select bg-black text-white border-secondary" id="ev_tipo" required>
+                                            <option value="">Selecciona...</option>
+                                            <option value="Cumpleaños">🎉 Cumpleaños</option>
+                                            <option value="Reunión de Amigos">🎱 Reunión de Amigos</option>
+                                            <option value="Reunión de Empresa">💼 Reunión de Empresa</option>
+                                            <option value="Otro">Otro motivo</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <h5 class="text-warning mb-3 fw-bold mt-5">2. Selecciona tu Plan de Alquiler</h5>
-                                <p class="small text-muted mb-4">El alquiler incluye exclusividad del área, uso de mesas de billar y control de la música.</p>
+                                <h5 class="text-warning mb-3 fw-bold mt-5">2. Selecciona tu Plan</h5>
                                 <div class="mb-4">
                                     <div class="form-check mb-3 p-3 border border-secondary rounded hover-bg-black">
-                                        <input class="form-check-input ms-1 mt-2" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
-                                        <label class="form-check-label ms-3 w-100 cursor-pointer" for="plan1">
-                                            <strong class="text-white fs-5">Plan Express (3 Horas)</strong><br>
-                                            <span class="text-muted small">Cierre de local, acceso a mesas de billar, torneo relámpago organizado por nuestro staff.</span>
+                                        <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
+                                        <label class="form-check-label ms-3 w-100 cursor-pointer text-white fs-5" for="plan1">
+                                            <strong>Plan Express (3 Horas)</strong>
                                         </label>
                                     </div>
                                     <div class="form-check mb-3 p-3 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
-                                        <input class="form-check-input ms-1 mt-2" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas) - RECOMENDADO">
-                                        <label class="form-check-label ms-3 w-100 cursor-pointer" for="plan2">
-                                            <strong class="text-warning fs-5">Plan Full (5 Horas)</strong> 👑<br>
-                                            <span class="text-muted small">La experiencia completa. Cierre total, mesas ilimitadas, luces premium y DJ setup.</span>
+                                        <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas)">
+                                        <label class="form-check-label ms-3 w-100 cursor-pointer text-warning fs-5" for="plan2">
+                                            <strong>Plan Full (5 Horas)</strong> 👑
                                         </label>
                                     </div>
                                 </div>
 
-                                <h5 class="text-warning mb-3 fw-bold mt-5">3. ¿Deseas añadir Consumo? (Opcional)</h5>
-                                <p class="small text-muted mb-4">Potencia tu evento agregando paquetes de comida y bebida con descuento de preventa.</p>
-                                <div class="row g-3 mb-5">
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="Paquete Cervezas (5 Baldes)" id="ex_cervezas">
-                                            <label class="form-check-label text-white" for="ex_cervezas">🍺 Pack de Cervezas (5 Baldes)</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="Ronda de Cócteles Premium" id="ex_cocteles">
-                                            <label class="form-check-label text-white" for="ex_cocteles">🍹 Ronda de Cócteles de Autor</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="Piqueos Variados (Alitas/Tequeños)" id="ex_piqueos">
-                                            <label class="form-check-label text-white" for="ex_piqueos">🍟 Bandejas de Piqueos Variados</label>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Nueva Zona de Requerimientos Libres -->
+                                <h5 class="text-warning mb-3 fw-bold mt-5">3. ¿Qué necesitas para tu evento?</h5>
+                                <p class="small text-muted mb-3">Cuéntanos si requieres algo en particular (decoración, bocaditos, DJ, etc.) y lo cotizamos.</p>
+                                <textarea class="form-control bg-black text-white border-secondary mb-4" id="ev_requerimientos" rows="3" placeholder="Ej: Me gustaría saber si pueden organizar un torneo de billar para 15 personas y si puedo llevar mi propia torta..."></textarea>
 
                                 <button type="submit" class="btn btn-gold w-100 py-3 mt-2" id="btnEnviarReserva">
                                     SOLICITAR COTIZACIÓN
@@ -207,7 +198,7 @@
         </div>
     </section>
 
-    <!-- Script para enviar al Backend -->
+   <!-- Script de conexión -->
     <script>
         document.getElementById('formReservaEvento').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -215,13 +206,7 @@
             const msg = document.getElementById('reservaMensaje');
             
             btn.disabled = true;
-            btn.innerText = 'ENVIANDO...';
-            
-            // Recopilar extras seleccionados
-            const extras = [];
-            if(document.getElementById('ex_cervezas').checked) extras.push(document.getElementById('ex_cervezas').value);
-            if(document.getElementById('ex_cocteles').checked) extras.push(document.getElementById('ex_cocteles').value);
-            if(document.getElementById('ex_piqueos').checked) extras.push(document.getElementById('ex_piqueos').value);
+            btn.innerText = 'VERIFICANDO DISPONIBILIDAD...';
 
             const payload = {
                 nombre: document.getElementById('ev_nombre').value,
@@ -229,8 +214,9 @@
                 fecha: document.getElementById('ev_fecha').value,
                 hora: document.getElementById('ev_hora').value,
                 personas: document.getElementById('ev_personas').value,
+                tipo_evento: document.getElementById('ev_tipo').value,
                 plan: document.querySelector('input[name="planAlquiler"]:checked').value,
-                extras: extras
+                requerimientos: document.getElementById('ev_requerimientos').value // Capturamos el texto libre
             };
 
             try {
@@ -241,13 +227,15 @@
                 });
                 
                 const data = await res.json();
+                
                 if(data.success) {
                     msg.className = 'text-center mt-3 fw-bold text-success';
-                    msg.innerText = '¡Solicitud enviada! Nos comunicaremos contigo en breve.';
+                    msg.innerText = '¡Solicitud enviada! Nos comunicaremos contigo para confirmar los detalles.';
                     document.getElementById('formReservaEvento').reset();
                 } else {
+                    // Si la fecha está ocupada, el servidor mandará el error y se mostrará aquí en rojo
                     msg.className = 'text-center mt-3 fw-bold text-danger';
-                    msg.innerText = 'Error al enviar. Intenta nuevamente.';
+                    msg.innerText = data.error || 'Error al enviar. Intenta nuevamente.';
                 }
             } catch (err) {
                 msg.className = 'text-center mt-3 fw-bold text-danger';

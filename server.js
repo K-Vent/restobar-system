@@ -280,16 +280,29 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
 // ==========================================
 app.post('/api/eventos', async (req, res) => {
     try {
-        const { nombre, telefono, fecha, hora, personas, plan, extras } = req.body;
+        const { nombre, telefono, fecha, hora, personas, tipo_evento, plan, requerimientos } = req.body;
         
-        // Convertimos el array de extras a texto para guardarlo fácil
-        const extrasTexto = extras && extras.length > 0 ? extras.join(' | ') : 'Sin extras';
+        // EL GUARDIÁN: Verificar si la fecha ya está ocupada
+        const check = await pool.query(
+            "SELECT id FROM eventos_privados WHERE fecha_evento = $1 AND estado != 'Rechazado'", 
+            [fecha]
+        );
+        
+        if (check.rows.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Esta fecha ya se encuentra reservada. Por favor, elige otro día.' 
+            });
+        }
+
+        // Si la fecha está libre, guardamos todo en la base de datos
+        const textoRequerimientos = requerimientos ? requerimientos : 'Sin requerimientos especiales';
 
         const result = await pool.query(
             `INSERT INTO eventos_privados 
-            (cliente_nombre, cliente_telefono, fecha_evento, hora_inicio, cantidad_personas, tipo_plan, extras_seleccionados) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [nombre, telefono, fecha, hora, personas, plan, extrasTexto]
+            (cliente_nombre, cliente_telefono, fecha_evento, hora_inicio, cantidad_personas, tipo_plan, extras_seleccionados, tipo_evento) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [nombre, telefono, fecha, hora, personas, plan, textoRequerimientos, tipo_evento]
         );
 
         res.json({ success: true, mensaje: 'Solicitud enviada correctamente', id: result.rows[0].id });
@@ -298,7 +311,6 @@ app.post('/api/eventos', async (req, res) => {
         res.status(500).json({ success: false, error: 'Error interno al procesar la reserva' });
     }
 });
-
 
 // ==========================================
 // 10. RUTAS API: ADMINISTRACIÓN Y REPORTES
