@@ -44,6 +44,16 @@
 
         /* Footer */
         .footer-premium { background: #000; padding: 40px 0; border-top: 1px solid #333; text-align: center; color: #888; }
+        /* Sección Cumpleaños y Reservas */
+        .promo-section { background: linear-gradient(45deg, #111, #1a1a1a); border-top: 1px solid #333; border-bottom: 1px solid #333; }
+        .promo-box { border-left: 4px solid #D4AF37; padding-left: 20px; }
+        .btn-whatsapp { 
+            background: #25D366; color: #fff; font-weight: 800; padding: 15px 30px; 
+            border-radius: 50px; text-decoration: none; display: inline-flex; 
+            align-items: center; gap: 10px; transition: all 0.3s; 
+        }
+        .btn-whatsapp:hover { transform: translateY(-3px); color: #fff; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); }
+        .list-vip li { margin-bottom: 12px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -98,6 +108,43 @@
         </div>
     </section>
 
+    <!-- Sección: Cumpleaños, Reservas y Contacto -->
+    <section id="reservas" class="py-5 promo-section">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <!-- Imagen llamativa de billar/amigos -->
+                <div class="col-lg-6 mb-4 mb-lg-0 text-center">
+                    <img src="https://images.unsplash.com/photo-1599564812638-31626f2f0a1c?q=80&w=800&auto=format&fit=crop" alt="Cumpleaños en La Esquina" class="img-fluid rounded-4 shadow-lg" style="border: 1px solid #333; max-height: 400px; object-fit: cover;">
+                </div>
+                
+                <!-- Textos y Botón de Acción -->
+                <div class="col-lg-6">
+                    <div class="promo-box">
+                        <h2 class="section-title text-start mb-3" style="font-size: 2.2rem; text-transform: none;">
+                            ¿Cumples años? <br><span style="color: #D4AF37;">Celébralo en el Billar</span>
+                        </h2>
+                        <p class="text-muted fs-5 mb-4">Rompe la rutina. Reserva una mesa para ti y tus amigos, disfruta de nuestros combos especiales y haz que tu día sea inolvidable.</p>
+                        
+                        <ul class="list-unstyled text-white list-vip mb-4">
+                            <li>🎱 <strong>1 Hora de Billar GRATIS</strong> para el cumpleañero.</li>
+                            <li>🍹 <strong>Ronda de shots</strong> de cortesía.</li>
+                            <li>🍟 Atención prioritaria y armado de combos a medida.</li>
+                        </ul>
+
+                        <p class="text-muted small mb-2">Para reservas de mesas generales o cumpleaños:</p>
+                        
+                        <!-- REEMPLAZA EL 51999999999 POR TU NÚMERO REAL -->
+                        <a href="https://wa.me/51903533860?text=Hola%20La%20Esquina,%20vengo%20de%20la%20página%20web%20y%20quiero%20hacer%20una%20reserva!" target="_blank" class="btn-whatsapp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.49.652.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                            </svg>
+                            RESERVAR POR WHATSAPP
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     
     <!-- Sección: Footer -->
     <footer id="ubicacion" class="footer-premium">
