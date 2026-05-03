@@ -2,7 +2,7 @@
   "name": "La Esquina del Billar",
   "short_name": "La Esquina",
   "description": "Sistema POS Premium y Gestión de Mesas",
-  "start_url": "/",
+  "start_url": "/login.html",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
