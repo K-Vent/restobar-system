@@ -276,6 +276,31 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
 });
 
 // ==========================================
+// RUTA: Solicitar Reserva de Evento Privado
+// ==========================================
+app.post('/api/eventos', async (req, res) => {
+    try {
+        const { nombre, telefono, fecha, hora, personas, plan, extras } = req.body;
+        
+        // Convertimos el array de extras a texto para guardarlo fácil
+        const extrasTexto = extras && extras.length > 0 ? extras.join(' | ') : 'Sin extras';
+
+        const result = await pool.query(
+            `INSERT INTO eventos_privados 
+            (cliente_nombre, cliente_telefono, fecha_evento, hora_inicio, cantidad_personas, tipo_plan, extras_seleccionados) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [nombre, telefono, fecha, hora, personas, plan, extrasTexto]
+        );
+
+        res.json({ success: true, mensaje: 'Solicitud enviada correctamente', id: result.rows[0].id });
+    } catch (error) {
+        console.error("Error al guardar el evento:", error);
+        res.status(500).json({ success: false, error: 'Error interno al procesar la reserva' });
+    }
+});
+
+
+// ==========================================
 // 10. RUTAS API: ADMINISTRACIÓN Y REPORTES
 // ==========================================
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => { 
