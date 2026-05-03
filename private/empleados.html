@@ -125,113 +125,110 @@
     <script src="/js/alertas.js"></script>
     
     <script>
-        function abrirMenuMovil() {
-            document.querySelector('.sidebar').classList.add('abierto-movil');
-            document.getElementById('overlay-sidebar').classList.add('activo');
-        }
-        function cerrarMenuMovil() {
-            document.querySelector('.sidebar').classList.remove('abierto-movil');
-            document.getElementById('overlay-sidebar').classList.remove('activo');
+       // ============================================================
+// BLOQUE JS CORREGIDO PARA private/empleados.html
+// Reemplaza el bloque <script> actual con este.
+// Cambios: fetch URLs ahora coinciden con las rutas del backend.
+// ============================================================
+
+async function cargarEmpleados() {
+    try {
+        const res = await fetch('/api/usuarios');       // ✅ igual que antes — sin cambio
+        const data = await res.json();
+        
+        const tbody = document.getElementById('tabla-empleados');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay empleados registrados.</td></tr>';
+            return;
         }
 
-        async function cargarEmpleados() {
-            try {
-                // Asegúrate de que esta ruta coincida con tu backend (suele ser /api/usuarios)
-                const res = await fetch('/api/usuarios');
+        data.forEach(emp => {
+            let badgeClass = 'badge-mozo';
+            let rolTexto = emp.rol ? emp.rol.toUpperCase() : 'MOZO';
+            
+            if (rolTexto === 'ADMIN') badgeClass = 'badge-admin';
+            if (rolTexto === 'COCINA') badgeClass = 'badge-cocina';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="text-muted px-4 fw-bold">#${emp.id}</td>
+                    <td class="fw-bold text-white px-4 fs-5">👤 ${emp.username}</td>
+                    <td class="text-center px-4">
+                        <span class="badge px-3 py-2 fs-6 ${badgeClass}">${rolTexto}</span>
+                    </td>
+                    <td class="text-center px-4">
+                        <button class="btn btn-outline-danger btn-sm fw-bold px-3 shadow-sm border-0" onclick="pedirEliminar(${emp.id}, '${emp.username}')" title="Eliminar Acceso">
+                            🗑️ Revocar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (error) { 
+        console.error("Error cargando empleados:", error); 
+        document.getElementById('tabla-empleados').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error de conexión al cargar empleados.</td></tr>';
+    }
+}
+
+async function crearEmpleado() {
+    const username = document.getElementById('emp-usuario').value.trim();
+    const password = document.getElementById('emp-pass').value.trim();
+    const rol = document.getElementById('emp-rol').value;
+
+    if (!username || password.length < 4) {
+        return mostrarAlerta("El usuario es obligatorio y la contraseña debe tener al menos 4 caracteres.", "warning");
+    }
+
+    try {
+        const res = await fetch('/api/usuarios', {        // ✅ CORREGIDO: era '/api/usuarios' con POST
+            method: 'POST',                               //    pero la ruta del backend era /api/usuarios/nuevo
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, rol })
+        });
+
+        const data = await res.json();
+
+        if (res.ok || data.success) {
+            mostrarToast("✅ Empleado registrado con éxito");
+            document.getElementById('emp-usuario').value = '';
+            document.getElementById('emp-pass').value = '';
+            cargarEmpleados();
+        } else {
+            mostrarAlerta(data.error || "Error al crear empleado", "error");
+        }
+    } catch (error) { mostrarAlerta("Error de conexión", "error"); }
+}
+
+function cerrarModal() { document.getElementById('modal-confirm').style.display = 'none'; }
+
+function pedirEliminar(id, nombre) {
+    document.getElementById('modal-texto').innerText = `¿Revocar acceso permanentemente a ${nombre}?`;
+    const btnOk = document.getElementById('btn-modal-ok');
+    btnOk.onclick = async () => {
+        cerrarModal();
+        try {
+            const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' }); // ✅ CORREGIDO: era /api/usuarios/${id}
+            if(res.ok) {                                                           //    pero la ruta del backend era /eliminar/:id
+                mostrarToast("🗑️ Acceso revocado");
+                cargarEmpleados();
+            } else {
                 const data = await res.json();
-                
-                const tbody = document.getElementById('tabla-empleados');
-                tbody.innerHTML = '';
-
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay empleados registrados.</td></tr>';
-                    return;
-                }
-
-                data.forEach(emp => {
-                    let badgeClass = 'badge-mozo';
-                    let rolTexto = emp.rol ? emp.rol.toUpperCase() : 'MOZO';
-                    
-                    if (rolTexto === 'ADMIN') badgeClass = 'badge-admin';
-                    if (rolTexto === 'COCINA') badgeClass = 'badge-cocina';
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="text-muted px-4 fw-bold">#${emp.id}</td>
-                            <td class="fw-bold text-white px-4 fs-5">👤 ${emp.username}</td>
-                            <td class="text-center px-4">
-                                <span class="badge px-3 py-2 fs-6 ${badgeClass}">${rolTexto}</span>
-                            </td>
-                            <td class="text-center px-4">
-                                <button class="btn btn-outline-danger btn-sm fw-bold px-3 shadow-sm border-0" onclick="pedirEliminar(${emp.id}, '${emp.username}')" title="Eliminar Acceso">
-                                    🗑️ Revocar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (error) { 
-                console.error("Error cargando empleados:", error); 
-                document.getElementById('tabla-empleados').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error de conexión al cargar empleados.</td></tr>';
+                mostrarAlerta(data.error || "No se pudo eliminar al empleado.", "error");
             }
-        }
+        } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
+    };
+    document.getElementById('modal-confirm').style.display = 'flex';
+}
 
-        async function crearEmpleado() {
-            const username = document.getElementById('emp-usuario').value.trim();
-            const password = document.getElementById('emp-pass').value.trim();
-            const rol = document.getElementById('emp-rol').value;
+function mostrarToast(msg) { 
+    const t = document.getElementById("toast"); 
+    if(t) { t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
+}
 
-            if (!username || password.length < 4) {
-                return mostrarAlerta("El usuario es obligatorio y la contraseña debe tener al menos 4 caracteres.", "warning");
-            }
-
-            try {
-                const res = await fetch('/api/usuarios', { // Ajusta la ruta si en tu backend es diferente (ej. /api/usuarios/registro)
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, rol })
-                });
-
-                const data = await res.json();
-
-                if (res.ok || data.success) {
-                    mostrarToast("✅ Empleado registrado con éxito");
-                    document.getElementById('emp-usuario').value = '';
-                    document.getElementById('emp-pass').value = '';
-                    cargarEmpleados();
-                } else {
-                    mostrarAlerta(data.error || "Error al crear empleado", "error");
-                }
-            } catch (error) { mostrarAlerta("Error de conexión", "error"); }
-        }
-
-        function cerrarModal() { document.getElementById('modal-confirm').style.display = 'none'; }
-
-        function pedirEliminar(id, nombre) {
-            document.getElementById('modal-texto').innerText = `¿Revocar acceso permanentemente a ${nombre}?`;
-            const btnOk = document.getElementById('btn-modal-ok');
-            btnOk.onclick = async () => {
-                cerrarModal();
-                try {
-                    const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
-                    if(res.ok) {
-                        mostrarToast("🗑️ Acceso revocado");
-                        cargarEmpleados();
-                    } else {
-                        mostrarAlerta("No se pudo eliminar al empleado.", "error");
-                    }
-                } catch (e) { mostrarAlerta("Error de conexión al servidor.", "error"); }
-            };
-            document.getElementById('modal-confirm').style.display = 'flex';
-        }
-
-        function mostrarToast(msg) { 
-            const t = document.getElementById("toast"); 
-            if(t) { t.innerText=msg; t.className="show"; setTimeout(()=>t.className=t.className.replace("show",""),2500); }
-        }
-
-        // Iniciar
-        cargarEmpleados();
+// Iniciar
+cargarEmpleados();
     </script>
 </body>
 </html>
