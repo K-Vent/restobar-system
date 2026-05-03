@@ -764,5 +764,81 @@ async function eliminarUltimaMesaDB() {
             } catch (error) { console.error("Error verificando permisos visuales:", error); }
         }
 
+
+        // ==========================================
+// MÓDULO: EVENTOS PRIVADOS
+// ==========================================
+
+async function cargarEventos() {
+    const tbody = document.getElementById('tablaEventosBody');
+    try {
+        const res = await fetch('/api/eventos/lista');
+        const eventos = await res.json();
+
+        if (eventos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay eventos registrados aún.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = eventos.map(ev => {
+            // Darle color al estado
+            let colorEstado = ev.estado === 'Pendiente' ? 'bg-warning text-dark' : 
+                              ev.estado === 'Aprobado' ? 'bg-success text-white' : 'bg-danger text-white';
+            
+            // Formatear la fecha para que se vea bonita
+            const fechaFormateada = new Date(ev.fecha_evento).toLocaleDateString('es-PE');
+
+            return `
+                <tr>
+                    <td><strong>${fechaFormateada}</strong><br><span class="small text-muted">⏰ ${ev.hora_inicio}</span></td>
+                    <td>${ev.cliente_nombre}<br><a href="https://wa.me/51${ev.cliente_telefono}" target="_blank" class="text-success small text-decoration-none">💬 ${ev.cliente_telefono}</a></td>
+                    <td>${ev.tipo_evento}<br><span class="badge bg-secondary">${ev.cantidad_personas}</span></td>
+                    <td class="text-warning small">${ev.tipo_plan}</td>
+                    <td class="small" style="max-width: 200px;">${ev.extras_seleccionados}</td>
+                    <td class="text-center"><span class="badge ${colorEstado}">${ev.estado}</span></td>
+                    <td class="text-center">
+                        ${ev.estado === 'Pendiente' ? `
+                            <button class="btn btn-sm btn-success mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Aprobado')">✓ Aprobar</button>
+                            <button class="btn btn-sm btn-danger mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Rechazado')">✕ Rechazar</button>
+                        ` : '<span class="text-muted small">Gestionado</span>'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error cargando eventos', error);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar la base de datos.</td></tr>';
+    }
+}
+
+async function cambiarEstadoEvento(id, nuevoEstado) {
+    if (!confirm(`¿Estás seguro de marcar este evento como ${nuevoEstado}?`)) return;
+
+    try {
+        const res = await fetch(`/api/eventos/${id}/estado`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            cargarEventos(); // Recargamos la tabla automáticamente
+        } else {
+            alert('Error al actualizar el estado');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error de conexión con el servidor');
+    }
+}
+
+// Cargar los eventos automáticamente al abrir el dashboard
+document.addEventListener('DOMContentLoaded', () => {
+    // Si ya tienes un DOMContentLoaded en este archivo, 
+    // solo agrega la llamada a cargarEventos() adentro.
+    cargarEventos(); 
+});
+
         // Ejecutamos la revisión de seguridad apenas carga la página
         document.addEventListener('DOMContentLoaded', aplicarPermisosUI);

@@ -313,6 +313,35 @@ app.post('/api/eventos', async (req, res) => {
 });
 
 // ==========================================
+// RUTAS ADMINISTRATIVAS: Gestión de Eventos
+// ==========================================
+
+// 1. Obtener todos los eventos para el Dashboard
+app.get('/api/eventos/lista', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM eventos_privados ORDER BY fecha_evento ASC");
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error al obtener lista de eventos:", error);
+        res.status(500).json({ error: 'Error al obtener los eventos' });
+    }
+});
+
+// 2. Aprobar o Rechazar un evento
+app.put('/api/eventos/:id/estado', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado } = req.body; // Recibirá 'Aprobado' o 'Rechazado'
+        
+        await pool.query("UPDATE eventos_privados SET estado = $1 WHERE id = $2", [estado, id]);
+        res.json({ success: true, mensaje: `Evento ${estado} con éxito` });
+    } catch (error) {
+        console.error("Error al actualizar evento:", error);
+        res.status(500).json({ error: 'Error al actualizar el estado' });
+    }
+});
+
+// ==========================================
 // 10. RUTAS API: ADMINISTRACIÓN Y REPORTES
 // ==========================================
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => { 
@@ -334,19 +363,6 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
     } catch (e) { next(e); } 
 });
 
-// ==========================================
-// 10.6. RUTAS API: CRM Y FIDELIZACIÓN (CLUB LA ESQUINA)
-// ==========================================
-
-
-// ==========================================
-// INTEGRACIÓN LECTURA Y CANJE SEGURO
-// ==========================================
-
-
-// ==========================================
-// 10.7. RUTAS API: GESTOR DE BENEFICIOS (CMS)
-// ==========================================
 
 /* ============================================================
    API AUDITORÍA FORENSE (ISO 27001)
