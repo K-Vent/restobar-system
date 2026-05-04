@@ -26,8 +26,6 @@ const app = express();
 const server = http.createServer(app); 
 const io = new Server(server); 
 app.set('socketio', io);
-const nodemailer = require('nodemailer');
-const dns = require('dns');
 // Llave maestra criptográfica
 const SECRET_KEY = process.env.JWT_SECRET || 'llave_maestra_billar_2026';
 
@@ -284,26 +282,15 @@ dns.setDefaultResultOrder('ipv4first');
 
 // Configuración del servicio de correo (Idealmente usa el correo de la empresa)
 // Configuración STARTTLS (Anti-Bloqueos en la Nube)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // CAMBIO CRÍTICO: Usamos el puerto 587 (Envío seguro estándar)
-    secure: false, // DEBE ser false cuando se usa el puerto 587
-    family: 4,
-    requireTLS: true, // Obliga a Render a encriptar la conexión (STARTTLS)
-    auth: {
-       user: process.env.EMAIL_USER,  
-        pass: process.env.EMAIL_PASS  
-    },
-    tls: {
-        rejectUnauthorized: false // Evita rechazos por certificados internos del servidor de Render
-    }
-});
 
 
 
+
+// ==========================================
+// RUTA: Solicitar Reserva de Evento Privado
+// ==========================================
 app.post('/api/eventos', async (req, res) => {
     try {
-        // Ahora recibimos el email también
         const { nombre, telefono, email, fecha, hora, personas, tipo_evento, plan, requerimientos } = req.body;
         
         // 1. Guardar en Base de Datos
@@ -320,32 +307,35 @@ app.post('/api/eventos', async (req, res) => {
             [nombre, telefono, email, fecha, hora, personas, plan, reqTexto, tipo_evento]
         );
 
-        // 2. ENVIAR CORREO DE CONFIRMACIÓN AUTOMÁTICO AL CLIENTE
-        const mailOptions = {
-            from: '"La Esquina del Billar" <laesquinadelbillar@gmail.com>',
-            to: email, // El correo que puso el cliente
-            subject: 'Solicitud de Evento Recibida - La Esquina',
-            html: `
+        // 2. ENVIAR CORREO MEDIANTE NUESTRA MICRO-API DE GOOGLE
+        const payloadCorreo = {
+            to: email,
+            subject: '👑 Solicitud de Evento Recibida - La Esquina',
+            htmlBody: `
                 <div style="font-family: Arial, sans-serif; background-color: #111; color: #fff; padding: 30px; border-radius: 10px;">
                     <h2 style="color: #D4AF37;">¡Hola, ${nombre}!</h2>
                     <p>Hemos recibido con éxito tu solicitud para celebrar un <strong>${tipo_evento}</strong> con nosotros el día <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
                     <p>Tu plan seleccionado es: <strong style="color: #D4AF37;">${plan}</strong>.</p>
                     <p style="border-left: 4px solid #D4AF37; padding-left: 15px; color: #ccc;">
-                        <em>"Nuestro equipo de administración está revisando la disponibilidad de la fecha y tus requerimientos. Nos comunicaremos contigo vía WhatsApp al ${telefono} en las próximas 24 horas para afinar detalles y enviarte la cotización final."</em>
+                        <em>"Nuestro equipo de administración está revisando la disponibilidad de la fecha y tus requerimientos. Nos comunicaremos contigo vía WhatsApp al ${telefono} en las próximas 24 horas para afinar detalles."</em>
                     </p>
-                    <hr style="border-color: #333; margin: 30px 0;">
-                    <p style="font-size: 12px; color: #666;">La Esquina del Billar - Santa Anita, Lima.</p>
                 </div>
             `
         };
 
-        // Enviamos el correo (sin bloquear la respuesta de la web)
-        transporter.sendMail(mailOptions).catch(console.error);
+        // Reemplaza ESTA URL por la que copiaste de Google Apps Script
+        const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
 
-        res.json({ success: true, mensaje: 'Solicitud enviada y correo despachado' });
+        // Enviamos la petición por HTTP (Render NUNCA bloquea esto)
+        fetch(URL_GOOGLE_SCRIPT, {
+            method: 'POST',
+            body: JSON.stringify(payloadCorreo)
+        }).catch(err => console.error("Error enviando correo API:", err));
+
+        res.json({ success: true, mensaje: 'Solicitud enviada exitosamente' });
     } catch (error) {
-        console.error("Error al guardar evento:", error);
-        res.status(500).json({ success: false, error: 'Error interno' });
+        console.error("Error al procesar el evento:", error);
+        res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
 });
 
