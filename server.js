@@ -280,7 +280,7 @@ dns.setDefaultResultOrder('ipv4first');
 // ==========================================
 // RUTA: Solicitar Reserva de Evento Privado
 // ==========================================
-const nodemailer = require('nodemailer'); // Asegúrate de poner esto arriba en tu server.js
+
 
 // Configuración del servicio de correo (Idealmente usa el correo de la empresa)
 // Configuración STARTTLS (Anti-Bloqueos en la Nube)
