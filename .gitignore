@@ -19,3 +19,6 @@ yarn-error.log*
 # Archivos del sistema operativo (Basura de Windows/Mac)
 .DS_Store
 Thumbs.db
+
+EMAIL_USER=laesquinadelbillar@gmail.com
+EMAIL_PASS=apmqitomzamtxfrg

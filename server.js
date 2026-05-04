@@ -26,7 +26,8 @@ const app = express();
 const server = http.createServer(app); 
 const io = new Server(server); 
 app.set('socketio', io);
-
+const nodemailer = require('nodemailer');
+const dns = require('dns');
 // Llave maestra criptográfica
 const SECRET_KEY = process.env.JWT_SECRET || 'llave_maestra_billar_2026';
 
@@ -275,6 +276,7 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
     } catch (e) { next(e); } 
 });
 
+dns.setDefaultResultOrder('ipv4first');
 // ==========================================
 // RUTA: Solicitar Reserva de Evento Privado
 // ==========================================
@@ -289,8 +291,8 @@ const transporter = nodemailer.createTransport({
     family: 4,
     requireTLS: true, // Obliga a Render a encriptar la conexión (STARTTLS)
     auth: {
-        user: 'laesquinadelbillar@gmail.com', // TU CORREO
-        pass: 'apmqitomzamtxfrg'       // TU CLAVE DE APLICACIÓN
+       user: process.env.EMAIL_USER,  
+        pass: process.env.EMAIL_PASS  
     },
     tls: {
         rejectUnauthorized: false // Evita rechazos por certificados internos del servidor de Render
