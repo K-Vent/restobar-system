@@ -92,6 +92,9 @@
                 <a href="#carta" class="btn btn-gold rounded-pill">Ver la Carta</a>
                 <a href="/login.html" class="btn btn-outline-gold rounded-pill">Únete al Club</a>
             </div>
+            <button class="btn btn-warning btn-lg mt-3 fw-bold shadow-lg" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="border: 2px solid #D4AF37; box-shadow: 0 0 15px rgba(212,175,55,0.4) !important;">
+    COTIZAR EVENTO VIP
+</button>
         </div>
     </section>
 
@@ -110,141 +113,119 @@
         </div>
     </section>
 
-    <!-- Sección: Eventos Privados y Alquiler de Local -->
-    <section id="eventos" class="py-5" style="background-color: #111; border-top: 1px solid #333;">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h2 class="section-title">Eventos <span>Privados</span></h2>
-                <p class="text-muted fs-5">Alquila nuestro local para tu cumpleaños, evento corporativo o reunión privada.</p>
-            </div>
-
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card bg-dark border-secondary shadow-lg">
-                        <div class="card-body p-4 p-md-5">
-                            <form id="formReservaEvento">
-                                
-                                <h5 class="text-warning mb-4 fw-bold">1. Datos del Evento</h5>
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label text-muted small text-uppercase">Tu Nombre</label>
-                                        <input type="text" class="form-control bg-black text-white border-secondary" id="ev_nombre" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label text-muted small text-uppercase">WhatsApp</label>
-                                        <input type="tel" class="form-control bg-black text-white border-secondary" id="ev_telefono" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label text-muted small text-uppercase">Fecha</label>
-                                        <input type="date" class="form-control bg-black text-white border-secondary" id="ev_fecha" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label text-muted small text-uppercase">Hora de Inicio</label>
-                                        <input type="time" class="form-control bg-black text-white border-secondary" id="ev_hora" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label text-muted small text-uppercase">Aforo Estimado</label>
-                                        <select class="form-select bg-black text-white border-secondary" id="ev_personas" required>
-                                            <option value="">Selecciona...</option>
-                                            <option value="10-20">10 a 20 personas</option>
-                                            <option value="21-40">21 a 40 personas</option>
-                                            <option value="Local Completo">Más de 40 (Local Completo)</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Selector de Tipo de Evento -->
-                                    <div class="col-12 mt-3">
-                                        <label class="form-label text-muted small text-uppercase">Motivo del Evento</label>
-                                        <select class="form-select bg-black text-white border-secondary" id="ev_tipo" required>
-                                            <option value="">Selecciona...</option>
-                                            <option value="Cumpleaños">🎉 Cumpleaños</option>
-                                            <option value="Reunión de Amigos">🎱 Reunión de Amigos</option>
-                                            <option value="Reunión de Empresa">💼 Reunión de Empresa</option>
-                                            <option value="Otro">Otro motivo</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <h5 class="text-warning mb-3 fw-bold mt-5">2. Selecciona tu Plan</h5>
-                                <div class="mb-4">
-                                    <div class="form-check mb-3 p-3 border border-secondary rounded hover-bg-black">
-                                        <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
-                                        <label class="form-check-label ms-3 w-100 cursor-pointer text-white fs-5" for="plan1">
-                                            <strong>Plan Express (3 Horas)</strong>
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-3 p-3 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
-                                        <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas)">
-                                        <label class="form-check-label ms-3 w-100 cursor-pointer text-warning fs-5" for="plan2">
-                                            <strong>Plan Full (5 Horas)</strong> 👑
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Nueva Zona de Requerimientos Libres -->
-                                <h5 class="text-warning mb-3 fw-bold mt-5">3. ¿Qué necesitas para tu evento?</h5>
-                                <p class="small text-muted mb-3">Cuéntanos si requieres algo en particular (decoración, bocaditos, DJ, etc.) y lo cotizamos.</p>
-                                <textarea class="form-control bg-black text-white border-secondary mb-4" id="ev_requerimientos" rows="3" placeholder="Ej: Me gustaría saber si pueden organizar un torneo de billar para 15 personas y si puedo llevar mi propia torta..."></textarea>
-
-                                <button type="submit" class="btn btn-gold w-100 py-3 mt-2" id="btnEnviarReserva">
-                                    SOLICITAR COTIZACIÓN
-                                </button>
-                                <div id="reservaMensaje" class="text-center mt-3 fw-bold"></div>
-                            </form>
+   
+    <!-- MODAL: Formulario de Eventos Privados -->
+    <div class="modal fade" id="modalEventoVIP" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark border-warning" style="border-width: 2px;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning fw-bold">👑 Reserva tu Evento Privado</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formReservaEventoModal">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">Nombre Completo</label>
+                                <input type="text" class="form-control bg-black text-white border-secondary" id="ev_nombre" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">WhatsApp</label>
+                                <input type="tel" class="form-control bg-black text-white border-secondary" id="ev_telefono" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">Correo Electrónico</label>
+                                <input type="email" class="form-control bg-black text-white border-secondary" id="ev_email" placeholder="Para enviarte la confirmación" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">Fecha Deseada</label>
+                                <input type="date" class="form-control bg-black text-white border-secondary" id="ev_fecha" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">Hora</label>
+                                <input type="time" class="form-control bg-black text-white border-secondary" id="ev_hora" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small text-uppercase">Motivo</label>
+                                <select class="form-select bg-black text-white border-secondary" id="ev_tipo" required>
+                                    <option value="">Selecciona...</option>
+                                    <option value="Cumpleaños">🎉 Cumpleaños</option>
+                                    <option value="Corporativo">💼 Evento Corporativo</option>
+                                    <option value="Reunión">🎱 Reunión de Amigos</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
+
+                        <h6 class="text-warning fw-bold">Selecciona tu Plan</h6>
+                        <div class="form-check mb-2 p-2 border border-secondary rounded">
+                            <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
+                            <label class="form-check-label ms-2 text-white" for="plan1">Plan Express (3 Horas)</label>
+                        </div>
+                        <div class="form-check mb-4 p-2 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
+                            <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas)">
+                            <label class="form-check-label ms-2 text-warning fw-bold" for="plan2">Plan Full (5 Horas) 👑</label>
+                        </div>
+
+                        <label class="form-label text-muted small text-uppercase">Requerimientos Adicionales</label>
+                        <textarea class="form-control bg-black text-white border-secondary mb-4" id="ev_requerimientos" rows="2" placeholder="Ej: Necesito torta, un torneo para 10 personas..."></textarea>
+
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2" id="btnEnviarReservaModal">
+                            ENVIAR SOLICITUD DE COTIZACIÓN
+                        </button>
+                        <div id="reservaMensajeModal" class="text-center mt-3 fw-bold"></div>
+                    </form>
                 </div>
             </div>
         </div>
-    </section>
-
+    </div>
    <!-- Script de conexión -->
     <script>
-        document.getElementById('formReservaEvento').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnEnviarReserva');
-            const msg = document.getElementById('reservaMensaje');
+        document.getElementById('formReservaEventoModal').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnEnviarReservaModal');
+        const msg = document.getElementById('reservaMensajeModal');
+        
+        btn.disabled = true;
+        btn.innerText = 'PROCESANDO...';
+
+        const payload = {
+            nombre: document.getElementById('ev_nombre').value,
+            telefono: document.getElementById('ev_telefono').value,
+            email: document.getElementById('ev_email').value, // NUEVO CAMPO
+            fecha: document.getElementById('ev_fecha').value,
+            hora: document.getElementById('ev_hora').value,
+            personas: "Por definir", // Simplificado para el modal
+            tipo_evento: document.getElementById('ev_tipo').value,
+            plan: document.querySelector('input[name="planAlquiler"]:checked').value,
+            requerimientos: document.getElementById('ev_requerimientos').value
+        };
+
+        try {
+            const res = await fetch('/api/eventos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
             
-            btn.disabled = true;
-            btn.innerText = 'VERIFICANDO DISPONIBILIDAD...';
-
-            const payload = {
-                nombre: document.getElementById('ev_nombre').value,
-                telefono: document.getElementById('ev_telefono').value,
-                fecha: document.getElementById('ev_fecha').value,
-                hora: document.getElementById('ev_hora').value,
-                personas: document.getElementById('ev_personas').value,
-                tipo_evento: document.getElementById('ev_tipo').value,
-                plan: document.querySelector('input[name="planAlquiler"]:checked').value,
-                requerimientos: document.getElementById('ev_requerimientos').value // Capturamos el texto libre
-            };
-
-            try {
-                const res = await fetch('/api/eventos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                const data = await res.json();
-                
-                if(data.success) {
-                    msg.className = 'text-center mt-3 fw-bold text-success';
-                    msg.innerText = '¡Solicitud enviada! Nos comunicaremos contigo para confirmar los detalles.';
-                    document.getElementById('formReservaEvento').reset();
-                } else {
-                    // Si la fecha está ocupada, el servidor mandará el error y se mostrará aquí en rojo
-                    msg.className = 'text-center mt-3 fw-bold text-danger';
-                    msg.innerText = data.error || 'Error al enviar. Intenta nuevamente.';
-                }
-            } catch (err) {
+            if(data.success) {
+                // ÉXITO: Cerramos el modal y mostramos un alert de la página
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalEventoVIP'));
+                modal.hide();
+                alert('¡Solicitud enviada! Revisa tu correo electrónico para la confirmación.');
+                document.getElementById('formReservaEventoModal').reset();
+            } else {
                 msg.className = 'text-center mt-3 fw-bold text-danger';
-                msg.innerText = 'Error de conexión con el servidor.';
+                msg.innerText = data.error || 'Error al enviar.';
             }
-            
-            btn.disabled = false;
-            btn.innerText = 'SOLICITAR COTIZACIÓN';
-        });
+        } catch (err) {
+            msg.className = 'text-center mt-3 fw-bold text-danger';
+            msg.innerText = 'Error de conexión.';
+        }
+        btn.disabled = false;
+        btn.innerText = 'ENVIAR SOLICITUD DE COTIZACIÓN';
+    });
     </script>
     
     <!-- Sección: Footer -->

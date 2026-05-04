@@ -278,37 +278,62 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
 // ==========================================
 // RUTA: Solicitar Reserva de Evento Privado
 // ==========================================
+const nodemailer = require('nodemailer'); // Asegúrate de poner esto arriba en tu server.js
+
+// Configuración del servicio de correo (Idealmente usa el correo de la empresa)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'laesquinadelbillar@gmail.com', // CAMBIA ESTO
+        pass: 'apmqitomzamtxfrg' // OJO: No es tu clave normal, es una "Contraseña de Aplicación" de Google
+    }
+});
+
 app.post('/api/eventos', async (req, res) => {
     try {
-        const { nombre, telefono, fecha, hora, personas, tipo_evento, plan, requerimientos } = req.body;
+        // Ahora recibimos el email también
+        const { nombre, telefono, email, fecha, hora, personas, tipo_evento, plan, requerimientos } = req.body;
         
-        // EL GUARDIÁN: Verificar si la fecha ya está ocupada
-        const check = await pool.query(
-            "SELECT id FROM eventos_privados WHERE fecha_evento = $1 AND estado != 'Rechazado'", 
-            [fecha]
-        );
-        
+        // 1. Guardar en Base de Datos
+        const check = await pool.query("SELECT id FROM eventos_privados WHERE fecha_evento = $1 AND estado != 'Rechazado'", [fecha]);
         if (check.rows.length > 0) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Esta fecha ya se encuentra reservada. Por favor, elige otro día.' 
-            });
+            return res.status(400).json({ success: false, error: 'Fecha ya reservada.' });
         }
 
-        // Si la fecha está libre, guardamos todo en la base de datos
-        const textoRequerimientos = requerimientos ? requerimientos : 'Sin requerimientos especiales';
-
+        const reqTexto = requerimientos ? requerimientos : 'Sin requerimientos';
         const result = await pool.query(
             `INSERT INTO eventos_privados 
-            (cliente_nombre, cliente_telefono, fecha_evento, hora_inicio, cantidad_personas, tipo_plan, extras_seleccionados, tipo_evento) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [nombre, telefono, fecha, hora, personas, plan, textoRequerimientos, tipo_evento]
+            (cliente_nombre, cliente_telefono, cliente_email, fecha_evento, hora_inicio, cantidad_personas, tipo_plan, extras_seleccionados, tipo_evento) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+            [nombre, telefono, email, fecha, hora, personas, plan, reqTexto, tipo_evento]
         );
 
-        res.json({ success: true, mensaje: 'Solicitud enviada correctamente', id: result.rows[0].id });
+        // 2. ENVIAR CORREO DE CONFIRMACIÓN AUTOMÁTICO AL CLIENTE
+        const mailOptions = {
+            from: '"La Esquina del Billar" <laesquinadelbillar@gmail.com>',
+            to: email, // El correo que puso el cliente
+            subject: 'Solicitud de Evento Recibida - La Esquina',
+            html: `
+                <div style="font-family: Arial, sans-serif; background-color: #111; color: #fff; padding: 30px; border-radius: 10px;">
+                    <h2 style="color: #D4AF37;">¡Hola, ${nombre}!</h2>
+                    <p>Hemos recibido con éxito tu solicitud para celebrar un <strong>${tipo_evento}</strong> con nosotros el día <strong>${fecha}</strong> a las <strong>${hora}</strong>.</p>
+                    <p>Tu plan seleccionado es: <strong style="color: #D4AF37;">${plan}</strong>.</p>
+                    <p style="border-left: 4px solid #D4AF37; padding-left: 15px; color: #ccc;">
+                        <em>"Nuestro equipo de administración está revisando la disponibilidad de la fecha y tus requerimientos. Nos comunicaremos contigo vía WhatsApp al ${telefono} en las próximas 24 horas para afinar detalles y enviarte la cotización final."</em>
+                    </p>
+                    <hr style="border-color: #333; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #666;">La Esquina del Billar - Santa Anita, Lima.</p>
+                </div>
+            `
+        };
+
+        // Enviamos el correo (sin bloquear la respuesta de la web)
+        transporter.sendMail(mailOptions).catch(console.error);
+
+        res.json({ success: true, mensaje: 'Solicitud enviada y correo despachado' });
     } catch (error) {
-        console.error("Error al guardar el evento:", error);
-        res.status(500).json({ success: false, error: 'Error interno al procesar la reserva' });
+        console.error("Error al guardar evento:", error);
+        res.status(500).json({ success: false, error: 'Error interno' });
     }
 });
 
