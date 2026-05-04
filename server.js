@@ -282,11 +282,19 @@ const nodemailer = require('nodemailer'); // Asegúrate de poner esto arriba en 
 
 // Configuración del servicio de correo (Idealmente usa el correo de la empresa)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // true para el puerto 465 (SSL/TLS)
     auth: {
-        user: 'laesquinadelbillar@gmail.com', // CAMBIA ESTO
-        pass: 'apmqitomzamtxfrg' // OJO: No es tu clave normal, es una "Contraseña de Aplicación" de Google
+        user: 'laesquinadelbillar@gmail.com', // Asegúrate de poner tu correo real
+        pass: 'apmqitomzamtxfrg'       // Asegúrate de poner la clave que generaste (sin espacios)
+    },
+    tls: {
+        // Esto evita que Render bloquee la conexión por problemas de certificados internos
+        rejectUnauthorized: false
     }
+
 });
 
 app.post('/api/eventos', async (req, res) => {
