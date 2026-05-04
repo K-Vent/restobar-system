@@ -272,7 +272,7 @@
         async function cargarMenuPublico() {
             try {
                 // Aquí usamos tu API existente para traer los productos
-                const res = await fetch('/api/productos');
+                const res = await fetch('/api/menu-publico');
                 const productos = await res.json();
                 
                 const contenedorMenu = document.getElementById('menu-publico');

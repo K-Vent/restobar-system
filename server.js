@@ -342,6 +342,20 @@ app.put('/api/eventos/:id/estado', async (req, res) => {
 });
 
 // ==========================================
+// RUTA PÚBLICA: Carta Digital (Sin Token)
+// ==========================================
+app.get('/api/menu-publico', async (req, res) => {
+    try {
+        // Selecciona todos los productos para la web
+        const result = await pool.query("SELECT * FROM productos");
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error al cargar la carta pública:", error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// ==========================================
 // 10. RUTAS API: ADMINISTRACIÓN Y REPORTES
 // ==========================================
 app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => { 
