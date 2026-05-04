@@ -286,6 +286,7 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587, // CAMBIO CRÍTICO: Usamos el puerto 587 (Envío seguro estándar)
     secure: false, // DEBE ser false cuando se usa el puerto 587
+    family: 4,
     requireTLS: true, // Obliga a Render a encriptar la conexión (STARTTLS)
     auth: {
         user: 'laesquinadelbillar@gmail.com', // TU CORREO
