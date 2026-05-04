@@ -274,7 +274,7 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
     } catch (e) { next(e); } 
 });
 
-dns.setDefaultResultOrder('ipv4first');
+
 // ==========================================
 // RUTA: Solicitar Reserva de Evento Privado
 // ==========================================
