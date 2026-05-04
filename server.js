@@ -281,21 +281,22 @@ app.delete('/api/pedidos/eliminar/:id', verificarSesion, async (req, res, next) 
 const nodemailer = require('nodemailer'); // Asegúrate de poner esto arriba en tu server.js
 
 // Configuración del servicio de correo (Idealmente usa el correo de la empresa)
+// Configuración STARTTLS (Anti-Bloqueos en la Nube)
 const transporter = nodemailer.createTransport({
-
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true para el puerto 465 (SSL/TLS)
+    port: 587, // CAMBIO CRÍTICO: Usamos el puerto 587 (Envío seguro estándar)
+    secure: false, // DEBE ser false cuando se usa el puerto 587
+    requireTLS: true, // Obliga a Render a encriptar la conexión (STARTTLS)
     auth: {
-        user: 'laesquinadelbillar@gmail.com', // Asegúrate de poner tu correo real
-        pass: 'apmqitomzamtxfrg'       // Asegúrate de poner la clave que generaste (sin espacios)
+        user: 'laesquinadelbillar@gmail.com', // TU CORREO
+        pass: 'apmqitomzamtxfrg'       // TU CLAVE DE APLICACIÓN
     },
     tls: {
-        // Esto evita que Render bloquee la conexión por problemas de certificados internos
-        rejectUnauthorized: false
+        rejectUnauthorized: false // Evita rechazos por certificados internos del servidor de Render
     }
-
 });
+
+
 
 app.post('/api/eventos', async (req, res) => {
     try {
