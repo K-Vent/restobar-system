@@ -327,11 +327,19 @@ app.post('/api/eventos', async (req, res) => {
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
 
         // Enviamos la petición por HTTP (Render NUNCA bloquea esto)
-        fetch(URL_GOOGLE_SCRIPT, {
+       fetch(URL_GOOGLE_SCRIPT, {
             method: 'POST',
-            body: JSON.stringify(payloadCorreo)
-        }).catch(err => console.error("Error enviando correo API:", err));
-
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payloadCorreo),
+            redirect: 'follow' // Vital para las APIs de Google
+        })
+        .then(response => response.text())
+        .then(text => console.log("🤖 Respuesta de Google API:", text))
+        .catch(err => console.error("❌ Error enviando correo API:", err));
+        
         res.json({ success: true, mensaje: 'Solicitud enviada exitosamente' });
     } catch (error) {
         console.error("Error al procesar el evento:", error);
