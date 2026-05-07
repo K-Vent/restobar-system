@@ -57,7 +57,7 @@ const getDashboardStats = async (req, res) => {
 const getHistorialCierres = async (req, res) => {
     try {
         // Traemos los últimos 50 cierres de caja ordenados por el más reciente
-        const historial = await pool.query('SELECT * FROM cierre_caja ORDER BY fecha_cierre DESC LIMIT 50');
+        const historial = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 50');
         res.json(historial.rows);
     } catch (error) {
         console.error("⚠️ Error leyendo historial de cierres:", error);
