@@ -277,18 +277,38 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         if (prodData.stock <= limiteCritico && stockAnterior > limiteCritico) {
             
             const payloadCorreo = {
-                to: 'kevinventocilla7@gmail.com', // ⚠️ CAMBIA ESTO POR TU CORREO REAL
-                subject: `🚨 ALERTA DE STOCK: Quedan ${prodData.stock} de ${prodData.nombre}`,
+                to: 'kevinventocilla7@gmail.com', // Mantén tu correo aquí
+                subject: `[Aviso de Sistema] Stock bajo: ${prodData.nombre} (${prodData.stock} unidades)`,
                 htmlBody: `
-                    <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0a0a0a; color: #fff; padding: 30px; border-radius: 10px; border-left: 6px solid #ff4757;">
-                        <h2 style="color: #ff4757; margin-top: 0;">Alerta de Inventario en La Esquina</h2>
-                        <p style="font-size: 16px; color: #ccc;">Atención, el siguiente producto requiere reabastecimiento urgente:</p>
-                        <div style="background-color: #111; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #333;">
-                            <p style="margin: 5px 0; font-size: 18px;">🍺 <strong>Producto:</strong> ${prodData.nombre}</p>
-                            <p style="margin: 5px 0; font-size: 18px;">📦 <strong>Categoría:</strong> ${prodData.categoria}</p>
-                            <p style="margin: 15px 0 5px 0; font-size: 24px;">📉 Stock actual: <strong style="color: #D4AF37;">${prodData.stock} unidades</strong></p>
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #eaeaec; border-top: 4px solid #d9534f; border-radius: 4px;">
+                        <div style="padding: 20px; border-bottom: 1px solid #eaeaec; background-color: #fbfbfc;">
+                            <h2 style="margin: 0; font-size: 18px; color: #333333; font-weight: 600;">Notificación de Inventario</h2>
                         </div>
-                        <p style="color: #666; font-size: 12px;">Este es un mensaje automático del Sistema de Gestión de La Esquina del Billar.</p>
+                        <div style="padding: 24px 20px;">
+                            <p style="margin: 0 0 16px 0; font-size: 15px; color: #555555; line-height: 1.5;">
+                                El sistema ha detectado que un producto ha alcanzado el nivel de stock crítico. Se recomienda coordinar el reabastecimiento a la brevedad.
+                            </p>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #777777; font-size: 14px; width: 35%;">Producto</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #333333; font-size: 14px; font-weight: 500;">${prodData.nombre}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #777777; font-size: 14px;">Categoría</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #333333; font-size: 14px;">${prodData.categoria}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; color: #777777; font-size: 14px;">Stock disponible</td>
+                                    <td style="padding: 10px 0; color: #d9534f; font-size: 15px; font-weight: bold;">${prodData.stock} unidades</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="padding: 16px 20px; background-color: #f9f9f9; border-top: 1px solid #eaeaec; border-radius: 0 0 4px 4px;">
+                            <p style="margin: 0; font-size: 12px; color: #999999;">
+                                La Esquina del Billar - Sistema de Gestión<br>
+                                Notificación generada automáticamente
+                            </p>
+                        </div>
                     </div>
                 `
             };
