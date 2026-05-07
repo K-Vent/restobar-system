@@ -175,7 +175,42 @@ function renderizarMesas(mesas) {
         `;
     });
 
-    iniciarCronometros();
+    function iniciarCronometros() {
+    intervaloCronometros = setInterval(() => {
+        document.querySelectorAll('.info-tiempo').forEach(el => {
+            if (el.dataset.tipo !== 'BILLAR') return;
+            
+            // 1. Aumentamos 1 segundo localmente
+            let seg = parseInt(el.dataset.segundos);
+            seg++;
+            el.dataset.segundos = seg;
+
+            // 2. Formato Visual del Reloj (00:00:00)
+            let h = Math.floor(seg / 3600);
+            let m = Math.floor((seg % 3600) / 60);
+            let s = seg % 60;
+            el.innerText = [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
+
+            // ==========================================
+            // 3. MOTOR DE PRECIOS "LA ESQUINA" (FRONTEND)
+            // ==========================================
+            let precioHora = parseFloat(el.dataset.precio || 10);
+            let minutosTotales = Math.floor(seg / 60);
+            let costoT = 0; // Por defecto S/ 0.00 en los primeros 5 min de gracia
+
+            if (minutosTotales > 5) {
+                let precioMediaHora = precioHora / 2;
+                // Calculamos los bloques de media hora descontando la tolerancia
+                let bloques = Math.ceil((minutosTotales - 5) / 30);
+                costoT = bloques * precioMediaHora;
+            }
+
+            // 4. Actualizamos el dinero en pantalla
+            const lblDinero = document.getElementById('dinero-' + el.id.split('-')[1]);
+            if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
+        });
+    }, 1000);
+}
 }
 
 // ==========================================

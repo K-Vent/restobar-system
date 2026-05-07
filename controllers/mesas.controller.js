@@ -19,32 +19,34 @@ const cambiarMesaSchema = z.object({
     idDestino: z.number().int()
 });
 
-// ==========================================
-// 2. FUNCIONES AUXILIARES
-// ==========================================
-// ==========================================
-// 2. FUNCIONES AUXILIARES (Blindada)
-// ==========================================
+
+
+
+
 // ==========================================
 // 2. FUNCIONES AUXILIARES (Con Caché Nativo)
 // ==========================================
 let configCache = { precio_billar: 10, ultimaActualizacion: 0 };
 
 async function getPrecioBillar() {
-    const AHORA = Date.now();
-    // Si ha pasado más de 1 minuto (60000 ms), volvemos a consultar la base de datos
-    if (AHORA - configCache.ultimaActualizacion > 60000) { 
-        try { 
-            // Apuntamos a la tabla 'config' y la clave 'precio_billar' exactas de tu BD
-            const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'"); 
-            configCache.precio_billar = parseFloat(conf.rows[0]?.valor || 10); 
-            configCache.ultimaActualizacion = AHORA; 
-        } catch (e) {
-            console.error("⚠️ Error leyendo tabla config:", e.message);
-        } 
-    }
+    // ... tu código actual del caché ...
     return configCache.precio_billar;
 }
+
+/**
+ * MOTOR DE PRECIOS "LA ESQUINA"
+ * @param {number} minutosTotales - Minutos transcurridos desde la apertura
+ * @param {number} precioHora - Precio actual (ej. 10 soles)
+ * @returns {number} - Costo total redondeado a tu regla de tolerancia
+ */
+function calcularCostoBillar(minutosTotales, precioHora) {
+    const precioMediaHora = precioHora / 2;
+    if (minutosTotales <= 5) return 0; // 5 minutos de cortesía
+    const bloquesACobrar = Math.ceil((minutosTotales - 5) / 30);
+    return bloquesACobrar * precioMediaHora;
+}
+
+
 // ==========================================
 // 3. CONTROLADORES (Lógica de Negocio)
 // ==========================================
@@ -100,11 +102,10 @@ const detalleMesa = async (req, res, next) => {
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) { 
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]); 
             minReal = Math.ceil(resT.rows[0].min || 0); 
-            let tiempoCalculo = minReal - 5; 
-            let bloques = Math.ceil(tiempoCalculo / 30); 
-            if (bloques < 1) bloques = 1; 
-            totalT = (bloques * 30 / 60) * precioHora; 
-        } 
+            
+            // 🔥 Usamos nuestro Motor de Precios Centralizado
+            totalT = calcularCostoBillar(minReal, precioHora);
+        }
         
         const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]); 
         let totalC = 0; 
@@ -128,11 +129,10 @@ const cerrarMesa = async (req, res, next) => {
         if (mesa.tipo === 'BILLAR' && mesa.hora_inicio) { 
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]); 
             const minReal = Math.ceil(resT.rows[0].min || 0); 
-            let tiempoCalculo = minReal - 5; 
-            let bloques = Math.ceil(tiempoCalculo / 30); 
-            if (bloques < 1) bloques = 1; 
-            totalT = (bloques * 30 / 60) * precioHora; 
-        } 
+            
+            // 🔥 Usamos nuestro Motor de Precios Centralizado
+            totalT = calcularCostoBillar(minReal, precioHora);
+        }
         
         const resC = await pool.query(`SELECT SUM(p.precio_venta * pm.cantidad) as total FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE`, [id]); 
         const totalC = parseFloat(resC.rows[0].total || 0); 
