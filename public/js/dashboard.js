@@ -179,29 +179,30 @@ function renderizarMesas(mesas) {
 
 }
 function iniciarCronometros() {
-    // Limpiamos cualquier cronómetro fantasma previo
+    // 1. Limpiamos cualquier proceso fantasma
     if (intervaloCronometros) clearInterval(intervaloCronometros);
 
+    // 2. Iniciamos el motor a 1 segundo exacto (1000 ms)
     intervaloCronometros = setInterval(() => {
-        document.querySelectorAll('.info-tiempo').forEach(el => {
+        const mesas = document.querySelectorAll('.info-tiempo');
+        
+        mesas.forEach(el => {
             try {
-                // BLINDAJE 1: Evitar problemas de espacios o minúsculas en la BD
-                const tipoMesa = String(el.dataset.tipo).trim().toUpperCase();
-                if (tipoMesa !== 'BILLAR') return;
+                // Si la mesa es de consumo, la ignoramos
+                if (el.dataset.tipo !== 'BILLAR') return;
                 
-                // BLINDAJE 2: Si el servidor manda un vacío (NaN), forzamos a que sea 0
-                let seg = parseInt(el.dataset.segundos) || 0;
-                seg++; 
+                // BLINDAJE: Si el servidor manda un vacío, forzamos a que sea 0
+                let seg = parseInt(el.dataset.segundos);
+                if (isNaN(seg)) seg = 0;
                 
-                // Guardamos el nuevo segundo en la memoria del navegador
-                el.dataset.segundos = seg;
+                seg++; // Sumamos 1 segundo
+                el.dataset.segundos = seg; // Guardamos en la memoria visual
 
-                // Matemáticas exactas para el reloj
+                // MATEMÁTICAS DEL RELOJ (00:00:00)
                 let h = Math.floor(seg / 3600);
                 let m = Math.floor((seg % 3600) / 60);
                 let s = seg % 60;
                 
-                // BLINDAJE 3: Formateo de texto infalible (00:00:00)
                 el.innerText = 
                     String(h).padStart(2, '0') + ':' + 
                     String(m).padStart(2, '0') + ':' + 
@@ -212,23 +213,23 @@ function iniciarCronometros() {
                 // ==========================================
                 let precioHora = parseFloat(el.dataset.precio || 10);
                 let minutosTotales = Math.floor(seg / 60);
-                let costoT = 0; // S/ 0.00 por defecto en la tolerancia
+                let costoT = 0; // Por defecto S/ 0.00 (Tolerancia)
 
+                // Regla de Oro: Cobro por bloques de 30 min, tras 5 min de gracia
                 if (minutosTotales > 5) {
-                    let precioMediaHora = precioHora / 2;
                     let bloques = Math.ceil((minutosTotales - 5) / 30);
-                    costoT = bloques * precioMediaHora;
+                    costoT = bloques * (precioHora / 2);
                 }
 
-                // Inyectamos el dinero calculado en la pantalla
+                // Inyectamos el dinero calculado
                 const lblDinero = document.getElementById('dinero-' + el.id.split('-')[1]);
                 if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
 
             } catch (error) {
-                console.error("Motor de reloj pausado por seguridad en Mesa:", el.id, error);
+                console.error("Reloj protegido contra fallo en mesa:", error);
             }
         });
-    }, 1000); // 1000 milisegundos = 1 segundo exacto
+    }, 1000);
 }
 
 // ==========================================
