@@ -1,20 +1,15 @@
-
+/* ============================================================
+   DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
+   ============================================================ */
 // ==========================================
 // ESTADO GLOBAL DEL SISTEMA
 // ==========================================
-let mesaActivaParaCobro = null; // Memoria para saber qué mesa está abierta en la caja
-
-// ... (aquí abajo siguen tus otras variables que ya tenías, como let mesas = [], etc.)
-
-/* ============================================================
-   DASHBOARD.JS - SISTEMA GESTIÓN "LA ESQUINA DEL BILLAR"
-   Versión: Premium POS / Alertas Dinámicas / Mudanzas
-   ============================================================ */
-
+let mesaActivaParaCobro = null;
+ 
 const socket = io(); 
 let intervaloCronometros = null;
 let mesaAccionId = null; 
-let mesaOrigenMoveId = null; // Variable para mudanzas
+let mesaOrigenMoveId = null;
 let usuarioActual = null;
 let totalDeudaCobro = 0; 
 let productosDisponibles = [];
@@ -22,24 +17,26 @@ let filtroActual = 'TODAS';
 let todasLasMesas = [];
 
 // ==========================================
-// 1. INICIALIZACIÓN
+// 1. INICIALIZACIÓN — UN SOLO DOMContentLoaded
 // ==========================================
 document.addEventListener("DOMContentLoaded", async () => {
     await verificarRol();
     await cargarMesas();
     await cargarProductosMenu();
-    if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
+    if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
+    cargarEventos();
+    aplicarPermisosUI();
 });
-
+ 
 socket.on('actualizar_mesas', () => cargarMesas());
 socket.on('actualizar_caja', () => { 
-    if(usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); 
+    if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); 
 });
 
 
 
 // ==========================================
-// 3. SEGURIDAD Y CARGAS INICIALES
+// 2. SEGURIDAD Y CARGAS INICIALES
 // ==========================================
 async function verificarRol() {
     try {
@@ -48,7 +45,8 @@ async function verificarRol() {
         if (usuarioActual.rol !== 'admin') {
             document.querySelectorAll('.menu-link').forEach(link => {
                 const txt = link.innerText.toLowerCase();
-                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja') || txt.includes('empleados')) link.style.display = 'none';
+                if (txt.includes('inventario') || txt.includes('historial') || txt.includes('cerrar caja') || txt.includes('empleados')) 
+                    link.style.display = 'none';
             });
             const moneyPanel = document.querySelector('.money-panel');
             if (moneyPanel) moneyPanel.style.display = 'none';
@@ -67,7 +65,7 @@ async function cargarCaja() {
         document.getElementById('total-real').innerText = 'S/ ' + parseFloat(data.dinero_en_cajon).toFixed(2);
     } catch (e) { console.log("Caja no disponible u oculta."); }
 }
-
+ 
 async function cargarProductosMenu() {
     try {
         const res = await fetch('/api/productos');
@@ -76,19 +74,18 @@ async function cargarProductosMenu() {
 }
 
 // ==========================================
-// 4. RENDERIZADO DE MESAS Y TIEMPO
+// 3. RENDERIZADO DE MESAS Y TIEMPO
 // ==========================================
 async function cargarMesas() {
     try {
         const res = await fetch('/api/mesas');
         todasLasMesas = await res.json();
-        filtrarMesas(); // Llamamos al filtro en lugar de renderizar directo
+        filtrarMesas();
     } catch (error) { console.error("Error al cargar mesas:", error); }
 }
-
+ 
 function setFiltro(tipo, btn) {
     filtroActual = tipo;
-    // Cambiar estilo de botones
     document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     filtrarMesas();
@@ -96,7 +93,6 @@ function setFiltro(tipo, btn) {
 
 function filtrarMesas() {
     const inputBusqueda = document.getElementById('busqueda-mesa');
-    // Si el buscador no existe aún en el HTML, no hacemos nada para evitar errores
     if (!inputBusqueda) return; 
     
     const busqueda = inputBusqueda.value.toLowerCase();
@@ -105,34 +101,30 @@ function filtrarMesas() {
         const cumpleTipo = filtroActual === 'TODAS' || 
                            (filtroActual === 'OCUPADA' && m.estado === 'OCUPADA') ||
                            (filtroActual === 'BILLAR' && m.tipo === 'BILLAR');
-        
-        // Blindamos el número de mesa por si viene vacío desde la base de datos
         const numeroSeguro = String(m.numero_mesa || '').toLowerCase();
-        const cumpleBusqueda = numeroSeguro.includes(busqueda);
-        
-        return cumpleTipo && cumpleBusqueda;
+        return cumpleTipo && numeroSeguro.includes(busqueda);
     });
-
+ 
     renderizarMesas(filtradas);
 }
 
-// Versión V5 - Dark Premium Absoluto
 function renderizarMesas(mesas) {
     const grid = document.getElementById('grid-mesas');
     if (!grid) return; 
     
     grid.innerHTML = '';
     grid.className = 'row g-3'; 
+ 
+    // FIX: Siempre limpiar el intervalo anterior antes de redibujar
     clearInterval(intervaloCronometros);
-
+    intervaloCronometros = null;
+ 
     mesas.forEach(mesa => {
         const isOcupada = mesa.estado === 'OCUPADA';
-        
-        // ✨ ADIÓS A LOS GRISES DE BOOTSTRAP ✨
         const claseTarjeta = isOcupada ? 'card-mesa card-mesa-ocupada' : 'card-mesa card-mesa-libre';
         const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-muted';
         const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
-
+ 
         grid.innerHTML += `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
             <div class="card ${claseTarjeta} h-100">
@@ -141,7 +133,7 @@ function renderizarMesas(mesas) {
                         <h6 class="fw-bold mb-0 text-white" style="letter-spacing: 0.5px;">${icono} MESA ${mesa.numero_mesa}</h6>
                         <span class="badge ${statusBadge} shadow-sm px-2 py-1">${mesa.estado}</span>
                     </div>
-
+ 
                     ${isOcupada ? `
                         <div class="text-center py-3 rounded-3 mb-3" style="background: #000; border: 1px solid rgba(212,175,55,0.2);">
                             <h2 class="display-6 fw-bold mb-0 info-tiempo text-white" id="tiempo-${mesa.id}" 
@@ -174,66 +166,66 @@ function renderizarMesas(mesas) {
         </div>
         `;
     });
-
-    
-
+ 
+    // FIX: Iniciar cronómetros DESPUÉS de que el HTML esté en el DOM
+    iniciarCronometros();
 }
+// ==========================================
+// 4. CRONÓMETROS — VERSIÓN ÚNICA Y CORRECTA
+//    Lógica idéntica al backend calcularCostoBillar:
+//    - 5 min de gracia (S/ 0.00)
+//    - Luego bloques de 30 min × (precioHora / 2)
+// ==========================================
 function iniciarCronometros() {
-    // 1. Limpiamos cualquier proceso fantasma
-    if (intervaloCronometros) clearInterval(intervaloCronometros);
-
-    // 2. Iniciamos el motor a 1 segundo exacto (1000 ms)
+    // Garantizar que no quede ningún intervalo huérfano
+    if (intervaloCronometros) {
+        clearInterval(intervaloCronometros);
+        intervaloCronometros = null;
+    }
+ 
     intervaloCronometros = setInterval(() => {
-        const mesas = document.querySelectorAll('.info-tiempo');
-        
-        mesas.forEach(el => {
+        document.querySelectorAll('.info-tiempo').forEach(el => {
             try {
-                // Si la mesa es de consumo, la ignoramos
                 if (el.dataset.tipo !== 'BILLAR') return;
-                
-                // BLINDAJE: Si el servidor manda un vacío, forzamos a que sea 0
+ 
                 let seg = parseInt(el.dataset.segundos);
                 if (isNaN(seg)) seg = 0;
-                
-                seg++; // Sumamos 1 segundo
-                el.dataset.segundos = seg; // Guardamos en la memoria visual
-
-                // MATEMÁTICAS DEL RELOJ (00:00:00)
-                let h = Math.floor(seg / 3600);
-                let m = Math.floor((seg % 3600) / 60);
-                let s = seg % 60;
-                
+ 
+                seg++;
+                el.dataset.segundos = seg;
+ 
+                // Formato HH:MM:SS
+                const h = Math.floor(seg / 3600);
+                const m = Math.floor((seg % 3600) / 60);
+                const s = seg % 60;
                 el.innerText = 
-                    String(h).padStart(2, '0') + ':' + 
-                    String(m).padStart(2, '0') + ':' + 
+                    String(h).padStart(2, '0') + ':' +
+                    String(m).padStart(2, '0') + ':' +
                     String(s).padStart(2, '0');
-
-                // ==========================================
-                // MOTOR FINANCIERO (FRONTEND)
-                // ==========================================
-                let precioHora = parseFloat(el.dataset.precio || 10);
-                let minutosTotales = Math.floor(seg / 60);
-                let costoT = 0; // Por defecto S/ 0.00 (Tolerancia)
-
-                // Regla de Oro: Cobro por bloques de 30 min, tras 5 min de gracia
+ 
+                // Motor financiero — igual que el backend
+                const precioHora = parseFloat(el.dataset.precio || 10);
+                const minutosTotales = Math.floor(seg / 60);
+                let costoT = 0;
+ 
                 if (minutosTotales > 5) {
-                    let bloques = Math.ceil((minutosTotales - 5) / 30);
+                    const bloques = Math.ceil((minutosTotales - 5) / 30);
                     costoT = bloques * (precioHora / 2);
                 }
-
-                // Inyectamos el dinero calculado
-                const lblDinero = document.getElementById('dinero-' + el.id.split('-')[1]);
+ 
+                const mesaId = el.id.split('-')[1];
+                const lblDinero = document.getElementById('dinero-' + mesaId);
                 if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
-
+ 
             } catch (error) {
-                console.error("Reloj protegido contra fallo en mesa:", error);
+                console.error("Error en cronómetro:", error);
             }
         });
     }, 1000);
 }
 
 // ==========================================
-// 5. ACCIONES DE MUDANZA (NUEVO)
+// 5. ACCIONES DE MUDANZA
 // ==========================================
 async function abrirModalMover(idOrigen) {
     mesaOrigenMoveId = idOrigen;
@@ -245,13 +237,13 @@ async function abrirModalMover(idOrigen) {
         if (libres.length === 0) {
             return mostrarAlerta("No hay ninguna mesa libre disponible para realizar el traslado.");
         }
-
+ 
         const select = document.getElementById('select-mesa-destino');
         select.innerHTML = '';
         libres.forEach(m => {
             select.innerHTML += `<option value="${m.id}">${m.tipo === 'BILLAR' ? '🎱' : '🛒'} Mesa ${m.numero_mesa}</option>`;
         });
-
+ 
         document.getElementById('modal-mover').style.display = 'flex';
     } catch (e) {
         mostrarAlerta("Error al buscar las mesas libres disponibles.");
@@ -261,14 +253,14 @@ async function abrirModalMover(idOrigen) {
 async function ejecutarMoverMesa() {
     const idDestino = document.getElementById('select-mesa-destino').value;
     if (!idDestino) return;
-
+ 
     try {
         const res = await fetch('/api/mesas/cambiar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idOrigen: mesaOrigenMoveId, idDestino: parseInt(idDestino) })
         });
-
+ 
         if (res.ok) {
             cerrarModal('modal-mover');
             mostrarToast("🔄 Mudanza realizada con éxito");
@@ -295,10 +287,10 @@ async function abrirMesa(id) {
         else mostrarAlerta("No se pudo iniciar la mesa. Verifica la conexión.");
     } catch (e) { mostrarAlerta("Error de red al intentar abrir mesa."); }
 }
-
+ 
 function abrirOpciones(id) {
     mesaAccionId = id;
-    if(productosDisponibles.length === 0) cargarProductosMenu(); 
+    if (productosDisponibles.length === 0) cargarProductosMenu(); 
     renderizarProductosMesa(productosDisponibles);
     document.getElementById('modal-pedidos').style.display = 'flex';
     document.getElementById('buscador-productos').value = '';
@@ -314,7 +306,7 @@ function renderizarProductosMesa(productos) {
         const stockBadge = isOutOfStock 
             ? '<span class="badge bg-danger">Agotado</span>' 
             : `<span class="badge border border-success text-success">Stock: ${p.stock}</span>`;
-
+ 
         container.innerHTML += `
             <div class="card bg-dark border-secondary mb-2 shadow-sm">
                 <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -333,7 +325,6 @@ function renderizarProductosMesa(productos) {
                                    oninput="validarManual(${p.id}, ${p.stock})">
                             <button class="btn-qty" onclick="cambiarQty(${p.id}, 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
                         </div>
-                        
                         <button class="btn btn-warning fw-bold shadow-sm" 
                                 onclick="agregarPedido(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
                             AÑADIR
@@ -344,23 +335,22 @@ function renderizarProductosMesa(productos) {
         `;
     });
 }
-
 function filtrarProductosMesa() {
     const txt = document.getElementById('buscador-productos').value.toLowerCase();
     const filtrados = productosDisponibles.filter(p => p.nombre.toLowerCase().includes(txt));
     renderizarProductosMesa(filtrados);
 }
-
+ 
 async function agregarPedido(productoId) {
     const cantInput = document.getElementById(`cant-${productoId}`);
     const cantidadSeleccionada = parseInt(cantInput.value) || 1;
-
+ 
     if (cantidadSeleccionada <= 0) return mostrarAlerta("La cantidad debe ser mayor a 0");
-
+ 
     try {
         const res = await fetch('/api/pedidos/agregar', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: productoId, cantidad: cantidadSeleccionada })
         });
         if (res.ok) {
@@ -375,14 +365,12 @@ async function agregarPedido(productoId) {
 
 async function eliminarPedido(idPedido, idMesa) {
     try {
-        // Llamamos al nuevo modal global asíncrono
         const confirmado = await mostrarConfirmacion("⚠️ Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
-        
         if (confirmado) {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
             if (res.ok) {
                 mostrarToast("🗑️ Producto retirado de la cuenta");
-                abrirModalCobro(idMesa); // Esto actualiza la lista y el total de la mesa al instante
+                abrirModalCobro(idMesa);
             } else {
                 mostrarAlerta("Error en el servidor al intentar eliminar.", "error");
             }
@@ -392,7 +380,6 @@ async function eliminarPedido(idPedido, idMesa) {
         mostrarAlerta("No se pudo cargar la confirmación. Revisa la consola.", "error");
     }
 }
-
 // ==========================================
 // 7. COBRO Y PAGO MIXTO
 // ==========================================
@@ -403,7 +390,7 @@ async function abrirModalCobro(id) {
         const data = await res.json();
         
         totalDeudaCobro = parseFloat(data.totalFinal);
-
+ 
         let listaHtml = '';
         if (data.listaProductos && data.listaProductos.length > 0) {
             data.listaProductos.forEach(p => {
@@ -422,25 +409,22 @@ async function abrirModalCobro(id) {
         } else {
             listaHtml = '<div class="text-muted text-center py-3 small">No hay consumo registrado</div>';
         }
-
-        let html = `
+ 
+        const html = `
             <div class="bg-black p-3 rounded mb-3 border border-secondary shadow-sm">
                 <div class="d-flex justify-content-between mb-3 text-muted border-bottom border-secondary pb-2">
                     <span class="fw-bold">⏳ Tiempo Jugado (${data.minutos} min):</span>
                     <span class="text-warning fw-bold fs-5">S/ ${data.totalTiempo.toFixed(2)}</span>
                 </div>
-                
                 <div class="text-muted small text-uppercase fw-bold mb-2">🍺 Detalle de Consumo:</div>
                 <div style="max-height: 180px; overflow-y: auto;" class="pe-1">
                     ${listaHtml}
                 </div>
             </div>
-            
             <div class="text-center fw-bold text-white mb-4">
                 <span class="fs-4">TOTAL:</span> 
                 <span class="fs-1 text-warning d-block" style="text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
-
             <button class="btn btn-warning w-100 fw-bold py-3 shadow-sm fs-6" onclick="abrirScanner()">
                 📸 ESCANEAR SOCIO VIP (+1 Sello)
             </button>
@@ -458,7 +442,7 @@ function abrirCobroMixto() {
     document.getElementById('modal-mixto').style.display = 'flex';
     document.getElementById('mixto-efectivo').focus();
 }
-
+ 
 function calcularMixto() {
     let ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
     let dig = totalDeudaCobro - ef;
@@ -466,54 +450,45 @@ function calcularMixto() {
     document.getElementById('mixto-digital').value = dig.toFixed(2);
 }
 
+
 async function ejecutarCobroReal(metodo) {
     let ef = 0; 
     let dig = 0;
     
-    // 1. DISTRIBUCIÓN MATEMÁTICA DEL DINERO
     if (metodo === 'MIXTO') {
         ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
         dig = parseFloat(document.getElementById('mixto-digital').value) || 0;
-        
         if ((ef + dig).toFixed(2) !== totalDeudaCobro.toFixed(2)) {
             return mostrarAlerta("Los montos no cuadran con el total exacto.");
         }
     } else if (metodo === 'EFECTIVO') {
-        ef = totalDeudaCobro; // Todo al cajón físico
+        ef = totalDeudaCobro;
         dig = 0;
     } else {
-        // Si es YAPE, PLIN o TARJETA, todo el dinero va a la cuenta digital
         ef = 0;
         dig = totalDeudaCobro;
     }
-
-    // 2. TRADUCTOR PARA LA BASE DE DATOS (El truco anti-Error 500)
-    // Si el método no es Efectivo ni Mixto, lo enviamos como 'DIGITAL' 
-    // para que PostgreSQL no lo rechace.
+ 
+    // Traducir métodos digitales al enum que acepta la BD
     let metodoParaDB = metodo;
     if (metodo === 'YAPE' || metodo === 'PLIN' || metodo === 'TARJETA') {
         metodoParaDB = 'DIGITAL'; 
     }
-
+ 
     try {
         const res = await fetch(`/api/mesas/cerrar/${mesaAccionId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                metodo: metodoParaDB,  // Mandamos el nombre traducido
-                pago_efectivo: ef,     // Mandamos el monto en efectivo
-                pago_digital: dig      // Mandamos el monto digital
-            })
+            body: JSON.stringify({ metodo: metodoParaDB, pago_efectivo: ef, pago_digital: dig })
         });
         
         if (res.ok) {
             cerrarModal('modal-cobro');
             cerrarModal('modal-mixto');
             mostrarToast(`💳 Cuenta cobrada con éxito`);
-            cargarMesas(); // Recarga el panel
-            if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja(); // Actualiza el dinero de arriba
+            cargarMesas();
+            if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
         } else {
-            // Leemos el error exacto que nos devuelve el servidor
             const data = await res.json();
             mostrarAlerta(data.error || "Error en la base de datos al registrar cobro.");
         }
@@ -529,7 +504,7 @@ async function ejecutarGasto() {
     const desc = document.getElementById('gasto-desc').value;
     const monto = document.getElementById('gasto-monto').value;
     if (!desc || !monto) return mostrarAlerta("Por favor, llena todos los campos del gasto.");
-
+ 
     await fetch('/api/gastos/nuevo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -543,85 +518,49 @@ async function ejecutarGasto() {
 }
 
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
 function mostrarToast(msg) { 
     const t = document.getElementById("toast"); 
-    t.innerText = msg; t.className = "show"; 
-    setTimeout(() => t.className = t.className.replace("show",""), 2500); 
+    t.innerText = msg; 
+    t.className = "show"; 
+    setTimeout(() => t.className = t.className.replace("show", ""), 2500); 
 }
 
-function iniciarCronometros() {
-    intervaloCronometros = setInterval(() => {
-        document.querySelectorAll('.info-tiempo').forEach(el => {
-            if (el.dataset.tipo !== 'BILLAR') return;
-            
-            let seg = parseInt(el.dataset.segundos);
-            seg++;
-            el.dataset.segundos = seg;
 
-            let h = Math.floor(seg / 3600);
-            let m = Math.floor((seg % 3600) / 60);
-            let s = seg % 60;
-            el.innerText = [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
-
-            let precioHora = parseFloat(el.dataset.precio || 10);
-            let minCalculo = Math.ceil(seg / 60) - 5; 
-            let bloques = Math.ceil(minCalculo / 30);
-            if (bloques < 1) bloques = 1;
-            let costoT = (bloques * 30 / 60) * precioHora;
-
-            const lblDinero = document.getElementById('dinero-' + el.id.split('-')[1]);
-            if (lblDinero) lblDinero.innerText = 'S/ ' + costoT.toFixed(2);
-        });
-    }, 1000);
-}
 
 // ==========================================
-// MÓDULO DE ESCÁNER QR Y CÁMARA
+// 9. ESCÁNER QR Y PERFIL VIP
 // ==========================================
 let escanerActivo = null;
 
 function abrirScanner() {
-    // 1. Mostramos la ventana negra
     document.getElementById('modal-scanner').style.display = 'flex';
-    
-    // 2. Encendemos la cámara con la librería
     escanerActivo = new Html5QrcodeScanner(
         "reader", 
         { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 }, 
         false
     );
-    
-    // 3. Le decimos qué hacer si lee un código o si falla
     escanerActivo.render(escaneoExitoso, escaneoFallido);
 }
 
 function cerrarScanner() {
-    // Apagamos la cámara para que no gaste batería
-    if (escanerActivo) {
-        escanerActivo.clear(); 
-    }
+    if (escanerActivo) escanerActivo.clear(); 
     document.getElementById('modal-scanner').style.display = 'none';
 }
 
-function escaneoFallido(error) {
-    // Esta función debe existir para que la librería no de errores mientras busca un QR.
-    // La dejamos vacía para que trabaje en silencio.
-}
+function escaneoFallido(error) { /* silencioso */ }
 
 async function escaneoExitoso(textoDecodificado) {
-    cerrarScanner(); // Apagamos la cámara de inmediato
+    cerrarScanner();
     
     try {
-        // 1. Consultamos a la base de datos quién es el dueño del QR
         const res = await fetch(`/api/vip/escanear/${textoDecodificado}`);
         const data = await res.json();
         
         if (!res.ok) return mostrarAlerta(data.error, "error");
-
-        // 2. Sumamos su sello de visita por haber venido hoy (En segundo plano)
+ 
         fetch(`/api/clientes/${data.id}/sello`, { method: 'POST' });
-
-        // 3. Mostramos su Perfil en la Caja (Estilo Agora)
+ 
         document.getElementById('vip-nombre-caja').innerText = data.nombre;
         document.getElementById('vip-nivel-caja').innerText = `Socio ${data.nivel}`;
         
@@ -633,36 +572,32 @@ async function escaneoExitoso(textoDecodificado) {
             btnContainer.innerHTML = `<button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; padding: 15px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)">✅ APLICAR PREMIO A ESTA MESA</button>`;
         } else {
             recompensaDiv.innerHTML = `<span style="color: #888; font-size: 14px;">No tiene recompensas disponibles aún.</span><br><span style="color: #25D366; font-weight: bold; font-size: 12px;">+1 Sello añadido por su visita.</span>`;
-            btnContainer.innerHTML = ''; // Ocultamos el botón porque no tiene premios
+            btnContainer.innerHTML = '';
         }
-
-        // Abrimos el Perfil VIP
+ 
         document.getElementById('modal-perfil-vip').style.display = 'flex';
-
+ 
     } catch (error) {
         mostrarAlerta("Error al leer la tarjeta VIP.", "error");
     }
 }
 
-// 4. La Función Definitiva que Cuadra la Caja y Resta el Premio
 async function ejecutarCanjeAgora(idSocio, idMesa) {
     document.getElementById('modal-perfil-vip').style.display = 'none';
-    const confirmado = await mostrarConfirmacion("⚠️ CONFIRMACIÓN DE SEGURIDAD", "¿Aplicar el descuento? Esta acción no se puede deshacer.");
+    const confirmado = await mostrarConfirmacion(" CONFIRMACIÓN DE SEGURIDAD", "¿Aplicar el descuento? Esta acción no se puede deshacer.");
     if (!confirmado) return;
-
+ 
     try {
         const res = await fetch('/api/transaccion/canje-seguro', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idSocio, idMesa })
         });
-
+ 
         if (res.ok) {
             document.getElementById('modal-perfil-vip').style.display = 'none';
             document.getElementById('modal-cobro').style.display = 'none';
-            mostrarAlerta("🎁 ¡Descuento  aplicado! La cuenta ha sido recalculada.", "success");
-            
-            // Recargamos el sistema para mostrar el nuevo total exacto
+            mostrarAlerta(" ¡Descuento aplicado! La cuenta ha sido recalculada.", "success");
             await cargarMesas();
             abrirModalCobro(idMesa); 
         } else {
@@ -673,32 +608,27 @@ async function ejecutarCanjeAgora(idSocio, idMesa) {
         mostrarAlerta("Error de conexión.", "error");
     }
 }
-// Función para los botones + y -
+
+
+// ==========================================
+// 10. CONTROLES DE CANTIDAD
+// ==========================================
 function cambiarQty(id, delta) {
     const input = document.getElementById(`cant-${id}`);
     if (!input) return;
-    
     let val = parseInt(input.value) || 1;
     val += delta;
-    
     const min = parseInt(input.min) || 1;
     const max = parseInt(input.max) || 999;
-
     if (val < min) val = min;
     if (val > max) val = max;
-    
     input.value = val;
 }
 
-// Función para validar cuando el usuario escribe manualmente
 function validarManual(id, maxStock) {
     const input = document.getElementById(`cant-${id}`);
     if (!input) return;
-
     let val = parseInt(input.value);
-    
-    // Si borra el número, lo dejamos en blanco para que pueda escribir, 
-    // pero si pone un número mayor al stock, lo bajamos al máximo.
     if (val > maxStock) {
         input.value = maxStock;
         mostrarToast(`Solo hay ${maxStock} en stock`);
@@ -707,24 +637,22 @@ function validarManual(id, maxStock) {
 }
 
 // ==========================================
-// CONTROL DE MENÚ EN DISPOSITIVOS MÓVILES
+// 11. MENÚ MÓVIL
 // ==========================================
 function abrirMenuMovil() {
     document.querySelector('.sidebar').classList.add('abierto-movil');
     document.getElementById('overlay-sidebar').classList.add('activo');
 }
-
+ 
 function cerrarMenuMovil() {
     document.querySelector('.sidebar').classList.remove('abierto-movil');
     document.getElementById('overlay-sidebar').classList.remove('activo');
 }
 
 // ==========================================
-// MÓDULO DE INFRAESTRUCTURA (AUMENTAR/QUITAR MESAS)
+// 12. INFRAESTRUCTURA (AÑADIR/QUITAR MESAS)
 // ==========================================
-
 function abrirModalGestionMesas() {
-    // Validamos que solo el Admin pueda tocar la infraestructura
     if (usuarioActual && usuarioActual.rol !== 'admin') {
         return mostrarAlerta("Acceso denegado. Solo la gerencia puede alterar la infraestructura.", "error");
     }
@@ -733,16 +661,14 @@ function abrirModalGestionMesas() {
 
 async function agregarMesaDB(tipo) {
     try {
-        // Asumiendo que crearás esta ruta en tu backend
         const res = await fetch('/api/mesas/crear', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo: tipo }) // Envía 'BILLAR' o 'CONSUMO'
+            body: JSON.stringify({ tipo })
         });
-        
         if (res.ok) {
             mostrarToast("✅ Mesa añadida a la infraestructura");
-            cargarMesas(); // Recargamos el tablero automáticamente
+            cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
             mostrarAlerta("Error en el servidor al intentar crear la mesa.");
@@ -758,12 +684,12 @@ async function eliminarUltimaMesaDB() {
         "¿Estás seguro de eliminar la ÚLTIMA mesa registrada? Asegúrate de que esté vacía."
     );
     if (!confirmado) return;
-
+ 
     try {
         const res = await fetch('/api/mesas/eliminar-ultima', { method: 'DELETE' });
         if (res.ok) {
             mostrarToast("🗑️ Mesa retirada exitosamente");
-            cargarMesas(); // Recargamos el tablero
+            cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
             mostrarAlerta("No se pudo eliminar la mesa. Verifica si tiene cuentas activas.");
@@ -774,74 +700,56 @@ async function eliminarUltimaMesaDB() {
 }
 
         // ==========================================
-        // 🔥 SISTEMA DE PERMISOS VISUALES (UI) 🔥
-        // ==========================================
-        async function aplicarPermisosUI() {
-            try {
-                // Le preguntamos al servidor quién es el usuario actual
-                const res = await fetch('/api/usuario/actual');
-                if (res.ok) {
-                    const usuario = await res.json();
-                    
-                    // Si NO es administrador, sacamos la tijera y ocultamos los botones privados
-                    if (usuario.rol !== 'admin') {
-                        // Lista de páginas prohibidas para mozos y cocineros
-                        const rutasProhibidas = [
-                            '/inventario.html', 
-                            '/clientes.html', 
-                            '/reportes.html', 
-                            '/cierre_caja.html', 
-                            '/auditoria.html', 
-                            '/empleados.html'
-                        ];
-
-                        // Buscamos todos los links del menú lateral
-                        const linksMenu = document.querySelectorAll('.sidebar a');
-                        
-                        linksMenu.forEach(link => {
-                            // Extraemos solo el final del link (ej. /inventario.html)
-                            const href = link.getAttribute('href');
-                            
-                            // Si el link está en la lista negra, lo desaparecemos de la pantalla
-                            if (rutasProhibidas.includes(href)) {
-                                link.style.display = 'none';
-                            }
-                        });
-                        
-                        // REGLA EXTRA PARA COCINA: Si es cocinero, ocultamos también las mesas
-                        if(usuario.rol === 'cocina') {
-                            const btnMesas = document.querySelector('.sidebar a[href="/dashboard.html"]');
-                            if(btnMesas) btnMesas.style.display = 'none';
-                        }
-                    }
-                }
-            } catch (error) { console.error("Error verificando permisos visuales:", error); }
-        }
-
-
-        // ==========================================
-// MÓDULO: EVENTOS PRIVADOS
+// 13. PERMISOS VISUALES (UI)
 // ==========================================
+async function aplicarPermisosUI() {
+    try {
+        const res = await fetch('/api/usuario/actual');
+        if (res.ok) {
+            const usuario = await res.json();
+            if (usuario.rol !== 'admin') {
+                const rutasProhibidas = [
+                    '/inventario.html', '/clientes.html', '/reportes.html',
+                    '/cierre_caja.html', '/auditoria.html', '/empleados.html'
+                ];
+                document.querySelectorAll('.sidebar a').forEach(link => {
+                    if (rutasProhibidas.includes(link.getAttribute('href'))) {
+                        link.style.display = 'none';
+                    }
+                });
+                if (usuario.rol === 'cocina') {
+                    const btnMesas = document.querySelector('.sidebar a[href="/dashboard.html"]');
+                    if (btnMesas) btnMesas.style.display = 'none';
+                }
+            }
+        }
+    } catch (error) { console.error("Error verificando permisos visuales:", error); }
+}
 
+
+
+
+// ==========================================
+// 14. EVENTOS PRIVADOS
+// ==========================================
 async function cargarEventos() {
     const tbody = document.getElementById('tablaEventosBody');
+    if (!tbody) return;
+ 
     try {
         const res = await fetch('/api/eventos/lista');
         const eventos = await res.json();
-
+ 
         if (eventos.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay eventos registrados aún.</td></tr>';
             return;
         }
-
+ 
         tbody.innerHTML = eventos.map(ev => {
-            // Darle color al estado
-            let colorEstado = ev.estado === 'Pendiente' ? 'bg-warning text-dark' : 
-                              ev.estado === 'Aprobado' ? 'bg-success text-white' : 'bg-danger text-white';
-            
-            // Formatear la fecha para que se vea bonita
+            const colorEstado = ev.estado === 'Pendiente' ? 'bg-warning text-dark' : 
+                                ev.estado === 'Aprobado'  ? 'bg-success text-white' : 'bg-danger text-white';
             const fechaFormateada = new Date(ev.fecha_evento).toLocaleDateString('es-PE');
-
+ 
             return `
                 <tr>
                     <td><strong>${fechaFormateada}</strong><br><span class="small text-muted">⏰ ${ev.hora_inicio}</span></td>
@@ -867,7 +775,7 @@ async function cargarEventos() {
 
 async function cambiarEstadoEvento(id, nuevoEstado) {
     if (!confirm(`¿Estás seguro de marcar este evento como ${nuevoEstado}?`)) return;
-
+ 
     try {
         const res = await fetch(`/api/eventos/${id}/estado`, {
             method: 'PUT',
@@ -875,12 +783,8 @@ async function cambiarEstadoEvento(id, nuevoEstado) {
             body: JSON.stringify({ estado: nuevoEstado })
         });
         const data = await res.json();
-        
-        if (data.success) {
-            cargarEventos(); // Recargamos la tabla automáticamente
-        } else {
-            alert('Error al actualizar el estado');
-        }
+        if (data.success) cargarEventos();
+        else alert('Error al actualizar el estado');
     } catch (error) {
         console.error(error);
         alert('Error de conexión con el servidor');
