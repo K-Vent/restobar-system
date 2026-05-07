@@ -280,7 +280,7 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
             const refID = `INV-${Date.now().toString().slice(-6)}`;
 
             const payloadCorreo = {
-                to: 'TU_CORREO_AQUI@gmail.com', // Mantén tu correo aquí
+                to: 'kevinventocilla7@gmail.com', // Mantén tu correo aquí
                 subject: `Acción Requerida: Stock bajo de ${prodData.nombre}`,
                 htmlBody: `
                     <div style="background-color: #f6f9fc; padding: 40px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
