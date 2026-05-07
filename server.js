@@ -248,14 +248,62 @@ app.post('/api/kds/entregar/:id', verificarSesion, async (req, res, next) => {
 app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => { 
     try { 
         const val = pedidoSchema.parse(req.body); 
+        
+        // 1. Registramos el pedido
         await pool.query('INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion, entregado) VALUES ($1, $2, $3, NOW(), FALSE)', [val.mesa_id, val.producto_id, val.cantidad]); 
-        await pool.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [val.cantidad, val.producto_id]); 
+        
+        // 2. Descontamos el stock y RETORNAMOS cómo quedó (Truco de Arquitecto: RETURNING)
+        const updateStock = await pool.query(
+            'UPDATE productos SET stock = stock - $1 WHERE id = $2 RETURNING nombre, stock, categoria', 
+            [val.cantidad, val.producto_id]
+        ); 
+        
+        const prodData = updateStock.rows[0];
         const mesaDb = await pool.query('SELECT numero_mesa FROM mesas WHERE id = $1', [val.mesa_id]);
-        const prodDb = await pool.query('SELECT nombre FROM productos WHERE id = $1', [val.producto_id]);
+        
+        // 3. Auditoría interna
         await pool.query(
             "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO PEDIDO', 'Añadió ' || $2 || 'x ' || $3 || ' a Mesa ' || $4)", 
-            [req.usuario.id, val.cantidad, prodDb.rows[0].nombre, mesaDb.rows[0].numero_mesa]
+            [req.usuario.id, val.cantidad, prodData.nombre, mesaDb.rows[0].numero_mesa]
         );
+
+        // ==========================================
+        // 🚀 SUPPLY CHAIN: ALERTA CRÍTICA DE STOCK
+        // ==========================================
+        const limiteCritico = 5;
+        const stockAnterior = prodData.stock + val.cantidad;
+
+        // LÓGICA ANTI-SPAM: Solo envía correo si el producto ACABA de cruzar la línea de peligro
+        if (prodData.stock <= limiteCritico && stockAnterior > limiteCritico) {
+            
+            const payloadCorreo = {
+                to: 'kevinventocilla7@gmail.com', // ⚠️ CAMBIA ESTO POR TU CORREO REAL
+                subject: `🚨 ALERTA DE STOCK: Quedan ${prodData.stock} de ${prodData.nombre}`,
+                htmlBody: `
+                    <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0a0a0a; color: #fff; padding: 30px; border-radius: 10px; border-left: 6px solid #ff4757;">
+                        <h2 style="color: #ff4757; margin-top: 0;">Alerta de Inventario en La Esquina</h2>
+                        <p style="font-size: 16px; color: #ccc;">Atención, el siguiente producto requiere reabastecimiento urgente:</p>
+                        <div style="background-color: #111; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #333;">
+                            <p style="margin: 5px 0; font-size: 18px;">🍺 <strong>Producto:</strong> ${prodData.nombre}</p>
+                            <p style="margin: 5px 0; font-size: 18px;">📦 <strong>Categoría:</strong> ${prodData.categoria}</p>
+                            <p style="margin: 15px 0 5px 0; font-size: 24px;">📉 Stock actual: <strong style="color: #D4AF37;">${prodData.stock} unidades</strong></p>
+                        </div>
+                        <p style="color: #666; font-size: 12px;">Este es un mensaje automático del Sistema de Gestión de La Esquina del Billar.</p>
+                    </div>
+                `
+            };
+
+            // Reutilizamos tu API de Google Apps Script
+            const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
+
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(payloadCorreo),
+                redirect: 'follow'
+            }).catch(err => console.error("Error enviando alerta de stock:", err));
+        }
+
         res.json({ success: true }); 
         io.emit('actualizar_mesas'); 
         io.emit('campana_cocina'); 
