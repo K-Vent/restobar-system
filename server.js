@@ -68,6 +68,8 @@ app.use('/api/productos', require('./routes/inventario.routes'));
 app.use('/api/mesas', require('./routes/mesas.routes'));
 app.use('/api', require('./routes/vip.routes')); // <-- Agrega esta línea
 const auditoriaRoutes = require('./routes/auditoria.routes');
+const reportesRoutes = require('./routes/reportes.routes');
+app.use('/api', reportesRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
 
