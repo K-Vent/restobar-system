@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <link rel="icon" type="image/png" href="/logo.png">
     <style>
         body { background-color: #1a1a1d; color: #eee; }
         .sidebar { width: 250px; min-height: 100vh; background: #000; border-right: 1px solid #333; position: fixed; top: 0; left: 0; z-index: 1000; }
@@ -208,30 +208,42 @@
                 const tbody = document.getElementById('tabla-cierres');
                 tbody.innerHTML = '';
 
-                if (historial.length === 0) {
+                // BLINDAJE 1: Si el servidor devuelve un error, lo atrapamos y lo mostramos en rojo
+                if (historial.error) {
+                    console.error("Error desde el servidor:", historial.error);
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold">⚠️ Error del Servidor: ${historial.error}</td></tr>`;
+                    return;
+                }
+
+                // BLINDAJE 2: Si no es un array o viene vacío, lo manejamos con gracia
+                if (!Array.isArray(historial) || historial.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No hay cierres de caja registrados en el sistema.</td></tr>';
                     return;
                 }
 
                 historial.forEach(c => {
-                    const gananciaNeta = parseFloat(c.total_ventas) - parseFloat(c.total_gastos);
+                    const ventas = parseFloat(c.total_ventas) || 0;
+                    const gastos = parseFloat(c.total_gastos) || 0;
+                    const gananciaNeta = ventas - gastos;
                     const fecha = new Date(c.fecha_cierre).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
                     
-                    // Ajuste de colores usando clases Bootstrap (text-success, text-danger, text-warning)
                     tbody.innerHTML += `
                         <tr>
                             <td>${fecha}</td>
-                            <td class="text-success fw-bold">S/ ${parseFloat(c.total_ventas).toFixed(2)}</td>
-                            <td class="text-danger fw-bold">S/ ${parseFloat(c.total_gastos).toFixed(2)}</td>
+                            <td class="text-success fw-bold">S/ ${ventas.toFixed(2)}</td>
+                            <td class="text-danger fw-bold">S/ ${gastos.toFixed(2)}</td>
                             <td class="text-warning fw-bold fs-5">S/ ${gananciaNeta.toFixed(2)}</td>
-                            <td>🎱 ${c.cantidad_mesas}</td>
+                            <td>🎱 ${c.cantidad_mesas || 0}</td>
                             <td class="text-center">
                                 <button class="btn btn-outline-danger btn-sm" onclick="eliminarCierre(${c.id})" title="Anular Cierre">🗑️ Anular</button>
                             </td>
                         </tr>
                     `;
                 });
-            } catch (error) { console.error("Error al cargar el historial:", error); }
+            } catch (error) { 
+                console.error("Error crítico en el historial:", error); 
+                document.getElementById('tabla-cierres').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4 fw-bold">Error interno de conexión con la Base de Datos.</td></tr>';
+            }
         }
 
         async function eliminarCierre(id) {
