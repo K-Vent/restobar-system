@@ -2,113 +2,82 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>KDS Cocina/Barra | La Esquina</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Motor Base Oscuro -->
+    <title>KDS | Barra La Esquina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="/logo.png">
-    
     <style>
-        /* Estilos KDS Optimizados para Pantalla Táctil/Tablet */
-        body { background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        :root { --gold: #D4AF37; --dark-card: #0a0a0a; }
+        body { background-color: #050505; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
         
-        .kds-header { background: #111; border-bottom: 3px solid #ff4757; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
-        .kds-title { font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 1px; margin: 0;}
-        .kds-clock { font-size: 20px; font-weight: 700; color: #aaa; font-variant-numeric: tabular-nums; }
-        
-        /* Contenedor de Comandas */
-        .comandas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; align-items: start;}
-        
-        /* Tarjeta de Pedido (Comanda) */
-        .comanda-card {
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Reloj y Header */
+        .kds-header { background: #000; border-bottom: 2px solid var(--gold); padding: 15px 30px; margin-bottom: 25px; }
+        #reloj { font-size: 2rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(212,175,55,0.3); }
 
-        /* Cabecera de la Comanda (Rojo para alerta) */
-        .comanda-header { background: #ff4757; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .mesa-numero { font-size: 28px; font-weight: 900; }
-        .tiempo-pedido { font-size: 16px; font-weight: 700; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 6px; }
+        /* Tarjeta de Comanda Premium */
+        .comanda-card { 
+            background: var(--dark-card); border: 1px solid #333; border-radius: 12px; 
+            overflow: hidden; transition: transform 0.2s, border-color 0.2s;
+            animation: fadeIn 0.4s ease-out; height: 100%; display: flex; flex-direction: column;
+        }
+        .comanda-card:hover { border-color: var(--gold); transform: translateY(-5px); }
         
-        /* Lista de Productos */
-        .comanda-body { padding: 0; background: #fff; }
+        .comanda-header { 
+            background: #111; padding: 12px; border-bottom: 1px solid #222;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mesa-numero { font-size: 1.4rem; font-weight: 900; color: #fff; }
+        .tiempo-pedido { font-size: 0.9rem; color: #888; font-weight: 600; }
+
+        .comanda-body { padding: 15px; flex-grow: 1; }
+        
+        /* Items de Producto */
         .producto-item { 
-            padding: 15px 20px; 
-            border-bottom: 1px solid #ddd; 
-            display: flex; 
-            align-items: center; 
-            color: #000;
-            font-size: 20px;
-            font-weight: 700;
+            display: flex; align-items: center; gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid #1a1a1a; 
         }
         .producto-item:last-child { border-bottom: none; }
         
         .cantidad-badge { 
-            background: #000; 
-            color: #fff; 
-            font-size: 22px; 
-            font-weight: 900; 
-            min-width: 45px; 
-            height: 45px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 8px; 
-            margin-right: 15px; 
+            background: var(--gold); color: #000; font-weight: 900; 
+            min-width: 35px; height: 35px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
         }
+        .producto-nombre { flex-grow: 1; font-weight: 600; color: #eee; font-size: 1.05rem; line-height: 1.2; }
+        .producto-categoria { display: block; font-size: 0.7rem; letter-spacing: 1px; font-weight: 800; margin-top: 2px; }
 
-        .producto-nombre { flex-grow: 1; line-height: 1.2; }
-        .producto-categoria { display: block; font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; margin-top: 4px;}
-
-        /* Botón de Despacho */
         .btn-despachar { 
-            width: 100%; 
-            padding: 15px; 
-            font-size: 20px; 
-            font-weight: 800; 
-            border: none; 
-            background: #25D366; 
-            color: black; 
-            text-transform: uppercase;
-            transition: background 0.2s;
-            cursor: pointer;
+            background: #1b4332; color: #74c69d; border: none; width: 100%;
+            padding: 15px; font-weight: 900; letter-spacing: 1px;
+            transition: background 0.2s; border-top: 1px solid #2d6a4f;
         }
-        .btn-despachar:active { background: #1da851; }
+        .btn-despachar:hover { background: #2d6a4f; color: #fff; }
 
-        /* Estado Vacío */
-        .empty-state { text-align: center; padding: 100px 20px; color: #555; grid-column: 1 / -1; }
-        .empty-icon { font-size: 80px; margin-bottom: 20px; opacity: 0.5; }
+        /* Estados Vacíos */
+        .empty-state { text-align: center; margin-top: 10vh; color: #444; }
+        .empty-icon { font-size: 5rem; margin-bottom: 20px; opacity: 0.2; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <!-- Sonido de Alerta (Campana) -->
-    <audio id="campana" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-    <!-- Barra Superior -->
-    <header class="kds-header">
-        <h1 class="kds-title">👨‍🍳 KDS | LA ESQUINA</h1>
-        <div class="d-flex align-items-center gap-4">
-            <div class="kds-clock" id="reloj">00:00:00</div>
-            <button class="btn btn-outline-light btn-sm" onclick="probarSonido()">🔊 Probar Sonido</button>
-            <a href="/logout" class="btn btn-danger btn-sm fw-bold">Salir</a>
+    <header class="kds-header d-flex justify-content-between align-items-center">
+        <div>
+            <img src="/logo.png" alt="La Esquina" style="height: 45px;">
         </div>
+        <div class="text-center">
+            <span class="badge bg-outline-secondary small mb-1" style="color: #666; border: 1px solid #333;">MODO KDS - BARRA</span>
+            <div id="reloj">00:00:00</div>
+        </div>
+        <button class="btn btn-sm btn-outline-warning fw-bold" onclick="probarSonido()">🔔 PROBAR SONIDO</button>
     </header>
 
-    <!-- Contenedor Principal de Pedidos -->
-    <main class="comandas-grid" id="contenedor-kds">
-        <div class="empty-state">
-            <div class="empty-icon">🍽️</div>
-            <h2>SIN PEDIDOS PENDIENTES</h2>
-            <p>La cocina y la barra están al día.</p>
-        </div>
-    </main>
+    <div class="container-fluid px-4">
+        <div id="contenedor-kds" class="row g-4">
+            </div>
+    </div>
+
+    <audio id="campana" src="https://actions.google.com/sounds/v1/alarms/ding.ogg" preload="auto"></audio>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -117,36 +86,40 @@
             document.getElementById('reloj').innerText = new Date().toLocaleTimeString('es-PE');
         }, 1000);
 
-        // Variables de Control
-        let cantidadPedidosAnteriores = 0;
+        // ¡Corregido el nombre de la variable!
+        let bloqueo_refresco = false; 
+        
         const sonidoCampana = document.getElementById('campana');
-
-        function probarSonido() {
-            sonidoCampana.play().catch(e => alert("Tu navegador bloquea el sonido automático. Haz clic aquí una vez para habilitarlo."));
-        }
-
-        // Conexión WebSockets
         const socket = io();
-        socket.on('actualizar_cocina', () => cargarKDS());
+
+        // 1. ESCUCHA DE WEBSOCKETS (CAMPANA Y ACTUALIZACIÓN)
         socket.on('campana_cocina', () => {
             sonidoCampana.currentTime = 0;
-            sonidoCampana.play().catch(e => console.log("Sonido bloqueado por el navegador", e));
+            sonidoCampana.play().catch(e => console.log("Audio en espera de interacción"));
+            if (!bloqueo_refresco) cargarKDS(); 
         });
 
-        // Agrupar pedidos por Mesa
+        socket.on('actualizar_cocina', () => {
+            if (!bloqueo_refresco) cargarKDS();
+        });
+
+        function probarSonido() {
+            sonidoCampana.play().catch(e => alert("Toca la pantalla una vez para habilitar sonidos."));
+        }
+
+        // 2. LÓGICA DE AGRUPACIÓN
         function agruparPorMesa(pedidos) {
             const agrupado = {};
             pedidos.forEach(p => {
                 if (!agrupado[p.numero_mesa]) {
                     agrupado[p.numero_mesa] = {
                         mesa: p.numero_mesa,
-                        horaMinima: p.hora, // Tomamos la hora del pedido más antiguo
+                        horaMinima: p.hora,
                         items: []
                     };
                 }
                 agrupado[p.numero_mesa].items.push(p);
             });
-            // Convertir a Array y ordenar por número de mesa
             return Object.values(agrupado).sort((a, b) => a.mesa - b.mesa);
         }
 
@@ -154,102 +127,79 @@
             try {
                 const res = await fetch('/api/kds/pendientes');
                 const pedidosRaw = await res.json();
-                
                 const contenedor = document.getElementById('contenedor-kds');
-                contenedor.innerHTML = '';
 
-                // Si no hay pedidos
                 if (pedidosRaw.length === 0) {
-                    cantidadPedidosAnteriores = 0;
                     contenedor.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">✅</div>
-                            <h2>TODO DESPACHADO</h2>
-                            <p>Esperando nuevas órdenes...</p>
-                        </div>
-                    `;
+                        <div class="empty-state w-100">
+                            <div class="empty-icon">🍷</div>
+                            <h2 class="fw-bold">BARRA DESPEJADA</h2>
+                            <p>No hay pedidos pendientes por ahora.</p>
+                        </div>`;
                     return;
                 }
 
-                // Agrupamos la data cruda en bloques por mesa
                 const comandas = agruparPorMesa(pedidosRaw);
-
-                // Pintar cada comanda (Tarjeta)
-                comandas.forEach(comanda => {
-                    let itemsHtml = '';
-                    
-                    // Pintar los productos dentro de la comanda
-                    comanda.items.forEach(item => {
-                        let cat = item.categoria ? item.categoria.toUpperCase() : 'GENERAL';
-                        let colorCat = cat.includes('CERVEZA') || cat.includes('TRAGO') ? 'color: #0dcaf0;' : 'color: #ff4757;';
-
-                        itemsHtml += `
+                contenedor.innerHTML = comandas.map(comanda => {
+                    const itemsHtml = comanda.items.map(item => {
+                        const cat = item.categoria ? item.categoria.toUpperCase() : 'GENERAL';
+                        const colorCat = (cat.includes('CERVEZA') || cat.includes('TRAGO')) ? '#0dcaf0' : '#ff4757';
+                        
+                        return `
                             <div class="producto-item">
                                 <div class="cantidad-badge">${item.cantidad}</div>
                                 <div class="producto-nombre">
                                     ${item.nombre}
-                                    <span class="producto-categoria" style="${colorCat}">${cat}</span>
+                                    <span class="producto-categoria" style="color: ${colorCat}">${cat}</span>
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary px-3 py-2 fw-bold" onclick="marcarEntregado(${item.id})">✔️</button>
-                            </div>
-                        `;
-                    });
+                                <button class="btn btn-sm btn-outline-secondary" onclick="marcarEntregado(${item.id})">✔️</button>
+                            </div>`;
+                    }).join('');
 
-                    // Construir la tarjeta completa
-                    contenedor.innerHTML += `
-                        <div class="comanda-card">
-                            <div class="comanda-header">
-                                <div class="mesa-numero">Mesa ${comanda.mesa}</div>
-                                <div class="tiempo-pedido">⏱️ ${comanda.horaMinima}</div>
+                    return `
+                        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                            <div class="comanda-card shadow">
+                                <div class="comanda-header">
+                                    <div class="mesa-numero">Mesa ${comanda.mesa}</div>
+                                    <div class="tiempo-pedido">⏱️ ${comanda.horaMinima}</div>
+                                </div>
+                                <div class="comanda-body">
+                                    ${itemsHtml}
+                                </div>
+                                <button class="btn-despachar" onclick="despacharMesaCompleta([${comanda.items.map(i => i.id).join(',')}])">
+                                    🛎️ DESPACHAR TODO
+                                </button>
                             </div>
-                            <div class="comanda-body">
-                                ${itemsHtml}
-                            </div>
-                            <button class="btn-despachar" onclick="despacharMesaCompleta([${comanda.items.map(item => item.id).join(',')}])">
-                                🛎️ DESPACHAR TODO
-                            </button>
-                        </div>
-                    `;
-                });
-
-                // Actualizar contador para evitar que suene la campana si solo recargó la página
-                cantidadPedidosAnteriores = pedidosRaw.length;
+                        </div>`;
+                }).join('');
 
             } catch (error) {
-                console.error("Error cargando KDS:", error);
+                console.error("Error KDS:", error);
             }
         }
 
-        // Marcar un solo producto como entregado
-        async function marcarEntregado(idPedido) {
+        async function marcarEntregado(id) {
             try {
-                await fetch(`/api/kds/entregar/${idPedido}`, { method: 'POST' });
-                // El WebSocket de tu server avisará a todos que recarguen
-            } catch (e) { alert("Error al entregar pedido"); }
+                await fetch(`/api/kds/entregar/${id}`, { method: 'POST' });
+            } catch (e) { console.error(e); }
         }
 
-        // (Opcional Futuro) Despachar toda la mesa de golpe
-        // Despachar toda la mesa de golpe (Ahora sí funciona)
-        async function despacharMesaCompleta(idsPedidos) {
+        // 3. OPTIMIZACIÓN: Despachar todo sin recargar 50 veces
+        async function despacharMesaCompleta(ids) {
+            bloqueo_refresco = true; // Bloqueamos el autorefresco del WebSocket temporalmente
             try {
-                // Desactivar temporalmente el botón para no hacer doble clic
-                // Recorremos la lista de IDs y hacemos la petición por cada uno
-                const promesas = idsPedidos.map(id => fetch(`/api/kds/entregar/${id}`, { method: 'POST' }));
+                const promesas = ids.map(id => fetch(`/api/kds/entregar/${id}`, { method: 'POST' }));
                 await Promise.all(promesas);
-                
-                // Recargamos la pantalla para que la tarjeta desaparezca
-                cargarKDS();
             } catch (error) {
-                console.error("Error al despachar la mesa completa:", error);
-                alert("Hubo un error de conexión al intentar despachar toda la mesa.");
+                console.error(error);
+            } finally {
+                bloqueo_refresco = false;
+                cargarKDS(); // Una sola recarga al final de todas las peticiones
             }
         }
 
-        // Iniciar
-        cargarKDS();
-
-        // Autorefresco por si el WebSocket falla
-        setInterval(cargarKDS, 10000); 
+        document.addEventListener('DOMContentLoaded', cargarKDS);
+        setInterval(cargarKDS, 15000); // Fallback de seguridad cada 15s
     </script>
 </body>
 </html>
