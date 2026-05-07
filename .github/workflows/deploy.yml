@@ -1,0 +1,31 @@
+name: 🚀 Pipeline de Producción La Esquina
+
+on:
+  push:
+    branches: 
+      - main
+      - master # Por si tu rama principal se llama master
+
+jobs:
+  auditoria_y_despliegue:
+    name: 🛡️ Verificación y Actualización
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Descarga el código en el servidor temporal de GitHub
+    - name: Clonando el repositorio
+      uses: actions/checkout@v3
+
+    # 2. Configura Node.js
+    - name: Configurando motor Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22.x'
+
+    # 3. Instala las librerías para asegurar que el código no esté roto
+    - name: Verificando dependencias (Build test)
+      run: npm install
+
+    # 4. Si todo lo anterior no dio error, le da la orden a Render de actualizar
+    - name: Desplegando en Producción (Zero-Downtime)
+      run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
