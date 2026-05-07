@@ -276,43 +276,59 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         // LÓGICA ANTI-SPAM: Solo envía correo si el producto ACABA de cruzar la línea de peligro
         if (prodData.stock <= limiteCritico && stockAnterior > limiteCritico) {
             
+            // Generamos un ID de rastreo ficticio pero profesional basado en la hora
+            const refID = `INV-${Date.now().toString().slice(-6)}`;
+
             const payloadCorreo = {
-                to: 'kevinventocilla7@gmail.com', // Mantén tu correo aquí
-                subject: `[Aviso de Sistema] Stock bajo: ${prodData.nombre} (${prodData.stock} unidades)`,
+                to: 'TU_CORREO_AQUI@gmail.com', // Mantén tu correo aquí
+                subject: `Acción Requerida: Stock bajo de ${prodData.nombre}`,
                 htmlBody: `
-                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #eaeaec; border-top: 4px solid #d9534f; border-radius: 4px;">
-                        <div style="padding: 20px; border-bottom: 1px solid #eaeaec; background-color: #fbfbfc;">
-                            <h2 style="margin: 0; font-size: 18px; color: #333333; font-weight: 600;">Notificación de Inventario</h2>
-                        </div>
-                        <div style="padding: 24px 20px;">
-                            <p style="margin: 0 0 16px 0; font-size: 15px; color: #555555; line-height: 1.5;">
-                                El sistema ha detectado que un producto ha alcanzado el nivel de stock crítico. Se recomienda coordinar el reabastecimiento a la brevedad.
-                            </p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                                <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #777777; font-size: 14px; width: 35%;">Producto</td>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #333333; font-size: 14px; font-weight: 500;">${prodData.nombre}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #777777; font-size: 14px;">Categoría</td>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #333333; font-size: 14px;">${prodData.categoria}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 0; color: #777777; font-size: 14px;">Stock disponible</td>
-                                    <td style="padding: 10px 0; color: #d9534f; font-size: 15px; font-weight: bold;">${prodData.stock} unidades</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="padding: 16px 20px; background-color: #f9f9f9; border-top: 1px solid #eaeaec; border-radius: 0 0 4px 4px;">
-                            <p style="margin: 0; font-size: 12px; color: #999999;">
-                                La Esquina del Billar - Sistema de Gestión<br>
-                                Notificación generada automáticamente
-                            </p>
+                    <div style="background-color: #f6f9fc; padding: 40px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            
+                            <div style="height: 4px; background-color: #000000;"></div>
+
+                            <div style="padding: 32px 40px;">
+                                <p style="margin: 0 0 24px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #8898aa;">
+                                    La Esquina del Billar
+                                </p>
+
+                                <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #32325d;">
+                                    Alerta de Inventario
+                                </h1>
+
+                                <p style="margin: 0 0 24px 0; font-size: 15px; color: #525f7f; line-height: 1.6;">
+                                    El siguiente producto ha alcanzado su nivel mínimo operativo y requiere reabastecimiento:
+                                </p>
+
+                                <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="padding-bottom: 12px; font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Producto</td>
+                                            <td style="padding-bottom: 12px; font-size: 14px; color: #32325d; text-align: right; font-weight: 500;">${prodData.nombre}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-bottom: 12px; font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Categoría</td>
+                                            <td style="padding-bottom: 12px; font-size: 14px; color: #32325d; text-align: right; font-weight: 500;">${prodData.categoria}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Stock Actual</td>
+                                            <td style="font-size: 15px; color: #e63946; text-align: right; font-weight: 700;">${prodData.stock} uds.</td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div style="border-top: 1px solid #e9ecef; padding-top: 20px;">
+                                    <p style="margin: 0; font-size: 12px; color: #8898aa; line-height: 1.5;">
+                                        Ref: ${refID}<br>
+                                        Enviado de forma segura por La Esquina POS Server.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `
             };
-
             // Reutilizamos tu API de Google Apps Script
             const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
 
