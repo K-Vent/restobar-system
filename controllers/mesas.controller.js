@@ -107,8 +107,8 @@ const detalleMesa = async (req, res, next) => {
             totalT = calcularCostoBillar(minReal, precioHora);
         }
         
-        const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]); 
-        let totalC = 0; 
+        // Reemplaza tu línea actual de resProds por esta:
+        const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta, pm.cliente_nombre FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
         const listaProductos = resProds.rows.map(p => { 
             totalC += p.precio_venta * p.cantidad; 
             return { ...p, subtotal: p.precio_venta * p.cantidad }; 
@@ -239,4 +239,61 @@ const eliminarUltimaMesa = async (req, res, next) => {
     }
 };
 
-module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa,crearMesa, eliminarUltimaMesa };
+const cerrarCuentaPersonal = async (req, res, next) => {
+    try {
+        const idMesa = z.coerce.number().int().parse(req.params.id);
+        // Validamos qué persona está pagando y cómo
+        const { cliente_nombre, metodo, pago_efectivo, pago_digital } = req.body;
+
+        // 1. Obtener el total exacto solo de los productos de esta persona
+        const resC = await pool.query(`
+            SELECT SUM(p.precio_venta * pm.cantidad) as total 
+            FROM pedidos_mesa pm 
+            JOIN productos p ON pm.producto_id = p.id 
+            WHERE pm.mesa_id = $1 AND pm.cliente_nombre = $2 AND pm.pagado = FALSE
+        `, [idMesa, cliente_nombre]);
+        
+        const totalProductos = parseFloat(resC.rows[0].total || 0);
+
+        if (totalProductos === 0) {
+            return res.status(400).json({ error: 'No hay productos pendientes para esta persona.' });
+        }
+
+        // 2. Calcular los montos según el método de pago
+        const efectivo = metodo === 'MIXTO' ? (pago_efectivo || 0) : (metodo === 'EFECTIVO' ? totalProductos : 0);
+        const digital = metodo === 'MIXTO' ? (pago_digital || 0) : (metodo !== 'EFECTIVO' && metodo !== 'MIXTO' ? totalProductos : 0);
+
+        // 3. Insertar el ticket parcial en las ventas diarias (Caja General)
+        await pool.query(`
+            INSERT INTO ventas (mesa_id, tipo_mesa, total_tiempo, total_productos, total_final, fecha, metodo_pago, pago_efectivo, pago_digital) 
+            VALUES ($1, 'PAGO PARCIAL', 0, $2, $3, NOW(), $4, $5, $6)
+        `, [idMesa, totalProductos, totalProductos, metodo, efectivo, digital]);
+
+        // 4. Marcar EXCLUSIVAMENTE los pedidos de esta persona como pagados
+        await pool.query(`
+            UPDATE pedidos_mesa SET pagado = TRUE 
+            WHERE mesa_id = $1 AND cliente_nombre = $2 AND pagado = FALSE
+        `, [idMesa, cliente_nombre]);
+
+        // 5. Auditoría Forense (Espía Blindado)
+        try {
+            const mesaDb = await pool.query('SELECT numero_mesa FROM mesas WHERE id = $1', [idMesa]);
+            const numMesa = mesaDb.rows.length > 0 ? mesaDb.rows[0].numero_mesa : idMesa;
+            await pool.query(
+                "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'PAGO PARCIAL', 'Cobró la cuenta de ' || $2 || ' en Mesa ' || $3 || ' por S/ ' || $4)", 
+                [req.usuario.id, cliente_nombre, numMesa, totalProductos.toFixed(2)]
+            );
+        } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
+
+        res.json({ success: true, cobrado: totalProductos });
+
+        // 6. Actualizar las pantallas por WebSockets
+        const io = req.app.get('socketio');
+        if (io) {
+            io.emit('actualizar_mesas'); 
+            io.emit('actualizar_caja'); 
+        }
+    } catch (err) { next(err); }
+};
+
+module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa,crearMesa, eliminarUltimaMesa, cerrarCuentaPersonal };

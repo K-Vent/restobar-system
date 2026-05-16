@@ -344,23 +344,39 @@ function filtrarProductosMesa() {
 async function agregarPedido(productoId) {
     const cantInput = document.getElementById(`cant-${productoId}`);
     const cantidadSeleccionada = parseInt(cantInput.value) || 1;
- 
+    
+    // 🔥 NUEVO: Capturamos el nombre de la persona desde el input del modal
+    const inputNombre = document.getElementById('nombrePersonaPedido');
+    const nombrePersona = inputNombre ? inputNombre.value.trim() : '';
+
     if (cantidadSeleccionada <= 0) return mostrarAlerta("La cantidad debe ser mayor a 0");
- 
+
     try {
         const res = await fetch('/api/pedidos/agregar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mesa_id: mesaAccionId, producto_id: productoId, cantidad: cantidadSeleccionada })
+            body: JSON.stringify({ 
+                mesa_id: mesaAccionId, 
+                producto_id: productoId, 
+                cantidad: cantidadSeleccionada,
+                cliente_nombre: nombrePersona // 🔥 NUEVO: Se envía al backend
+            })
         });
+        
         if (res.ok) {
             mostrarToast(`✅ ${cantidadSeleccionada}x añadido(s)`);
+            
+            // 🔥 NUEVO: Limpiamos el nombre para el siguiente pedido
+            if (inputNombre) inputNombre.value = '';
+
             await cargarProductosMenu(); 
             abrirOpciones(mesaAccionId); 
         } else {
             mostrarAlerta("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
         }
-    } catch (e) { mostrarAlerta("Error de red al añadir producto."); }
+    } catch (e) { 
+        mostrarAlerta("Error de red al añadir producto."); 
+    }
 }
 
 async function eliminarPedido(idPedido, idMesa) {
@@ -390,26 +406,58 @@ async function abrirModalCobro(id) {
         const data = await res.json();
         
         totalDeudaCobro = parseFloat(data.totalFinal);
- 
+
         let listaHtml = '';
         if (data.listaProductos && data.listaProductos.length > 0) {
+            
+            // 1. Agrupar productos por cliente
+            const cuentasPorPersona = {};
             data.listaProductos.forEach(p => {
+                const nombre = p.cliente_nombre || 'General'; 
+                if (!cuentasPorPersona[nombre]) {
+                    cuentasPorPersona[nombre] = { total: 0, items: [] };
+                }
+                cuentasPorPersona[nombre].items.push(p);
+                cuentasPorPersona[nombre].total += p.subtotal;
+            });
+
+            // 2. Renderizar por grupos manteniendo tu diseño
+            for (const [persona, cuenta] of Object.entries(cuentasPorPersona)) {
+                
+                // --- Cabecera de la Persona ---
                 listaHtml += `
-                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
-                        <div class="text-white fw-bold">
-                            <span class="text-warning me-2">${p.cantidad}x</span> ${p.nombre}
+                    <div class="d-flex justify-content-between align-items-center bg-dark p-2 mt-2 rounded border border-secondary">
+                        <div class="text-white fw-bold small">
+                            👤 Cuenta: <span class="text-info text-uppercase">${persona}</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="text-success fw-bold">S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-                            <button class="btn btn-outline-danger btn-sm" onclick="eliminarPedido(${p.id}, ${id})" title="Quitar de la cuenta">🗑️</button>
+                            <span class="text-success fw-bold">S/ ${cuenta.total.toFixed(2)}</span>
+                            ${persona !== 'General' ? 
+                                `<button class="btn btn-success btn-sm fw-bold py-0 px-2" onclick="cobrarCuentaPersonal('${persona}', ${cuenta.total})">Cobrar Solo a Él</button>` 
+                            : ''}
                         </div>
                     </div>
                 `;
-            });
+
+                // --- Lista de Productos de esta Persona ---
+                cuenta.items.forEach(p => {
+                    listaHtml += `
+                        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary py-2 ps-3">
+                            <div class="text-white">
+                                <span class="text-warning me-2">${p.cantidad}x</span> ${p.nombre}
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted small">S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
+                                <button class="btn btn-outline-danger btn-sm p-1" onclick="eliminarPedido(${p.id}, ${id})" title="Quitar de la cuenta"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
         } else {
             listaHtml = '<div class="text-muted text-center py-3 small">No hay consumo registrado</div>';
         }
- 
+
         const html = `
             <div class="bg-black p-3 rounded mb-3 border border-secondary shadow-sm">
                 <div class="d-flex justify-content-between mb-3 text-muted border-bottom border-secondary pb-2">
@@ -417,12 +465,12 @@ async function abrirModalCobro(id) {
                     <span class="text-warning fw-bold fs-5">S/ ${data.totalTiempo.toFixed(2)}</span>
                 </div>
                 <div class="text-muted small text-uppercase fw-bold mb-2">🍺 Detalle de Consumo:</div>
-                <div style="max-height: 180px; overflow-y: auto;" class="pe-1">
+                <div style="max-height: 250px; overflow-y: auto;" class="pe-1">
                     ${listaHtml}
                 </div>
             </div>
             <div class="text-center fw-bold text-white mb-4">
-                <span class="fs-4">TOTAL:</span> 
+                <span class="fs-4">TOTAL MESA:</span> 
                 <span class="fs-1 text-warning d-block" style="text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
             <button class="btn btn-warning w-100 fw-bold py-3 shadow-sm fs-6" onclick="abrirScanner()">
@@ -432,6 +480,46 @@ async function abrirModalCobro(id) {
         document.getElementById('cobro-contenido').innerHTML = html;
         document.getElementById('modal-cobro').style.display = 'flex';
     } catch (e) { console.error("Error al obtener cuenta:", e); }
+}
+
+// Ejecuta el cobro de una sola persona
+async function cobrarCuentaPersonal(nombrePersona, montoDeuda) {
+    // 1. Confirmación de seguridad
+    if (!confirm(`¿Deseas cobrar los consumos de ${nombrePersona} por un total de S/ ${montoDeuda.toFixed(2)}?`)) return;
+
+    // 2. Preguntar método de pago rápido
+    let metodoPrompt = prompt("¿Método de pago? Escribe 1 para EFECTIVO o 2 para DIGITAL", "1");
+    if (!metodoPrompt) return; // Si cancela, salimos
+
+    let metodoFinal = 'EFECTIVO';
+    if (metodoPrompt === '2') metodoFinal = 'DIGITAL';
+
+    try {
+        const res = await fetch(`/api/mesas/cerrar-personal/${mesaAccionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                cliente_nombre: nombrePersona, 
+                metodo: metodoFinal 
+            })
+        });
+        
+        if (res.ok) {
+            mostrarToast(`✅ Cuenta de ${nombrePersona} cobrada (${metodoFinal})`);
+            
+            // Recargamos el modal de cobro para que desaparezcan los productos de esa persona
+            // y se actualice el TOTAL MESA con lo que queda.
+            abrirModalCobro(mesaAccionId); 
+            
+            cargarMesas(); // Refresca las vistas generales
+            if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
+        } else {
+            const data = await res.json();
+            mostrarAlerta(data.error || "Error al procesar cobro parcial.");
+        }
+    } catch (e) { 
+        mostrarAlerta("Error de conexión al procesar el cobro parcial."); 
+    }
 }
 
 function abrirCobroMixto() {

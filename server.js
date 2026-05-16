@@ -40,7 +40,12 @@ const cerrarMesaSchema = z.object({
     pago_efectivo: z.coerce.number().nonnegative().optional(),
     pago_digital: z.coerce.number().nonnegative().optional()
 });
-const pedidoSchema = z.object({ mesa_id: z.coerce.number().int().positive(), producto_id: z.coerce.number().int().positive(), cantidad: z.coerce.number().int().positive() });
+const pedidoSchema = z.object({ 
+    mesa_id: z.coerce.number().int().positive(), 
+    producto_id: z.coerce.number().int().positive(), 
+    cantidad: z.coerce.number().int().positive(),
+    cliente_nombre: z.string().optional() // 🔥 NUEVO: Permitimos recibir el nombre
+});
 const cambiarMesaSchema = z.object({ idOrigen: z.coerce.number().int().positive(), idDestino: z.coerce.number().int().positive() });
 const nuevoProductoSchema = z.object({ nombre: z.string().min(1), precio: z.coerce.number().positive(), stock: z.coerce.number().int().nonnegative().default(0), categoria: z.string().default('General') });
 const stockSchema = z.object({ id: z.coerce.number().int().positive(), cantidad: z.coerce.number().int().positive(), costo: z.coerce.number().nonnegative().optional(), nombre: z.string() });
@@ -119,6 +124,7 @@ async function getPrecioBillar() {
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_efectivo DECIMAL(10,2) DEFAULT 0"); } catch (e) {} 
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_digital DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
         try { await pool.query("DROP TABLE IF EXISTS session CASCADE"); } catch(e){} // Eliminamos la tabla obsoleta
+        try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN cliente_nombre VARCHAR(100) DEFAULT 'General'"); } catch (e) {}
         // 👇 AÑADIR ESTA LÍNEA PARA CREAR LA TABLA DE CLIENTES 👇
         try { 
             await pool.query(`
@@ -249,8 +255,16 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
     try { 
         const val = pedidoSchema.parse(req.body); 
         
-        // 1. Registramos el pedido
-        await pool.query('INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion, entregado) VALUES ($1, $2, $3, NOW(), FALSE)', [val.mesa_id, val.producto_id, val.cantidad]); 
+        // 🔥 LÓGICA DE CUENTAS: Capturamos el nombre de la persona. Si no envían nada, es 'General'
+        const cliente = req.body.cliente_nombre && req.body.cliente_nombre.trim() !== '' 
+            ? req.body.cliente_nombre.trim().toUpperCase() 
+            : 'General';
+
+        // 1. Registramos el pedido INYECTANDO EL NOMBRE ($4)
+        await pool.query(
+            'INSERT INTO pedidos_mesa (mesa_id, producto_id, cantidad, fecha_creacion, entregado, cliente_nombre) VALUES ($1, $2, $3, NOW(), FALSE, $4)', 
+            [val.mesa_id, val.producto_id, val.cantidad, cliente]
+        ); 
         
         // 2. Descontamos el stock y RETORNAMOS cómo quedó (Truco de Arquitecto: RETURNING)
         const updateStock = await pool.query(
@@ -261,10 +275,10 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         const prodData = updateStock.rows[0];
         const mesaDb = await pool.query('SELECT numero_mesa FROM mesas WHERE id = $1', [val.mesa_id]);
         
-        // 3. Auditoría interna
+        // 3. Auditoría interna (Registramos para quién fue)
         await pool.query(
-            "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO PEDIDO', 'Añadió ' || $2 || 'x ' || $3 || ' a Mesa ' || $4)", 
-            [req.usuario.id, val.cantidad, prodData.nombre, mesaDb.rows[0].numero_mesa]
+            "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO PEDIDO', 'Añadió ' || $2 || 'x ' || $3 || ' a Mesa ' || $4 || ' (Cuenta: ' || $5 || ')')", 
+            [req.usuario.id, val.cantidad, prodData.nombre, mesaDb.rows[0].numero_mesa, cliente]
         );
 
         // ==========================================
@@ -273,65 +287,35 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         const limiteCritico = 5;
         const stockAnterior = prodData.stock + val.cantidad;
 
-        // LÓGICA ANTI-SPAM: Solo envía correo si el producto ACABA de cruzar la línea de peligro
         if (prodData.stock <= limiteCritico && stockAnterior > limiteCritico) {
-            
-            // Generamos un ID de rastreo ficticio pero profesional basado en la hora
             const refID = `INV-${Date.now().toString().slice(-6)}`;
-
             const payloadCorreo = {
-                to: 'kevinventocilla7@gmail.com', // Mantén tu correo aquí
+                to: 'kevinventocilla7@gmail.com',
                 subject: `Acción Requerida: Stock bajo de ${prodData.nombre}`,
                 htmlBody: `
-                    <div style="background-color: #f6f9fc; padding: 40px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    <div style="background-color: #f6f9fc; padding: 40px 0; font-family: sans-serif;">
                         <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                            
                             <div style="height: 4px; background-color: #000000;"></div>
-
                             <div style="padding: 32px 40px;">
-                                <p style="margin: 0 0 24px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #8898aa;">
-                                    La Esquina del Billar
-                                </p>
-
-                                <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #32325d;">
-                                    Alerta de Inventario
-                                </h1>
-
-                                <p style="margin: 0 0 24px 0; font-size: 15px; color: #525f7f; line-height: 1.6;">
-                                    El siguiente producto ha alcanzado su nivel mínimo operativo y requiere reabastecimiento:
-                                </p>
-
-                                <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 24px; border: 1px solid #e9ecef;">
-                                    <table style="width: 100%; border-collapse: collapse;">
-                                        <tr>
-                                            <td style="padding-bottom: 12px; font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Producto</td>
-                                            <td style="padding-bottom: 12px; font-size: 14px; color: #32325d; text-align: right; font-weight: 500;">${prodData.nombre}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding-bottom: 12px; font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Categoría</td>
-                                            <td style="padding-bottom: 12px; font-size: 14px; color: #32325d; text-align: right; font-weight: 500;">${prodData.categoria}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-size: 13px; color: #8898aa; text-transform: uppercase; font-weight: 600;">Stock Actual</td>
-                                            <td style="font-size: 15px; color: #e63946; text-align: right; font-weight: 700;">${prodData.stock} uds.</td>
-                                        </tr>
-                                    </table>
-                                </div>
-
-                                <div style="border-top: 1px solid #e9ecef; padding-top: 20px;">
-                                    <p style="margin: 0; font-size: 12px; color: #8898aa; line-height: 1.5;">
-                                        Ref: ${refID}<br>
-                                        Enviado de forma segura por La Esquina POS Server.
-                                    </p>
-                                </div>
+                                <p style="margin: 0 0 24px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #8898aa;">La Esquina del Billar</p>
+                                <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #32325d;">Alerta de Inventario</h1>
+                                <p style="margin: 0 0 24px 0; font-size: 15px; color: #525f7f;">El producto ha alcanzado su nivel mínimo:</p>
+                                <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                                    <tr>
+                                        <td style="padding-bottom: 12px; font-weight: 600;">Producto</td>
+                                        <td style="padding-bottom: 12px; text-align: right;">${prodData.nombre}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 600;">Stock Actual</td>
+                                        <td style="color: #e63946; text-align: right; font-weight: 700;">${prodData.stock} uds.</td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </div>
                 `
             };
-            // Reutilizamos tu API de Google Apps Script
             const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
-
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },

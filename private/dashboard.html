@@ -180,17 +180,26 @@
     </div>
 
     <div id="modal-pedidos" class="modal-overlay">
-        <div class="modal-box" style="max-width: 500px;">
-            <div class="modal-title">🍺 Añadir Consumo</div>
-            <div class="modal-body" style="padding: 20px;">
-                <input type="text" id="buscador-productos" class="modal-input" placeholder="🔍 Buscar cerveza, trago, etc..." onkeyup="filtrarProductosMesa()" style="margin-bottom: 20px;">
-                <div id="lista-productos-mesa" style="max-height: 350px; overflow-y: auto; display: grid; gap: 12px; padding-right: 5px;"></div>
+    <div class="modal-box" style="max-width: 500px;">
+        <div class="modal-title">🍺 Añadir Consumo</div>
+        <div class="modal-body" style="padding: 20px;">
+            
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 14px; font-weight: bold; color: #444;">
+                    👤 ¿Para quién es el pedido? (Opcional)
+                </label>
+                <input type="text" id="nombrePersonaPedido" class="modal-input" placeholder="Ej. Carlos (Dejar vacío si es para toda la mesa)" style="margin-top: 8px;">
             </div>
-            <div class="modal-btns">
-                <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-pedidos')">Cerrar</button>
-            </div>
+            <input type="text" id="buscador-productos" class="modal-input" placeholder="🔍 Buscar cerveza, trago, etc..." onkeyup="filtrarProductosMesa()" style="margin-bottom: 20px;">
+            
+            <div id="lista-productos-mesa" style="max-height: 350px; overflow-y: auto; display: grid; gap: 12px; padding-right: 5px;"></div>
+            
+        </div>
+        <div class="modal-btns">
+            <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-pedidos')">Cerrar</button>
         </div>
     </div>
+</div>
 
     <div id="modal-cobro" class="modal-overlay">
         <div class="modal-box">
