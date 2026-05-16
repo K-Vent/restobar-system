@@ -189,6 +189,8 @@
                     👤 ¿Para quién es el pedido? (Opcional)
                 </label>
                 <input type="text" id="nombrePersonaPedido" class="modal-input" placeholder="Ej. Carlos (Dejar vacío si es para toda la mesa)" style="margin-top: 8px;">
+                
+                <div id="nombresRapidos" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
             </div>
             <input type="text" id="buscador-productos" class="modal-input" placeholder="🔍 Buscar cerveza, trago, etc..." onkeyup="filtrarProductosMesa()" style="margin-bottom: 20px;">
             
@@ -196,15 +198,6 @@
             
         </div>
         
-        <div style="margin-bottom: 20px;">
-    <label style="font-size: 14px; font-weight: bold; color: #444;">
-        👤 ¿Para quién es el pedido? (Opcional)
-    </label>
-    <input type="text" id="nombrePersonaPedido" class="modal-input" placeholder="Ej. Carlos (Dejar vacío si es para toda la mesa)" style="margin-top: 8px;">
-    
-    <div id="nombresRapidos" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
-    </div>
-
         <div class="modal-btns">
             <button class="btn-modal btn-cancel" onclick="cerrarModal('modal-pedidos')">Cerrar</button>
         </div>
