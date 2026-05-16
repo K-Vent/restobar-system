@@ -107,8 +107,12 @@ const detalleMesa = async (req, res, next) => {
             totalT = calcularCostoBillar(minReal, precioHora);
         }
         
-        // Reemplaza tu línea actual de resProds por esta:
+        // Obtenemos los productos incluyendo cliente_nombre
         const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta, pm.cliente_nombre FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
+        
+        // 🔥 SOLUCIÓN: Declaramos la variable totalC aquí para que inicie en 0
+        let totalC = 0; 
+        
         const listaProductos = resProds.rows.map(p => { 
             totalC += p.precio_venta * p.cantidad; 
             return { ...p, subtotal: p.precio_venta * p.cantidad }; 
