@@ -292,7 +292,18 @@ function abrirOpciones(id) {
     mesaAccionId = id;
     if (productosDisponibles.length === 0) cargarProductosMenu(); 
     renderizarProductosMesa(productosDisponibles);
+    
+    // 1. Limpiamos el campo de nombre antes de abrir
+    const inputNombre = document.getElementById('nombrePersonaPedido');
+    if (inputNombre) inputNombre.value = '';
+    
+    // 2. Mostramos el modal
     document.getElementById('modal-pedidos').style.display = 'flex';
+    
+    // 3. Cargamos los nombres como botones (después de mostrar)
+    cargarNombresRapidos();
+    
+    // 4. Enfocamos el buscador
     document.getElementById('buscador-productos').value = '';
     document.getElementById('buscador-productos').focus();
 }
@@ -370,6 +381,7 @@ async function agregarPedido(productoId) {
             if (inputNombre) inputNombre.value = '';
 
             await cargarProductosMenu(); 
+            await cargarNombresRapidos();
             abrirOpciones(mesaAccionId); 
         } else {
             mostrarAlerta("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
@@ -521,6 +533,35 @@ async function cobrarCuentaPersonal(nombrePersona, montoDeuda) {
         mostrarAlerta("Error de conexión al procesar el cobro parcial."); 
     }
 }
+
+// Carga los nombres como botones seleccionables
+async function cargarNombresRapidos() {
+    try {
+        const div = document.getElementById('nombresRapidos');
+        div.innerHTML = ''; // Limpiamos
+
+        const res = await fetch(`/api/mesas/${mesaAccionId}/nombres`);
+        const nombres = await res.json();
+        
+        nombres.forEach(nombre => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-outline-info fw-bold';
+            btn.style.borderRadius = '15px';
+            btn.style.padding = '2px 12px';
+            btn.innerText = nombre;
+            
+            // Al hacer clic, el input se llena solito
+            btn.onclick = () => {
+                document.getElementById('nombrePersonaPedido').value = nombre;
+            };
+            
+            div.appendChild(btn);
+        });
+    } catch(e) {
+        console.error("Error cargando nombres rápidos", e);
+    }
+}
+
 
 function abrirCobroMixto() {
     document.getElementById('modal-cobro').style.display = 'none';

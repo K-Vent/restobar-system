@@ -300,4 +300,20 @@ const cerrarCuentaPersonal = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
-module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa,crearMesa, eliminarUltimaMesa, cerrarCuentaPersonal };
+const obtenerNombresMesa = async (req, res, next) => {
+    try {
+        const id = z.coerce.number().int().parse(req.params.id);
+        const r = await pool.query(
+            "SELECT DISTINCT cliente_nombre FROM pedidos_mesa WHERE mesa_id = $1 AND pagado = FALSE", 
+            [id]
+        );
+        // Filtramos 'General', nulos o vacíos
+        const nombres = r.rows
+            .map(row => row.cliente_nombre)
+            .filter(n => n !== 'General' && n !== null && n.trim() !== '');
+            
+        res.json(nombres);
+    } catch (e) { next(e); }
+};
+
+module.exports = { obtenerMesas, abrirMesa, detalleMesa, cerrarMesa, cambiarMesa,crearMesa, eliminarUltimaMesa, cerrarCuentaPersonal, obtenerNombresMesa };

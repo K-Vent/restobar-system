@@ -10,7 +10,8 @@ const {
     cambiarMesa,
     crearMesa, 
     eliminarUltimaMesa,
-    cerrarCuentaPersonal // 1. SE IMPORTA LA NUEVA FUNCIÓN AQUÍ
+    cerrarCuentaPersonal,
+    obtenerNombresMesa // 1. SE IMPORTA LA NUEVA FUNCIÓN AQUÍ
 } = require('../controllers/mesas.controller');
 
 router.get('/',                  verificarSesion,             obtenerMesas);
@@ -21,6 +22,7 @@ router.post('/cambiar',          verificarSesion,             cambiarMesa);
 
 // 2. GESTIÓN DE CUENTAS DIVIDIDAS (Se coloca junto a los flujos de cierre)
 router.post('/cerrar-personal/:id', verificarSesion,          cerrarCuentaPersonal);
+router.get('/:id/nombres', verificarSesion, obtenerNombresMesa);
 
 // 🔒 CORREGIDO: estas dos rutas estaban sin protección — cualquiera podía crear o borrar mesas
 router.post('/crear',            verificarSesion, soloAdmin,  crearMesa);
