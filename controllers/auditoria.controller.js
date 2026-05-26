@@ -21,7 +21,7 @@ const obtenerRegistrosAuditoria = async (req, res, next) => {
         const result = await pool.query(consulta);
         res.json(result.rows);
     } catch (error) {
-        console.error("🔥 Error al leer auditoría:", error);
+        console.error(" Error al leer auditoría:", error);
         res.status(500).json({ error: 'Error al obtener registros de auditoría' });
     }
 };

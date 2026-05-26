@@ -12,9 +12,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* ═══════════════════════════════════════════
+        /* 
            DESIGN TOKENS
-           ═══════════════════════════════════════════ */
+            */
         :root {
             --bg-main: #09090b;
             --bg-surface: #18181b;
@@ -28,9 +28,9 @@
             --radius: 6px;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            GLOBAL RESET & BASE
-           ═══════════════════════════════════════════ */
+            */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -46,9 +46,9 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            HEADER & NAVIGATION
-           ═══════════════════════════════════════════ */
+            */
         .header-container {
             position: sticky;
             top: 0;
@@ -62,12 +62,10 @@
             padding: 24px 0 12px 0;
         }
 
-        .logo {
-            width: 80px;
-            filter: grayscale(100%) brightness(200%);
-        }
-
-        /* Subtitle under logo */
+        .logo-header {
+            height: 36px;
+            opacity: 1;
+        }/* Subtitle under logo */
         .header-subtitle {
             text-align: center;
             font-size: 11px;
@@ -78,9 +76,9 @@
             margin-top: 8px;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            CATEGORY TABS
-           ═══════════════════════════════════════════ */
+            */
         .category-tabs {
             display: flex;
             overflow-x: auto;
@@ -128,18 +126,18 @@
             font-weight: 600;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            PRODUCT CONTAINER
-           ═══════════════════════════════════════════ */
+            */
         .container {
             padding: 24px 18px;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            PRODUCT CARDS
-           ═══════════════════════════════════════════ */
+            */
         .producto-card {
             background: var(--bg-surface);
             border: 1px solid var(--border);
@@ -172,9 +170,9 @@
             }
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            PRODUCT INFO
-           ═══════════════════════════════════════════ */
+            */
         .producto-info {
             flex-grow: 1;
             min-width: 0;
@@ -204,9 +202,9 @@
             color: var(--primary);
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            PRICE BADGES
-           ═══════════════════════════════════════════ */
+            */
         .producto-precio {
             font-size: 16px;
             font-weight: 600;
@@ -216,9 +214,9 @@
             flex-shrink: 0;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            LOADING & EMPTY STATES
-           ═══════════════════════════════════════════ */
+            */
         .loading-box {
             text-align: center;
             color: var(--text-muted);
@@ -244,9 +242,9 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            FLOATING FOOTER
-           ═══════════════════════════════════════════ */
+            */
         .powered-footer {
             position: fixed;
             bottom: 0;
@@ -267,9 +265,9 @@
             font-weight: 600;
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            SCROLLBAR STYLING (desktop)
-           ═══════════════════════════════════════════ */
+            */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -284,9 +282,9 @@
             background: var(--border);
         }
 
-        /* ═══════════════════════════════════════════
+        /* 
            RESPONSIVE
-           ═══════════════════════════════════════════ */
+            */
         @media (max-width: 380px) {
             .container { padding: 16px 14px; }
             .producto-card { padding: 16px; }

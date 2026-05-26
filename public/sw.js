@@ -17,7 +17,7 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
         .then(cache => {
-            console.log('📦 Interfaz guardada en caché local');
+            console.log(' Interfaz guardada en caché local');
             return cache.addAll(urlsToCache);
         })
     );

@@ -8,7 +8,7 @@ const newSidebar = `
     <!-- Corporate Sidebar -->
     <nav class="sidebar">
         <div class="text-center mb-5 mt-2">
-            <img src="/logo.png" class="brand-logo" style="max-width: 120px; filter: grayscale(100%) brightness(150%) contrast(120%); opacity: 0.9;" alt="La Esquina">
+            <img src="/logo.png" class="brand-logo" style="max-width: 120px;" alt="La Esquina">
         </div>
         
         <button class="btn btn-warning fw-bold mb-4 py-2 w-100 d-flex justify-content-center align-items-center gap-2" style="font-size: 13px;" onclick="document.getElementById('modal-gasto') ? document.getElementById('modal-gasto').style.display='flex' : alert('Gasto no disponible aquí')">

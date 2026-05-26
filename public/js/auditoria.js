@@ -19,7 +19,7 @@ async function cargarAuditoria() {
         tbody.innerHTML = '';
 
         if (logs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--success);">✅ Sistema limpio. No se han detectado alteraciones.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--success);"> Sistema limpio. No se han detectado alteraciones.</td></tr>`;
             return;
         }
 

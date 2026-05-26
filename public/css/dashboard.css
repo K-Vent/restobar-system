@@ -8,34 +8,36 @@
 
 /* 2. DESIGN TOKENS (Corporate Palette) */
 :root {
-    --bg-main: #09090b;
-    --bg-surface: #18181b;
-    --bg-elevated: #27272a;
-    --bg-card: #18181b;
+    --bg-main: #0a0e17; /* Rich deep blue-black */
+    --bg-surface: #121826;
+    --bg-elevated: #1e293b;
+    --bg-card: #121826;
     
-    /* Matte Bronze/Gold */
-    --gold: #B8973E;
-    --gold-hover: #c4a655;
-    --gold-dim: rgba(184, 151, 62, 0.1);
+    /* Matte Bronze/Gold with a touch of life */
+    --gold: #D4AF37;
+    --gold-hover: #e5c355;
+    --gold-dim: rgba(212, 175, 55, 0.15);
     
     --success: #22c55e;
     --danger: #ef4444;
     --info: #3b82f6;
     
-    --text-main: #fafafa;
-    --text-muted: #a1a1aa;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
     
-    --border: #27272a;
-    --border-gold: rgba(184, 151, 62, 0.4);
+    --border: #334155;
+    --border-gold: rgba(212, 175, 55, 0.5);
     
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 8px;
     
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.5);
+    --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+    --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.3);
+    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.6), 0 10px 10px -5px rgba(0,0,0,0.4);
+    --shadow-gold: 0 0 15px rgba(212, 175, 55, 0.15);
     
-    --transition: all 0.2s linear;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 3. BASE RESET & TYPOGRAPHY */
@@ -45,7 +47,7 @@ body, html {
     margin: 0; padding: 0;
     width: 100%; min-height: 100vh;
     overflow-x: hidden;
-    background-color: var(--bg-main);
+    background: radial-gradient(circle at top center, #101623 0%, var(--bg-main) 100%);
     font-family: 'Inter', -apple-system, sans-serif;
     color: var(--text-main);
     -webkit-font-smoothing: antialiased;
@@ -246,15 +248,22 @@ body, html {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 16px;
+    box-shadow: var(--shadow-sm);
     transition: var(--transition);
 }
 
+.card-mesa:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 .card-mesa-libre { border: 1px solid var(--border); }
-.card-mesa-libre:hover { border-color: #3f3f46; }
+.card-mesa-libre:hover { border-color: #475569; }
 
 .card-mesa-ocupada {
     border-top: 3px solid var(--gold);
     background: var(--bg-elevated);
+    box-shadow: var(--shadow-gold), var(--shadow-md);
 }
 
 .btn-iniciar-mesa {

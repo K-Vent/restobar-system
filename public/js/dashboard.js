@@ -764,7 +764,7 @@ async function agregarMesaDB(tipo) {
             body: JSON.stringify({ tipo })
         });
         if (res.ok) {
-            mostrarToast("✅ Mesa añadida a la infraestructura");
+            mostrarToast(" Mesa añadida a la infraestructura");
             cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
@@ -777,7 +777,7 @@ async function agregarMesaDB(tipo) {
 
 async function eliminarUltimaMesaDB() {
     const confirmado = await mostrarConfirmacion(
-        "⚠️ ALERTA DE INFRAESTRUCTURA", 
+        " ALERTA DE INFRAESTRUCTURA", 
         "¿Estás seguro de eliminar la ÚLTIMA mesa registrada? Asegúrate de que esté vacía."
     );
     if (!confirmado) return;
@@ -785,7 +785,7 @@ async function eliminarUltimaMesaDB() {
     try {
         const res = await fetch('/api/mesas/eliminar-ultima', { method: 'DELETE' });
         if (res.ok) {
-            mostrarToast("🗑️ Mesa retirada exitosamente");
+            mostrarToast(" Mesa retirada exitosamente");
             cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
@@ -849,16 +849,16 @@ async function cargarEventos() {
  
             return `
                 <tr>
-                    <td><strong>${fechaFormateada}</strong><br><span class="small text-muted">⏰ ${ev.hora_inicio}</span></td>
-                    <td>${ev.cliente_nombre}<br><a href="https://wa.me/51${ev.cliente_telefono}" target="_blank" class="text-success small text-decoration-none">💬 ${ev.cliente_telefono}</a></td>
+                    <td><strong>${fechaFormateada}</strong><br><span class="small text-muted"> ${ev.hora_inicio}</span></td>
+                    <td>${ev.cliente_nombre}<br><a href="https://wa.me/51${ev.cliente_telefono}" target="_blank" class="text-success small text-decoration-none"> ${ev.cliente_telefono}</a></td>
                     <td>${ev.tipo_evento}<br><span class="badge bg-secondary">${ev.cantidad_personas}</span></td>
                     <td class="text-warning small">${ev.tipo_plan}</td>
                     <td class="small" style="max-width: 200px;">${ev.extras_seleccionados}</td>
                     <td class="text-center"><span class="badge ${colorEstado}">${ev.estado}</span></td>
                     <td class="text-center">
                         ${ev.estado === 'Pendiente' ? `
-                            <button class="btn btn-sm btn-success mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Aprobado')">✓ Aprobar</button>
-                            <button class="btn btn-sm btn-danger mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Rechazado')">✕ Rechazar</button>
+                            <button class="btn btn-sm btn-success mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Aprobado')"> Aprobar</button>
+                            <button class="btn btn-sm btn-danger mb-1" onclick="cambiarEstadoEvento(${ev.id}, 'Rechazado')"> Rechazar</button>
                         ` : '<span class="text-muted small">Gestionado</span>'}
                     </td>
                 </tr>
