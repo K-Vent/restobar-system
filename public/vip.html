@@ -2,637 +2,516 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>VIP | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Portal VIP | La Esquina del Billar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* 
-           CSS CUSTOM PROPERTIES
-         */
         :root {
-            --bg-main: #09090b;
-            --bg-surface: #18181b;
-            --bg-elevated: #27272a;
-            --text-main: #fafafa;
-            --text-muted: #a1a1aa;
-            --border: #27272a;
-            --primary: #B8973E;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --radius: 6px;
+            --gold: #D4AF37;
+            --gold-light: #FFDF73;
+            --dark-bg: #0a0a0c;
         }
 
-        /* 
-           RESET & BASE
-         */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: radial-gradient(circle at top center, #1a1a20 0%, #000000 100%);
+            color: white;
             min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* 
-           WALLET CARD
-         */
-        .wallet-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 400px;
-            padding: 0 30px 40px 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-            transition: opacity 0.2s linear;
-        }
-
-        /* 
-           HEADER
-         */
-        .header {
-            position: relative;
-            z-index: 1;
-            padding-top: 40px;
-        }
-
-        .logo-text {
-            color: var(--text-main);
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 8px;
+            align-items: center;
+            overflow-x: hidden;
         }
 
-        .sub-text {
-            color: var(--text-muted);
-            font-size: 12px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 35px;
-            font-weight: 500;
+        /* Ambient Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+        }
+        .orb-1 { width: 300px; height: 300px; background: rgba(212, 175, 55, 0.2); top: -100px; left: -100px; animation: float 10s infinite ease-in-out alternate; }
+        .orb-2 { width: 250px; height: 250px; background: rgba(255, 255, 255, 0.1); bottom: -50px; right: -50px; animation: float 8s infinite ease-in-out alternate-reverse; }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(30px) scale(1.1); }
         }
 
-        /* 
-           LOGIN SECTION
-         */
-        #login-section {
-            position: relative;
-            z-index: 1;
-            transition: opacity 0.2s linear, transform 0.2s linear;
-        }
-
-        #login-section.hiding {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        #card-section {
-            position: relative;
-            z-index: 1;
-        }
-
-        #card-section.showing {
-            animation: sectionFadeSlideIn 0.2s linear forwards;
-        }
-
-        @keyframes sectionFadeSlideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 
-           INPUT STYLES
-         */
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .input-vip {
+        .container {
             width: 100%;
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 16px 18px;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 500;
-            outline: none;
-            transition: border-color 0.2s linear;
+            max-width: 450px;
+            padding: 20px;
+            z-index: 10;
+            position: relative;
         }
 
-        .input-vip:focus {
-            border-color: var(--primary);
-        }
-
-        .input-vip::placeholder {
-            color: var(--text-muted);
-        }
-
-        input[type="password"].input-vip {
-            letter-spacing: 12px;
+        .header-logo {
             text-align: center;
-            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            width: 130px;
+            drop-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            animation: pulseLogo 3s infinite alternate ease-in-out;
         }
 
-        /* 
-           BUTTON
-         */
-        .btn-vip {
-            background: var(--primary);
-            color: #09090b;
-            font-weight: 600;
-            font-size: 15px;
-            padding: 16px;
-            border: none;
-            border-radius: var(--radius);
+        @keyframes pulseLogo {
+            0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212,175,55,0.2)); }
+            100% { transform: scale(1.03); filter: drop-shadow(0 0 15px rgba(212,175,55,0.5)); }
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px 25px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
             width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: white;
+            padding: 16px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            text-align: center;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-gold {
+            width: 100%;
+            background: linear-gradient(135deg, var(--gold), #9a7d25);
+            color: black;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border-radius: 12px;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: background-color 0.2s linear;
-            margin-top: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px -5px rgba(212, 175, 55, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gold::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(45deg) translate(-100%, -100%);
+            transition: all 0.5s ease;
+        }
+
+        .btn-gold:hover::after {
+            transform: rotate(45deg) translate(100%, 100%);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(212, 175, 55, 0.6);
+        }
+
+        /* VIP Card Design */
+        .vip-card {
+            background: linear-gradient(135deg, #111, #222);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: none;
+            text-align: left;
+            animation: cardEntrance 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(40px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .card-glare {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            pointer-events: none;
+        }
+
+        .hologram-seal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ffeb99, #d4af37);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            font-size: 20px;
+            box-shadow: 0 0 15px rgba(212,175,55,0.5);
+            animation: spin 10s linear infinite;
         }
 
-        .btn-vip:hover {
-            background-color: #a18334;
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* 
-           CLIENT INFO CARD
-         */
-        .client-info {
-            background: var(--bg-main);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-        }
-
-        .client-name {
-            font-size: 24px;
+        .vip-name {
+            font-size: 1.2rem;
             font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        .client-level {
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
+            margin-bottom: 5px;
             text-transform: uppercase;
+        }
+
+        .vip-level {
+            font-size: 0.9rem;
+            color: var(--gold);
+            font-weight: 600;
             letter-spacing: 1px;
-            background: transparent;
-            border: none;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        /* 
-           QR CONTAINER
-         */
-        .qr-container {
-            background: #fff;
-            padding: 10px;
-            border-radius: var(--radius);
-            display: inline-block;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .qr-container img {
-            display: block;
-            width: 160px;
-            height: 160px;
-            border-radius: 2px;
-        }
-
-        /* 
-           STAMPS GRID
-         */
         .stamps-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
-            margin-top: 15px;
+            margin-bottom: 20px;
         }
 
-        .stamp-slot {
+        .stamp-box {
             aspect-ratio: 1;
-            border-radius: var(--radius);
-            border: 1px dashed var(--border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: transparent;
-            background: var(--bg-main);
-        }
-
-        .stamp-filled {
-            border: 1px solid var(--border);
-            color: var(--primary);
-            background: var(--bg-main);
-        }
-
-        /* 
-           PROGRESS BAR
-         */
-        .progress-bar-container {
-            width: 100%;
-            height: 4px;
-            background: var(--bg-elevated);
-            border-radius: 2px;
-            margin-top: 14px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 2px;
-            transition: width 0.2s linear;
-        }
-
-        .progress-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 6px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        /* 
-           REWARDS SECTION
-         */
-        .rewards-box {
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            padding: 18px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-        }
-
-        .rewards-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        .rewards-title {
-            font-size: 14px;
-            color: var(--text-main);
-            font-weight: 600;
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            font-size: 1.2rem;
+            transition: all 0.3s;
         }
 
-        .rewards-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 5px;
+        .stamp-box.filled {
+            border: 2px solid var(--gold);
+            background: rgba(212,175,55,0.1);
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(212,175,55,0.5);
+            animation: popIn 0.3s ease-out;
         }
 
-        .btn-benefits {
-            margin-bottom: 20px;
-            font-size: 12px;
-            padding: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-main) !important;
-            color: var(--text-main) !important;
-            border-radius: var(--radius);
-            transition: background-color 0.2s linear;
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        .btn-benefits:hover {
-            background-color: var(--bg-elevated) !important;
-        }
-
-        /* 
-           BENEFITS MODAL
-         */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(9, 9, 11, 0.9);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 30px;
-            width: 100%;
-            max-width: 370px;
-            text-align: left;
-        }
-
-        .modal-title {
-            color: var(--text-main);
+        .qr-box {
             text-align: center;
-            margin-bottom: 24px;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            margin-top: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
         }
 
-        /* 
-           ERROR MESSAGE
-         */
-        .msg-error {
-            color: var(--danger);
-            font-size: 13px;
-            margin-top: 15px;
-            font-weight: 500;
-            display: none;
-            padding: 12px;
-            background: var(--bg-main);
-            border-radius: var(--radius);
-            border: 1px solid var(--danger);
-        }
-
-        /* 
-           PROGRESS TITLE
-         */
-        .progress-title {
-            font-size: 12px;
-            color: var(--text-muted);
+        .recompensa-alert {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
             font-weight: 600;
-            text-transform: uppercase;
-            margin-top: 10px;
-            letter-spacing: 1px;
+            margin-top: 15px;
+            animation: pulseGreen 2s infinite;
         }
 
-        /* 
-           LOGOUT LINK
-         */
-        .logout-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            transition: color 0.2s linear;
-        }
-        .logout-link:hover {
-            color: var(--text-main);
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
-        /* 
-           PREMIOS HIGHLIGHT
-         */
-        .premios-count {
-            color: var(--text-main);
-            font-weight: 700;
-            font-size: 14px;
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: none;
         }
 
-        .premios-count.has-premios {
-            color: var(--primary);
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.1);
         }
 
-        /* 
-           RESPONSIVE
-         */
-        @media (max-width: 420px) {
-            .wallet-card { padding: 0 20px 30px 20px; }
-            .logo-text { font-size: 20px; }
-            .stamps-grid { gap: 8px; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="wallet-card">
-        <div class="header">
-            <div class="logo-text"><i data-lucide="crown"></i> LA ESQUINA</div>
-            <div class="sub-text" id="header-sub">Portal de Socios VIP</div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        
+        <div class="header-logo">
+            <img src="/logo.png" alt="La Esquina del Billar">
         </div>
 
-        <div id="login-section">
-            <div class="input-group">
-                <label>Teléfono Registrado</label>
-                <input type="tel" id="in-tel" class="input-vip" placeholder="Ingresa tu celular">
-            </div>
-            <div class="input-group">
-                <label>PIN de Seguridad</label>
-                <input type="password" id="in-pin" class="input-vip" placeholder="• • • •" maxlength="4">
-            </div>
-            <button class="btn-vip" onclick="iniciarSesionVIP()">Acceder a mi Tarjeta</button>
-            <div class="msg-error" id="msg-error">Datos incorrectos. Intenta nuevamente.</div>
+        <!-- Login Form -->
+        <div class="glass-panel" id="loginPanel">
+            <h1 class="title">Socio VIP</h1>
+            <p class="subtitle">Ingresa tu número de DNI para acceder a tus beneficios</p>
+            
+            <form id="vipForm">
+                <div class="input-group">
+                    <input type="tel" id="dniInput" placeholder="N° DE DNI" required maxlength="12" autocomplete="off">
+                </div>
+                <button type="submit" class="btn-gold" id="btnIngresar">
+                    ACCEDER AHORA ✨
+                </button>
+                <div class="error-msg" id="errorMsg">DNI no encontrado o error en el sistema.</div>
+            </form>
         </div>
 
-        <div id="card-section" style="display: none;">
-            <div class="client-info">
-                <div class="client-name" id="lbl-nombre">Cargando...</div>
-                <div class="client-level" id="lbl-nivel">Cargando...</div>
+        <!-- Tarjeta VIP -->
+        <div class="vip-card" id="vipCard">
+            <div class="card-glare"></div>
+            <div class="hologram-seal">👑</div>
+            
+            <div class="vip-name" id="sNombre">Cargando...</div>
+            <div class="vip-level" id="sNivel">👑 Socio Plata</div>
+            
+            <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">Progreso para la siguiente recompensa:</p>
+            <div class="stamps-grid" id="stampsGrid">
+                <!-- Se llenan con JS -->
             </div>
-
-            <div class="qr-container">
-                <img id="qr-image" src="" alt="Código QR VIP">
-            </div>
-
-            <div class="rewards-box">
-                <div class="rewards-label">Tu Recompensa Actual</div>
-                <br>
-                <button class="btn-vip btn-benefits" onclick="mostrarBeneficiosCliente()"><i data-lucide="gem" style="width:16px;height:16px;"></i> Ver Mis Beneficios</button>
-
-            <div id="modal-ben-cliente" class="modal-overlay">
-                <div class="modal-content">
-                    <h3 class="modal-title">Tus Beneficios</h3>
-                    <div id="lista-ben-cliente" style="margin-bottom: 25px;">
-                    </div>
-                    <button class="btn-vip" onclick="document.getElementById('modal-ben-cliente').style.display='none'">Cerrar</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div class="qr-box">
+                    <img id="qrImg" src="" alt="QR Socio" style="width: 100px; height: 100px;">
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: #aaa;">ID SOCIO</div>
+                    <div style="font-weight: 800; font-family: monospace; font-size: 1.1rem; color: var(--gold);" id="sId">0000</div>
                 </div>
             </div>
-                <div class="rewards-title"><i data-lucide="circle-play" style="width:18px;height:18px;"></i> 1 Hora de Billar Gratis</div>
-                <div class="rewards-sub">Premios disponibles: <span id="lbl-premios" class="premios-count">0</span></div>
+
+            <div id="recompensaBox" style="display: none;">
+                <div class="recompensa-alert">
+                    🎁 ¡Tienes <span id="sRecompensas">1</span> Hora Gratis Disponible!
+                </div>
+                <p style="font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px;">Muéstrale este QR a la caja para canjear tu premio.</p>
             </div>
 
-            <div class="progress-title">Progreso de Visitas</div>
-            <div class="stamps-grid" id="stamps-container"></div>
-            
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
-            </div>
-            <div class="progress-label" id="progress-label">0 / 10 visitas</div>
-
-            <div style="margin-top: 20px; font-size: 12px;">
-                <a href="#" onclick="cerrarSesionVIP()" class="logout-link">Cerrar sesión</a>
+            <div style="text-align: center;">
+                <button class="btn-logout" onclick="cerrarSesion()">CERRAR SESIÓN</button>
             </div>
         </div>
+
     </div>
 
+    <!-- Cargar librería QRCode para generar el QR dinámicamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <script>
-        // 
-        //  ORIGINAL VIP LOGIC — 100% PRESERVED
-        // 
-        async function mostrarBeneficiosCliente() {
-            const textoNivel = document.getElementById('lbl-nivel').innerText.toLowerCase();
-            let poderNivel = 1; 
-            if (textoNivel.includes('plata')) poderNivel = 2;
-            if (textoNivel.includes('oro')) poderNivel = 3;
+        const form = document.getElementById('vipForm');
+        const loginPanel = document.getElementById('loginPanel');
+        const vipCard = document.getElementById('vipCard');
+        const btnIngresar = document.getElementById('btnIngresar');
+        const errorMsg = document.getElementById('errorMsg');
 
-            try {
-                const res = await fetch('/api/beneficios');
-                const beneficiosBD = await res.json();
-                
-                const contenedor = document.getElementById('lista-ben-cliente');
-                contenedor.innerHTML = '';
-
-                let encontrados = 0;
-                beneficiosBD.forEach(b => {
-                    let reqNivel = 1;
-                    if (b.nivel === 'Plata') reqNivel = 2;
-                    if (b.nivel === 'Oro') reqNivel = 3;
-
-                    if (poderNivel >= reqNivel) {
-                        encontrados++;
-                        contenedor.innerHTML += `
-                            <div style="background: var(--bg-main); border: 1px solid var(--border); padding: 12px; margin-bottom: 10px; border-radius: var(--radius);">
-                                <div style="color: var(--primary); font-size: 11px; font-weight: 600; text-transform: uppercase;">Beneficio ${b.nivel}</div>
-                                <div style="color: var(--text-main); font-size: 14px; margin-top: 4px;">${b.descripcion}</div>
-                            </div>
-                        `;
-                    }
-                });
-
-                if(encontrados === 0) {
-                    contenedor.innerHTML = `<div style="color: var(--text-muted); text-align: center; font-size: 14px;">Aún no hay beneficios configurados para tu nivel. ¡Sigue acumulando sellos!</div>`;
-                }
-
-                document.getElementById('modal-ben-cliente').style.display = 'flex';
-            } catch (e) { alert("Error al cargar beneficios"); }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const credenciales = localStorage.getItem('vip_esquina');
-            if(credenciales) {
-                const { telefono, pin } = JSON.parse(credenciales);
-                ejecutarLogin(telefono, pin);
+        // Si ya hay un DNI guardado en el celular, cargar automático
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDni = localStorage.getItem('vip_dni');
+            if (savedDni) {
+                document.getElementById('dniInput').value = savedDni;
+                form.dispatchEvent(new Event('submit'));
             }
-            lucide.createIcons();
         });
 
-        function iniciarSesionVIP() {
-            const tel = document.getElementById('in-tel').value.trim();
-            const pin = document.getElementById('in-pin').value.trim();
-            if(!tel || !pin) return alert("Completa tus datos");
-            ejecutarLogin(tel, pin);
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const dni = document.getElementById('dniInput').value.trim();
+            
+            if (!dni) return;
+
+            btnIngresar.innerText = 'VERIFICANDO...';
+            btnIngresar.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                // Hacer petición a nuestra API real
+                const res = await fetch(`/api/vip/verificar/${dni}`);
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Guardar DNI para futuras visitas
+                    localStorage.setItem('vip_dni', dni);
+                    mostrarTarjeta(data);
+                } else {
+                    mostrarError(data.error || 'DNI no registrado.');
+                }
+            } catch (err) {
+                mostrarError('Error de conexión.');
+            }
+
+            btnIngresar.innerText = 'ACCEDER AHORA ✨';
+            btnIngresar.disabled = false;
+        });
+
+        function mostrarError(msg) {
+            errorMsg.innerText = msg;
+            errorMsg.style.display = 'block';
         }
 
-        async function ejecutarLogin(telefono, pin) {
-            document.getElementById('msg-error').style.display = 'none';
-            try {
-                const res = await fetch('/api/vip/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telefono, pin })
-                });
+        function mostrarTarjeta(data) {
+            loginPanel.style.display = 'none';
+            vipCard.style.display = 'block';
 
-                if (!res.ok) {
-                    document.getElementById('msg-error').style.display = 'block';
-                    localStorage.removeItem('vip_esquina');
-                    return;
-                }
+            document.getElementById('sNombre').innerText = data.nombre;
+            document.getElementById('sId').innerText = data.id.toString().padStart(4, '0');
+            
+            // Asignar el nivel
+            let iconoNivel = '🥉';
+            if(data.nivel.includes('Oro')) iconoNivel = '👑';
+            if(data.nivel.includes('Plata')) iconoNivel = '🥈';
+            document.getElementById('sNivel').innerText = `${iconoNivel} Socio ${data.nivel}`;
 
-                const data = await res.json();
-                
-                localStorage.setItem('vip_esquina', JSON.stringify({ telefono, pin }));
+            // Calcular sellos actuales (módulo de 10)
+            const sellos = data.sellos % 10;
+            const recompensas = Math.floor(data.sellos / 10) - data.canjes;
 
-                const loginSection = document.getElementById('login-section');
-                loginSection.classList.add('hiding');
-                setTimeout(() => {
-                    loginSection.style.display = 'none';
-                    document.getElementById('header-sub').innerText = "Tarjeta Digital Activa";
-                    const cardSection = document.getElementById('card-section');
-                    cardSection.style.display = 'block';
-                    cardSection.classList.add('showing');
-                }, 200);
+            dibujarSellos(sellos);
 
-                document.getElementById('lbl-nombre').innerText = data.nombre;
-                
-                const badge = document.getElementById('lbl-nivel');
-                badge.innerText = `[ ${data.nivel.toUpperCase()} ]`;
-                badge.className = 'client-level'; 
+            // Generar QR Dinámico
+            const qrContainer = document.getElementById('qrImg');
+            // Como usamos un tag img, lo reemplazaremos por el contenedor de qrcode
+            qrContainer.outerHTML = '<div id="qrCodeDiv"></div>';
+            new QRCode(document.getElementById("qrCodeDiv"), {
+                text: data.id.toString(),
+                width: 100,
+                height: 100,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
 
-                document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=socio-${data.id}`;
-
-                const container = document.getElementById('stamps-container');
-                container.innerHTML = '';
-                let sellosVisuales = data.sellos % 10;
-                if (data.sellos > 0 && sellosVisuales === 0) sellosVisuales = 10; 
-                
-                const premiosGanados = Math.floor(data.sellos / 10) - (data.premios_canjeados || 0);
-                document.getElementById('lbl-premios').innerText = premiosGanados;
-                for (let i = 1; i <= 10; i++) {
-                    if (i <= sellosVisuales) container.innerHTML += `<div class="stamp-slot stamp-filled"><i data-lucide="check" style="width:20px;height:20px;"></i></div>`;
-                    else container.innerHTML += `<div class="stamp-slot"></div>`;
-                }
-
-                lucide.createIcons();
-
-                const progressPct = (sellosVisuales / 10) * 100;
-                setTimeout(() => {
-                    document.getElementById('progress-fill').style.width = progressPct + '%';
-                    document.getElementById('progress-label').innerText = sellosVisuales + ' / 10 visitas';
-                }, 300);
-
-                const premiosEl = document.getElementById('lbl-premios');
-                if (premiosGanados > 0) {
-                    premiosEl.classList.add('has-premios');
-                } else {
-                    premiosEl.classList.remove('has-premios');
-                }
-
-            } catch (error) {
-                alert("Error de conexión");
+            // Mostrar recompensa si la hay
+            if (recompensas > 0) {
+                document.getElementById('recompensaBox').style.display = 'block';
+                document.getElementById('sRecompensas').innerText = recompensas;
+                lanzarConfeti();
+            } else {
+                document.getElementById('recompensaBox').style.display = 'none';
             }
         }
 
-        function cerrarSesionVIP() {
-            localStorage.removeItem('vip_esquina');
+        function dibujarSellos(cantidad) {
+            const grid = document.getElementById('stampsGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const box = document.createElement('div');
+                if (i <= cantidad) {
+                    box.className = 'stamp-box filled';
+                    box.innerText = '🎱';
+                    box.style.animationDelay = `${i * 0.05}s`;
+                } else {
+                    box.className = 'stamp-box';
+                    // Dejar vacío
+                }
+                grid.appendChild(box);
+            }
+        }
+
+        function lanzarConfeti() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#D4AF37', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#D4AF37', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('vip_dni');
             location.reload();
         }
     </script>

@@ -281,8 +281,8 @@
                         <i data-lucide="banknote"></i> PAGO EN EFECTIVO
                     </button>
                     <div style="display:flex; gap:10px;">
-                        <button class="btn-modal" style="background:#8b5cf6; color:white;" onclick="ejecutarCobroReal('YAPE')">Billetera Digital</button>
-                        <button class="btn-modal" style="background:#3b82f6; color:white;" onclick="ejecutarCobroReal('TARJETA')">Tarjeta (POS)</button>
+                        <button class="btn-modal" style="background:var(--bg-elevated); border: 1px solid #a855f7; color:#a855f7; transition: all 0.3s;" onmouseover="this.style.background='#a855f7'; this.style.color='#fff';" onmouseout="this.style.background='var(--bg-elevated)'; this.style.color='#a855f7';" onclick="ejecutarCobroReal('YAPE')">Billetera Digital</button>
+                        <button class="btn-modal" style="background:var(--bg-elevated); border: 1px solid var(--text-muted); color:var(--text-main); transition: all 0.3s;" onmouseover="this.style.background='var(--text-muted)'; this.style.color='#000';" onmouseout="this.style.background='var(--bg-elevated)'; this.style.color='var(--text-main)';" onclick="ejecutarCobroReal('TARJETA')">Tarjeta (POS)</button>
                     </div>
                     <button class="btn-modal btn-confirm" onclick="abrirCobroMixto()">
                         <i data-lucide="split-square-horizontal"></i> Pago Fraccionado

@@ -8,10 +8,10 @@
 
 /* 2. DESIGN TOKENS (Corporate Palette) */
 :root {
-    --bg-main: #0a0e17; /* Rich deep blue-black */
-    --bg-surface: #121826;
-    --bg-elevated: #1e293b;
-    --bg-card: #121826;
+    --bg-main: #0a0a0c; /* Deep neutral dark */
+    --bg-surface: #141416;
+    --bg-elevated: #1e1e22;
+    --bg-card: #141416;
     
     /* Matte Bronze/Gold with a touch of life */
     --gold: #D4AF37;
@@ -47,7 +47,7 @@ body, html {
     margin: 0; padding: 0;
     width: 100%; min-height: 100vh;
     overflow-x: hidden;
-    background: radial-gradient(circle at top center, #101623 0%, var(--bg-main) 100%);
+    background: radial-gradient(circle at top center, #1c1c20 0%, var(--bg-main) 100%);
     font-family: 'Inter', -apple-system, sans-serif;
     color: var(--text-main);
     -webkit-font-smoothing: antialiased;
