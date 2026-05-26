@@ -320,16 +320,19 @@
         <!-- Login Form -->
         <div class="glass-panel" id="loginPanel">
             <h1 class="title">Socio VIP</h1>
-            <p class="subtitle">Ingresa tu número de DNI para acceder a tus beneficios</p>
+            <p class="subtitle">Ingresa tu celular y PIN de 4 dígitos para acceder a tus beneficios</p>
             
             <form id="vipForm">
                 <div class="input-group">
-                    <input type="tel" id="dniInput" placeholder="N° DE DNI" required maxlength="12" autocomplete="off">
+                    <input type="tel" id="telefonoInput" placeholder="N° DE CELULAR" required maxlength="15" autocomplete="off">
+                </div>
+                <div class="input-group" style="margin-top: 15px;">
+                    <input type="password" id="pinInput" placeholder="PIN SECRETO (4 Dígitos)" required maxlength="4" autocomplete="off">
                 </div>
                 <button type="submit" class="btn-gold" id="btnIngresar">
                     ACCEDER AHORA ✨
                 </button>
-                <div class="error-msg" id="errorMsg">DNI no encontrado o error en el sistema.</div>
+                <div class="error-msg" id="errorMsg">Credenciales incorrectas o error en el sistema.</div>
             </form>
         </div>
 
@@ -380,20 +383,23 @@
         const btnIngresar = document.getElementById('btnIngresar');
         const errorMsg = document.getElementById('errorMsg');
 
-        // Si ya hay un DNI guardado en el celular, cargar automático
+        // Si ya hay un celular guardado en el navegador, cargar automático
         document.addEventListener('DOMContentLoaded', () => {
-            const savedDni = localStorage.getItem('vip_dni');
-            if (savedDni) {
-                document.getElementById('dniInput').value = savedDni;
+            const savedTel = localStorage.getItem('vip_telefono');
+            const savedPin = localStorage.getItem('vip_pin');
+            if (savedTel && savedPin) {
+                document.getElementById('telefonoInput').value = savedTel;
+                document.getElementById('pinInput').value = savedPin;
                 form.dispatchEvent(new Event('submit'));
             }
         });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const dni = document.getElementById('dniInput').value.trim();
+            const telefono = document.getElementById('telefonoInput').value.trim();
+            const pin = document.getElementById('pinInput').value.trim();
             
-            if (!dni) return;
+            if (!telefono || !pin) return;
 
             btnIngresar.innerText = 'VERIFICANDO...';
             btnIngresar.disabled = true;
@@ -401,18 +407,23 @@
 
             try {
                 // Hacer petición a nuestra API real
-                const res = await fetch(`/api/vip/verificar/${dni}`);
+                const res = await fetch('/api/vip/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telefono, pin })
+                });
                 const data = await res.json();
 
                 if (res.ok) {
-                    // Guardar DNI para futuras visitas
-                    localStorage.setItem('vip_dni', dni);
+                    // Guardar credenciales para futuras visitas
+                    localStorage.setItem('vip_telefono', telefono);
+                    localStorage.setItem('vip_pin', pin);
                     mostrarTarjeta(data);
                 } else {
-                    mostrarError(data.error || 'DNI no registrado.');
+                    mostrarError(data.error || 'Credenciales incorrectas.');
                 }
             } catch (err) {
-                mostrarError('Error de conexión.');
+                mostrarError('Error de conexión con el servidor.');
             }
 
             btnIngresar.innerText = 'ACCEDER AHORA ✨';
@@ -511,7 +522,8 @@
         }
 
         function cerrarSesion() {
-            localStorage.removeItem('vip_dni');
+            localStorage.removeItem('vip_telefono');
+            localStorage.removeItem('vip_pin');
             location.reload();
         }
     </script>
