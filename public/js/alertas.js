@@ -9,15 +9,15 @@ window.mostrarAlerta = function(mensaje, tipo = 'info') {
     overlay.style.zIndex = '9999';
     
     let colorStr = 'var(--gold)';
-    let titleStr = '⚠️ Atención';
+    let titleStr = '<i data-lucide="alert-triangle"></i> Atención';
     
-    if(tipo === 'error') { colorStr = 'var(--danger)'; titleStr = '❌ Error'; }
-    if(tipo === 'success') { colorStr = 'var(--success)'; titleStr = '✅ Éxito'; }
+    if(tipo === 'error') { colorStr = 'var(--danger)'; titleStr = '<i data-lucide="x-circle"></i> Error'; }
+    if(tipo === 'success') { colorStr = 'var(--success)'; titleStr = '<i data-lucide="check-circle"></i> Éxito'; }
 
     overlay.innerHTML = `
-        <div class="modal-box" style="max-width: 350px; animation: popIn 0.3s ease-out;">
-            <div class="modal-title" style="background: #111; color: ${colorStr}; border-bottom: 1px solid var(--border);">${titleStr}</div>
-            <div class="modal-body" style="text-align:center; padding: 30px 20px; font-size: 16px; color: white;">
+        <div class="modal-box" style="animation: popIn 0.2s linear;">
+            <div class="modal-title" style="color: ${colorStr};">${titleStr}</div>
+            <div class="modal-body" style="text-align:center;">
                 ${mensaje}
             </div>
             <div class="modal-btns">

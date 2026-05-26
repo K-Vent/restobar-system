@@ -17,6 +17,7 @@
             .main-content { margin-left: 0; padding: 15px; }
         }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="text-light">
     <div class="d-flex flex-column flex-md-row">
@@ -265,6 +266,11 @@
         document.addEventListener("DOMContentLoaded", () => {
             cargarBI();
             cargarHistorialCierres();
+        });
+    </script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     </script>
 </body>

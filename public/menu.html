@@ -4,30 +4,28 @@
     <meta charset="UTF-8">
     <title>La Esquina - Carta Digital</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#09090b">
     <link rel="icon" href="/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         /* ═══════════════════════════════════════════
            DESIGN TOKENS
            ═══════════════════════════════════════════ */
         :root {
-            --bg-main: #050505;
-            --bg-card: rgba(20, 20, 22, 0.8);
-            --bg-elevated: #0a0a0c;
-            --gold: #D4AF37;
-            --gold-hover: #e5c158;
-            --gold-glow: 0 0 25px rgba(212,175,55,0.3);
-            --success: #00d26a;
-            --danger: #ff4757;
-            --info: #00b4d8;
-            --text-main: #ffffff;
-            --text-muted: #8a8f98;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-gold: rgba(212,175,55,0.3);
+            --bg-main: #09090b;
+            --bg-surface: #18181b;
+            --bg-elevated: #27272a;
+            --primary: #B8973E;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --radius: 6px;
         }
 
         /* ═══════════════════════════════════════════
@@ -49,90 +47,24 @@
         }
 
         /* ═══════════════════════════════════════════
-           AMBIENT BACKGROUND — slow shifting gradient
-           ═══════════════════════════════════════════ */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background:
-                radial-gradient(ellipse 80% 50% at 20% 0%,  rgba(212,175,55,0.06) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(212,175,55,0.04) 0%, transparent 50%),
-                radial-gradient(ellipse 90% 60% at 50% 50%,  rgba(10,10,12,1)     0%, var(--bg-main) 100%);
-            animation: ambientShift 12s ease-in-out infinite alternate;
-        }
-
-        @keyframes ambientShift {
-            0%   { opacity: 0.7; filter: hue-rotate(0deg); }
-            50%  { opacity: 1;   filter: hue-rotate(5deg); }
-            100% { opacity: 0.8; filter: hue-rotate(-3deg); }
-        }
-
-        /* Subtle noise texture overlay */
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            opacity: 0.025;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-            pointer-events: none;
-        }
-
-        /* ═══════════════════════════════════════════
            HEADER & NAVIGATION
            ═══════════════════════════════════════════ */
         .header-container {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(5, 5, 5, 0.88);
-            backdrop-filter: blur(24px) saturate(1.6);
-            -webkit-backdrop-filter: blur(24px) saturate(1.6);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.7);
-        }
-
-        /* Shimmer gradient border-bottom */
-        .header-container::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(212,175,55,0.0) 10%,
-                rgba(212,175,55,0.6) 30%,
-                var(--gold) 50%,
-                rgba(212,175,55,0.6) 70%,
-                rgba(212,175,55,0.0) 90%,
-                transparent 100%
-            );
-            background-size: 200% 100%;
-            animation: shimmerBorder 4s ease-in-out infinite;
-        }
-
-        @keyframes shimmerBorder {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            background: var(--bg-main);
+            border-bottom: 1px solid var(--border);
         }
 
         .logo-wrapper {
             text-align: center;
-            padding: 22px 0 6px 0;
+            padding: 24px 0 12px 0;
         }
 
         .logo {
-            width: 110px;
-            filter: drop-shadow(0 4px 20px rgba(212,175,55,0.25));
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .logo:active {
-            transform: scale(0.95);
+            width: 80px;
+            filter: grayscale(100%) brightness(200%);
         }
 
         /* Subtitle under logo */
@@ -140,12 +72,10 @@
             text-align: center;
             font-size: 11px;
             font-weight: 500;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--gold);
-            opacity: 0.7;
-            margin-top: 4px;
-            margin-bottom: 2px;
+            color: var(--text-muted);
+            margin-top: 8px;
         }
 
         /* ═══════════════════════════════════════════
@@ -155,7 +85,7 @@
             display: flex;
             overflow-x: auto;
             gap: 10px;
-            padding: 14px 20px 16px 20px;
+            padding: 16px 20px;
             scroll-behavior: smooth;
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -163,62 +93,39 @@
         .category-tabs::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            background: rgba(255, 255, 255, 0.04);
+            background: var(--bg-main);
             color: var(--text-muted);
             border: 1px solid var(--border);
-            padding: 10px 22px;
-            border-radius: 50px;
+            padding: 8px 16px;
+            border-radius: var(--radius);
             white-space: nowrap;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 13px;
             cursor: pointer;
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s linear;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
-            gap: 7px;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
         }
 
-        .tab-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50px;
-            opacity: 0;
-            background: radial-gradient(circle at center, rgba(212,175,55,0.15), transparent 70%);
-            transition: opacity 0.3s ease;
+        .tab-btn i {
+            width: 16px;
+            height: 16px;
         }
 
         .tab-btn:hover {
             color: var(--text-main);
-            border-color: rgba(255,255,255,0.15);
-            background: rgba(255, 255, 255, 0.07);
-        }
-
-        .tab-btn:hover::before {
-            opacity: 1;
+            background: var(--bg-surface);
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, var(--gold) 0%, #c49b2d 100%);
-            color: #0a0a0c;
-            border-color: var(--gold);
-            box-shadow:
-                var(--gold-glow),
-                0 2px 8px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-            transform: scale(1.06);
-            font-weight: 800;
-        }
-
-        .tab-btn.active::before { opacity: 0; }
-
-        .tab-btn:active {
-            transform: scale(0.97);
+            background: var(--bg-elevated);
+            color: var(--primary);
+            border-color: var(--border);
+            font-weight: 600;
         }
 
         /* ═══════════════════════════════════════════
@@ -234,45 +141,30 @@
            PRODUCT CARDS
            ═══════════════════════════════════════════ */
         .producto-card {
-            background: var(--bg-card);
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-left: 3px solid var(--gold);
-            border-radius: 16px;
-            padding: 20px 20px 20px 22px;
-            margin-bottom: 14px;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 16px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow:
-                0 4px 16px rgba(0,0,0,0.25),
-                0 0 0 0 rgba(212,175,55,0);
             opacity: 0;
-            transform: translateY(18px);
-            animation: cardSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                        box-shadow 0.25s ease,
-                        border-color 0.25s ease;
+            transform: translateY(10px);
+            animation: fadeIn 0.2s linear forwards;
+            transition: border-color 0.2s linear;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .producto-card:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                0 8px 28px rgba(0,0,0,0.35),
-                0 0 0 1px rgba(212,175,55,0.08);
-            border-left-color: var(--gold-hover);
+            border-color: var(--primary);
         }
 
-        .producto-card:active {
-            transform: scale(0.985);
-        }
-
-        @keyframes cardSlideIn {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(18px);
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
@@ -290,58 +182,38 @@
 
         .producto-nombre {
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-main);
-            letter-spacing: 0.2px;
+            letter-spacing: 0px;
             line-height: 1.35;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .producto-cat-label {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 500;
+            font-weight: 400;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
 
-        .producto-cat-label::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--gold);
-            opacity: 0.6;
+        .producto-cat-label i {
+            width: 12px;
+            height: 12px;
+            color: var(--primary);
         }
 
         /* ═══════════════════════════════════════════
            PRICE BADGES
            ═══════════════════════════════════════════ */
         .producto-precio {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 16px;
+            font-weight: 600;
             font-family: 'Inter', sans-serif;
-            color: var(--gold);
-            background: rgba(212,175,55,0.08);
-            padding: 10px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(212,175,55,0.15);
+            color: var(--primary);
             white-space: nowrap;
             flex-shrink: 0;
-            text-shadow: 0 0 20px rgba(212,175,55,0.2);
-            animation: pricePop 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            opacity: 0;
-            transform: scale(0.85);
-        }
-
-        @keyframes pricePop {
-            0%   { opacity: 0; transform: scale(0.85); }
-            60%  { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
         }
 
         /* ═══════════════════════════════════════════
@@ -351,34 +223,25 @@
             text-align: center;
             color: var(--text-muted);
             margin-top: 80px;
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-size: 14px;
+            font-weight: 500;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            animation: fadeInUp 0.6s ease-out;
+            gap: 16px;
+            animation: fadeIn 0.2s linear forwards;
         }
 
-        .loading-box::before {
-            content: '🎱';
-            font-size: 52px;
-            display: block;
-            animation: billiardBounce 1.8s cubic-bezier(0.36, 0, 0.66, -0.56) infinite;
-            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+        .loading-box i {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes billiardBounce {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25%      { transform: translateY(-18px) rotate(8deg); }
-            50%      { transform: translateY(0) rotate(0deg); }
-            75%      { transform: translateY(-10px) rotate(-5deg); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* ═══════════════════════════════════════════
@@ -391,39 +254,34 @@
             right: 0;
             z-index: 90;
             text-align: center;
-            padding: 14px 20px;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: rgba(138, 143, 152, 0.6);
-            background: linear-gradient(to top, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.7) 70%, transparent 100%);
-            pointer-events: none;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            padding: 16px;
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-muted);
+            background: var(--bg-main);
+            border-top: 1px solid var(--border);
         }
 
         .powered-footer span {
-            color: var(--gold);
-            font-weight: 700;
-            opacity: 0.8;
+            color: var(--text-main);
+            font-weight: 600;
         }
 
         /* ═══════════════════════════════════════════
            SCROLLBAR STYLING (desktop)
            ═══════════════════════════════════════════ */
         ::-webkit-scrollbar {
-            width: 4px;
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: var(--bg-main);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(212,175,55,0.2);
-            border-radius: 4px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius);
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(212,175,55,0.4);
+            background: var(--border);
         }
 
         /* ═══════════════════════════════════════════
@@ -431,10 +289,10 @@
            ═══════════════════════════════════════════ */
         @media (max-width: 380px) {
             .container { padding: 16px 14px; }
-            .producto-card { padding: 16px 16px 16px 18px; }
+            .producto-card { padding: 16px; }
             .producto-nombre { font-size: 15px; }
-            .producto-precio { font-size: 16px; padding: 8px 12px; }
-            .tab-btn { padding: 8px 16px; font-size: 12px; }
+            .producto-precio { font-size: 15px; }
+            .tab-btn { padding: 8px 12px; font-size: 12px; }
         }
 
         /* Respect reduced motion */
@@ -458,7 +316,10 @@
     </div>
 
     <div class="container" id="menu-container">
-        <div class="loading-box">Preparando la carta...</div>
+        <div class="loading-box">
+            <i data-lucide="loader-2"></i>
+            Preparando la carta...
+        </div>
     </div>
 
     <!-- Floating footer -->
@@ -470,18 +331,19 @@
         let todosLosProductos = [];
         let categoriasUnicas = [];
 
-        // Íconos visuales para las pestañas
+        // Íconos visuales para las pestañas (Lucide Icons)
         const iconosCat = { 
-            'Cervezas': '🍺', 
-            'Tragos': '🍹', 
-            'Cócteles': '🍸', 
-            'Comida': '🍔', 
-            'Piqueos': '🍟',
-            'General': '✨',
-            'Otros': '✨' 
+            'Cervezas': 'beer', 
+            'Tragos': 'wine', 
+            'Cócteles': 'martini', 
+            'Comida': 'utensils', 
+            'Piqueos': 'pizza',
+            'General': 'sparkles',
+            'Otros': 'sparkles' 
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
             try {
                 const res = await fetch('/api/menu/publico');
                 todosLosProductos = await res.json();
@@ -489,7 +351,8 @@
                 const container = document.getElementById('menu-container');
 
                 if(todosLosProductos.length === 0) {
-                    container.innerHTML = '<div class="loading-box">Aún no hay productos en stock. Vuelve pronto.</div>';
+                    container.innerHTML = '<div class="loading-box"><i data-lucide="info"></i> Aún no hay productos en stock. Vuelve pronto.</div>';
+                    lucide.createIcons();
                     return;
                 }
 
@@ -509,7 +372,8 @@
 
             } catch (e) {
                 document.getElementById('menu-container').innerHTML = 
-                    '<div class="loading-box" style="color:#ff4757;">Error al cargar el menú. Por favor, avise al personal.</div>';
+                    '<div class="loading-box" style="color:var(--danger);"><i data-lucide="alert-circle"></i> Error al cargar el menú. Por favor, avise al personal.</div>';
+                lucide.createIcons();
             }
         });
 
@@ -518,15 +382,16 @@
             tabsContainer.innerHTML = '';
 
             categoriasUnicas.forEach((cat, index) => {
-                const icono = cat === 'Todas' ? '📜' : (iconosCat[cat] || '✨');
+                const icono = cat === 'Todas' ? 'list' : (iconosCat[cat] || 'sparkles');
                 const activeClass = index === 0 ? 'active' : '';
                 
                 tabsContainer.innerHTML += `
                     <button class="tab-btn ${activeClass}" onclick="filtrarPorCategoria('${cat}', this)">
-                        ${icono} ${cat}
+                        <i data-lucide="${icono}"></i> ${cat}
                     </button>
                 `;
             });
+            lucide.createIcons();
         }
 
         function filtrarPorCategoria(categoriaSeleccionada, botonHTML = null) {
@@ -549,16 +414,21 @@
             container.innerHTML = '';
 
             productosFiltrados.forEach((p, index) => {
+                const iconName = iconosCat[p.categoria || 'General'] || 'sparkles';
                 container.innerHTML += `
-                    <div class="producto-card" style="animation-delay: ${index * 0.05}s">
+                    <div class="producto-card" style="animation-delay: ${index * 0.02}s">
                         <div class="producto-info">
                             <div class="producto-nombre">${p.nombre}</div>
-                            <div class="producto-cat-label">${p.categoria || 'General'}</div>
+                            <div class="producto-cat-label">
+                                <i data-lucide="${iconName}"></i>
+                                ${p.categoria || 'General'}
+                            </div>
                         </div>
-                        <div class="producto-precio" style="animation-delay: ${index * 0.05 + 0.2}s">S/ ${parseFloat(p.precio_venta).toFixed(2)}</div>
+                        <div class="producto-precio">S/ ${parseFloat(p.precio_venta).toFixed(2)}</div>
                     </div>
                 `;
             });
+            lucide.createIcons();
         }
     </script>
 </body>

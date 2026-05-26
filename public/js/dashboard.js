@@ -123,7 +123,7 @@ function renderizarMesas(mesas) {
         const isOcupada = mesa.estado === 'OCUPADA';
         const claseTarjeta = isOcupada ? 'card-mesa card-mesa-ocupada' : 'card-mesa card-mesa-libre';
         const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-muted';
-        const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
+        const icono = mesa.tipo === 'BILLAR' ? '<i data-lucide="circle-dot" style="width:16px;"></i>' : '<i data-lucide="coffee" style="width:16px;"></i>';
  
         grid.innerHTML += `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
@@ -145,10 +145,10 @@ function renderizarMesas(mesas) {
                         </div>
                         <div class="mt-auto d-grid gap-2">
                             <div class="row g-2">
-                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button></div>
-                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2 shadow-sm" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
+                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" onclick="abrirOpciones(${mesa.id})"><i data-lucide="plus-circle" style="width:14px; margin-right:4px;"></i> PEDIR</button></div>
+                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2 shadow-sm" onclick="abrirModalCobro(${mesa.id})"><i data-lucide="banknote" style="width:14px; margin-right:4px;"></i> COBRAR</button></div>
                             </div>
-                            <button class="btn btn-dark border-secondary btn-sm text-light mt-1" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
+                            <button class="btn btn-dark border-secondary btn-sm text-light mt-1" onclick="abrirModalMover(${mesa.id})"><i data-lucide="arrow-right-left" style="width:12px; margin-right:4px;"></i> MUDAR</button>
                         </div>
                     ` : `
                         <div class="text-center py-4 flex-grow-1 d-flex flex-column justify-content-center">
@@ -157,7 +157,7 @@ function renderizarMesas(mesas) {
                         </div>
                         <div class="mt-auto">
                             <button class="btn btn-iniciar-mesa w-100 fw-bold py-3 text-uppercase" onclick="abrirMesa(${mesa.id})">
-                                ▶ Iniciar Mesa
+                                <i data-lucide="play" style="width:14px; margin-right:4px;"></i> Iniciar Mesa
                             </button>
                         </div>
                     `}
@@ -167,17 +167,12 @@ function renderizarMesas(mesas) {
         `;
     });
  
-    // FIX: Iniciar cronómetros DESPUÉS de que el HTML esté en el DOM
     iniciarCronometros();
 }
 // ==========================================
-// 4. CRONÓMETROS — VERSIÓN ÚNICA Y CORRECTA
-//    Lógica idéntica al backend calcularCostoBillar:
-//    - 5 min de gracia (S/ 0.00)
-//    - Luego bloques de 30 min × (precioHora / 2)
+// 4. CRONÓMETROS
 // ==========================================
 function iniciarCronometros() {
-    // Garantizar que no quede ningún intervalo huérfano
     if (intervaloCronometros) {
         clearInterval(intervaloCronometros);
         intervaloCronometros = null;
@@ -194,7 +189,6 @@ function iniciarCronometros() {
                 seg++;
                 el.dataset.segundos = seg;
  
-                // Formato HH:MM:SS
                 const h = Math.floor(seg / 3600);
                 const m = Math.floor((seg % 3600) / 60);
                 const s = seg % 60;
@@ -203,7 +197,6 @@ function iniciarCronometros() {
                     String(m).padStart(2, '0') + ':' +
                     String(s).padStart(2, '0');
  
-                // Motor financiero — igual que el backend
                 const precioHora = parseFloat(el.dataset.precio || 10);
                 const minutosTotales = Math.floor(seg / 60);
                 let costoT = 0;
@@ -241,7 +234,8 @@ async function abrirModalMover(idOrigen) {
         const select = document.getElementById('select-mesa-destino');
         select.innerHTML = '';
         libres.forEach(m => {
-            select.innerHTML += `<option value="${m.id}">${m.tipo === 'BILLAR' ? '🎱' : '🛒'} Mesa ${m.numero_mesa}</option>`;
+            const nomIcono = m.tipo === 'BILLAR' ? 'Billar' : 'Consumo';
+            select.innerHTML += `<option value="${m.id}">${nomIcono} Mesa ${m.numero_mesa}</option>`;
         });
  
         document.getElementById('modal-mover').style.display = 'flex';
@@ -263,7 +257,7 @@ async function ejecutarMoverMesa() {
  
         if (res.ok) {
             cerrarModal('modal-mover');
-            mostrarToast("🔄 Mudanza realizada con éxito");
+            mostrarToast("Mudanza realizada con éxito");
             cargarMesas(); 
         } else {
             mostrarAlerta("Error en el servidor al intentar mover la mesa.");
@@ -293,17 +287,13 @@ function abrirOpciones(id) {
     if (productosDisponibles.length === 0) cargarProductosMenu(); 
     renderizarProductosMesa(productosDisponibles);
     
-    // 1. Limpiamos el campo de nombre antes de abrir
     const inputNombre = document.getElementById('nombrePersonaPedido');
     if (inputNombre) inputNombre.value = '';
     
-    // 2. Mostramos el modal
     document.getElementById('modal-pedidos').style.display = 'flex';
     
-    // 3. Cargamos los nombres como botones (después de mostrar)
     cargarNombresRapidos();
     
-    // 4. Enfocamos el buscador
     document.getElementById('buscador-productos').value = '';
     document.getElementById('buscador-productos').focus();
 }
@@ -356,7 +346,6 @@ async function agregarPedido(productoId) {
     const cantInput = document.getElementById(`cant-${productoId}`);
     const cantidadSeleccionada = parseInt(cantInput.value) || 1;
     
-    // 🔥 NUEVO: Capturamos el nombre de la persona desde el input del modal
     const inputNombre = document.getElementById('nombrePersonaPedido');
     const nombrePersona = inputNombre ? inputNombre.value.trim() : '';
 
@@ -370,21 +359,20 @@ async function agregarPedido(productoId) {
                 mesa_id: mesaAccionId, 
                 producto_id: productoId, 
                 cantidad: cantidadSeleccionada,
-                cliente_nombre: nombrePersona // 🔥 NUEVO: Se envía al backend
+                cliente_nombre: nombrePersona 
             })
         });
         
         if (res.ok) {
-            mostrarToast(`✅ ${cantidadSeleccionada}x añadido(s)`);
+            mostrarToast("Añadido al pedido");
             
-            // 🔥 NUEVO: Limpiamos el nombre para el siguiente pedido
             if (inputNombre) inputNombre.value = '';
 
             await cargarProductosMenu(); 
             await cargarNombresRapidos();
             abrirOpciones(mesaAccionId); 
         } else {
-            mostrarAlerta("Error al añadir producto (¿Revisaste si hay stock suficiente?)");
+            mostrarAlerta("Error al añadir producto");
         }
     } catch (e) { 
         mostrarAlerta("Error de red al añadir producto."); 
@@ -393,11 +381,11 @@ async function agregarPedido(productoId) {
 
 async function eliminarPedido(idPedido, idMesa) {
     try {
-        const confirmado = await mostrarConfirmacion("⚠️ Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
+        const confirmado = await mostrarConfirmacion("Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta?");
         if (confirmado) {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
             if (res.ok) {
-                mostrarToast("🗑️ Producto retirado de la cuenta");
+                mostrarToast("Producto retirado de la cuenta");
                 abrirModalCobro(idMesa);
             } else {
                 mostrarAlerta("Error en el servidor al intentar eliminar.", "error");
@@ -405,7 +393,7 @@ async function eliminarPedido(idPedido, idMesa) {
         }
     } catch (error) {
         console.error("Error en eliminarPedido:", error);
-        mostrarAlerta("No se pudo cargar la confirmación. Revisa la consola.", "error");
+        mostrarAlerta("No se pudo cargar la confirmación.", "error");
     }
 }
 // ==========================================
@@ -422,7 +410,6 @@ async function abrirModalCobro(id) {
         let listaHtml = '';
         if (data.listaProductos && data.listaProductos.length > 0) {
             
-            // 1. Agrupar productos por cliente
             const cuentasPorPersona = {};
             data.listaProductos.forEach(p => {
                 const nombre = p.cliente_nombre || 'General'; 
@@ -433,25 +420,16 @@ async function abrirModalCobro(id) {
                 cuentasPorPersona[nombre].total += p.subtotal;
             });
 
-            // 2. Renderizar por grupos manteniendo tu diseño
             for (const [persona, cuenta] of Object.entries(cuentasPorPersona)) {
                 
-                // --- Cabecera de la Persona ---
                 listaHtml += `
-                    <div class="d-flex justify-content-between align-items-center bg-dark p-2 mt-2 rounded border border-secondary">
-                        <div class="text-white fw-bold small">
-                            👤 Cuenta: <span class="text-info text-uppercase">${persona}</span>
+                    <div class="mb-3 p-2 border rounded" style="background: rgba(255,255,255,0.02); border-color: var(--border)!important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span style="font-size: 13px; font-weight: 600;"><i data-lucide="user" style="width:14px;"></i> Cuenta: <span class="text-info text-uppercase">${persona}</span></span>
+                            <span class="fw-bold" style="color: var(--success); font-size: 14px;">S/ ${cuenta.total.toFixed(2)}</span>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="text-success fw-bold">S/ ${cuenta.total.toFixed(2)}</span>
-                            ${persona !== 'General' ? 
-                                `<button class="btn btn-success btn-sm fw-bold py-0 px-2" onclick="cobrarCuentaPersonal('${persona}', ${cuenta.total})">Cobrar Solo a Él</button>` 
-                            : ''}
-                        </div>
-                    </div>
-                `;
+                    `;
 
-                // --- Lista de Productos de esta Persona ---
                 cuenta.items.forEach(p => {
                     listaHtml += `
                         <div class="d-flex justify-content-between align-items-center border-bottom border-secondary py-2 ps-3">
@@ -460,11 +438,12 @@ async function abrirModalCobro(id) {
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="text-muted small">S/ ${parseFloat(p.subtotal).toFixed(2)}</span>
-                                <button class="btn btn-outline-danger btn-sm p-1" onclick="eliminarPedido(${p.id}, ${id})" title="Quitar de la cuenta"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline-danger btn-sm p-1" onclick="eliminarPedido(${p.id}, ${id})" title="Quitar de la cuenta"><i data-lucide="trash-2" style="width:14px;"></i></button>
                             </div>
                         </div>
                     `;
                 });
+                listaHtml += `</div>`;
             }
         } else {
             listaHtml = '<div class="text-muted text-center py-3 small">No hay consumo registrado</div>';
@@ -472,11 +451,11 @@ async function abrirModalCobro(id) {
 
         const html = `
             <div class="bg-black p-3 rounded mb-3 border border-secondary shadow-sm">
-                <div class="d-flex justify-content-between mb-3 text-muted border-bottom border-secondary pb-2">
-                    <span class="fw-bold">⏳ Tiempo Jugado (${data.minutos} min):</span>
-                    <span class="text-warning fw-bold fs-5">S/ ${data.totalTiempo.toFixed(2)}</span>
+                <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--border);">
+                    <span class="fw-bold"><i data-lucide="clock" style="width:14px; margin-right:4px;"></i> Tiempo Jugado (${data.minutos} min):</span>
+                    <span style="float: right; color: var(--success); font-weight: bold;">S/ ${data.totalTiempo.toFixed(2)}</span>
                 </div>
-                <div class="text-muted small text-uppercase fw-bold mb-2">🍺 Detalle de Consumo:</div>
+                <div class="text-muted small text-uppercase fw-bold mb-2"><i data-lucide="coffee" style="width:14px; margin-right:4px;"></i> Detalle de Consumo:</div>
                 <div style="max-height: 250px; overflow-y: auto;" class="pe-1">
                     ${listaHtml}
                 </div>
@@ -485,8 +464,8 @@ async function abrirModalCobro(id) {
                 <span class="fs-4">TOTAL MESA:</span> 
                 <span class="fs-1 text-warning d-block" style="text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
-            <button class="btn btn-warning w-100 fw-bold py-3 shadow-sm fs-6" onclick="abrirScanner()">
-                📸 ESCANEAR SOCIO VIP (+1 Sello)
+            <button class="btn btn-outline-warning w-100 mb-3 fw-bold mt-2" onclick="abrirScanner()" style="border-radius: var(--radius-md);">
+                <i data-lucide="qr-code" style="width:16px; margin-right:4px;"></i> ESCANEAR SOCIO VIP (+1 Sello)
             </button>
         `;
         document.getElementById('cobro-contenido').innerHTML = html;
@@ -494,17 +473,13 @@ async function abrirModalCobro(id) {
     } catch (e) { console.error("Error al obtener cuenta:", e); }
 }
 
-// Ejecuta el cobro de una sola persona
 async function cobrarCuentaPersonal(nombrePersona, montoDeuda) {
-    // 1. Confirmación de seguridad
-    if (!confirm(`¿Deseas cobrar los consumos de ${nombrePersona} por un total de S/ ${montoDeuda.toFixed(2)}?`)) return;
+    if (!confirm(`¿Cobrar a ${nombrePersona} S/ ${montoDeuda.toFixed(2)}?`)) return;
 
-    // 2. Preguntar método de pago rápido
-    let metodoPrompt = prompt("¿Método de pago? Escribe 1 para EFECTIVO o 2 para DIGITAL", "1");
-    if (!metodoPrompt) return; // Si cancela, salimos
+    let metodoPrompt = prompt("Escribe 1 (Efectivo) o 2 (Digital)", "1");
+    if (!metodoPrompt) return;
 
-    let metodoFinal = 'EFECTIVO';
-    if (metodoPrompt === '2') metodoFinal = 'DIGITAL';
+    let metodoFinal = metodoPrompt === '2' ? 'DIGITAL' : 'EFECTIVO';
 
     try {
         const res = await fetch(`/api/mesas/cerrar-personal/${mesaAccionId}`, {
@@ -517,28 +492,23 @@ async function cobrarCuentaPersonal(nombrePersona, montoDeuda) {
         });
         
         if (res.ok) {
-            mostrarToast(`✅ Cuenta de ${nombrePersona} cobrada (${metodoFinal})`);
-            
-            // Recargamos el modal de cobro para que desaparezcan los productos de esa persona
-            // y se actualice el TOTAL MESA con lo que queda.
+            mostrarToast(`Cuenta de ${nombrePersona} cobrada`);
             abrirModalCobro(mesaAccionId); 
-            
-            cargarMesas(); // Refresca las vistas generales
+            cargarMesas(); 
             if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
         } else {
             const data = await res.json();
             mostrarAlerta(data.error || "Error al procesar cobro parcial.");
         }
     } catch (e) { 
-        mostrarAlerta("Error de conexión al procesar el cobro parcial."); 
+        mostrarAlerta("Error de conexión."); 
     }
 }
 
-// Carga los nombres como botones seleccionables
 async function cargarNombresRapidos() {
     try {
         const div = document.getElementById('nombresRapidos');
-        div.innerHTML = ''; // Limpiamos
+        div.innerHTML = ''; 
 
         const res = await fetch(`/api/mesas/${mesaAccionId}/nombres`);
         const nombres = await res.json();
@@ -550,7 +520,6 @@ async function cargarNombresRapidos() {
             btn.style.padding = '2px 12px';
             btn.innerText = nombre;
             
-            // Al hacer clic, el input se llena solito
             btn.onclick = () => {
                 document.getElementById('nombrePersonaPedido').value = nombre;
             };
@@ -588,7 +557,7 @@ async function ejecutarCobroReal(metodo) {
         ef = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
         dig = parseFloat(document.getElementById('mixto-digital').value) || 0;
         if ((ef + dig).toFixed(2) !== totalDeudaCobro.toFixed(2)) {
-            return mostrarAlerta("Los montos no cuadran con el total exacto.");
+            return mostrarAlerta("Los montos no cuadran.");
         }
     } else if (metodo === 'EFECTIVO') {
         ef = totalDeudaCobro;
@@ -598,7 +567,6 @@ async function ejecutarCobroReal(metodo) {
         dig = totalDeudaCobro;
     }
  
-    // Traducir métodos digitales al enum que acepta la BD
     let metodoParaDB = metodo;
     if (metodo === 'YAPE' || metodo === 'PLIN' || metodo === 'TARJETA') {
         metodoParaDB = 'DIGITAL'; 
@@ -614,15 +582,15 @@ async function ejecutarCobroReal(metodo) {
         if (res.ok) {
             cerrarModal('modal-cobro');
             cerrarModal('modal-mixto');
-            mostrarToast(`💳 Cuenta cobrada con éxito`);
+            mostrarToast(`Cuenta cobrada con éxito`);
             cargarMesas();
             if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
         } else {
             const data = await res.json();
-            mostrarAlerta(data.error || "Error en la base de datos al registrar cobro.");
+            mostrarAlerta(data.error || "Error al registrar cobro.");
         }
     } catch (e) { 
-        mostrarAlerta("Error de conexión al procesar el cobro."); 
+        mostrarAlerta("Error de conexión."); 
     }
 }
 
@@ -632,7 +600,7 @@ async function ejecutarCobroReal(metodo) {
 async function ejecutarGasto() {
     const desc = document.getElementById('gasto-desc').value;
     const monto = document.getElementById('gasto-monto').value;
-    if (!desc || !monto) return mostrarAlerta("Por favor, llena todos los campos del gasto.");
+    if (!desc || !monto) return mostrarAlerta("Llena todos los campos.");
  
     await fetch('/api/gastos/nuevo', {
         method: 'POST',
@@ -643,7 +611,7 @@ async function ejecutarGasto() {
     cerrarModal('modal-gasto');
     document.getElementById('gasto-desc').value = '';
     document.getElementById('gasto-monto').value = '';
-    mostrarToast("💸 Gasto Registrado Correctamente");
+    mostrarToast("Gasto Registrado");
 }
 
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -677,7 +645,7 @@ function cerrarScanner() {
     document.getElementById('modal-scanner').style.display = 'none';
 }
 
-function escaneoFallido(error) { /* silencioso */ }
+function escaneoFallido(error) { }
 
 async function escaneoExitoso(textoDecodificado) {
     cerrarScanner();
@@ -697,10 +665,10 @@ async function escaneoExitoso(textoDecodificado) {
         const btnContainer = document.getElementById('btn-container-canje');
         
         if (data.premios > 0) {
-            recompensaDiv.innerHTML = `<span style="color: #D4AF37; font-weight: 900; font-size: 16px;">🎁 ¡Tiene ${data.premios} Hora(s) Gratis disponible(s)!</span>`;
-            btnContainer.innerHTML = `<button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; padding: 15px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)">✅ APLICAR PREMIO A ESTA MESA</button>`;
+            recompensaDiv.innerHTML = `<span style="color: var(--gold); font-weight: 800; font-size: 14px;"><i data-lucide="gift" style="width:16px; margin-right:4px;"></i> ¡Tiene ${data.premios} Hora(s) Gratis disponible(s)!</span>`;
+            btnContainer.innerHTML = `<button class="btn-mesa mt-3" style="background: var(--gold); color: #000; font-weight: 800; width: 100%; padding: 12px; border-radius: var(--radius-md); text-transform: uppercase; font-size: 13px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)"><i data-lucide="check" style="width:16px; margin-right:4px;"></i> Aplicar Premio a esta Mesa</button>`;
         } else {
-            recompensaDiv.innerHTML = `<span style="color: #888; font-size: 14px;">No tiene recompensas disponibles aún.</span><br><span style="color: #25D366; font-weight: bold; font-size: 12px;">+1 Sello añadido por su visita.</span>`;
+            recompensaDiv.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">No tiene recompensas disponibles aún.</span><br><span style="color: var(--success); font-weight: 600; font-size: 12px; display:inline-block; margin-top:8px;"><i data-lucide="check-circle-2" style="width:14px; margin-right:4px;"></i> +1 Sello añadido por su visita.</span>`;
             btnContainer.innerHTML = '';
         }
  

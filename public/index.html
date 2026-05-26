@@ -15,29 +15,47 @@
     
     <style>
         :root {
-            --gold: #D4AF37;
-            --gold-hover: #e5c158;
-            --gold-dim: rgba(212, 175, 55, 0.1);
-            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.35);
-            --bg-main: #050505;
-            --bg-card: rgba(15, 15, 17, 0.85);
-            --border: rgba(255,255,255,0.06);
-            --text-muted: #8a8f98;
+            --gold: #B8973E;
+            --bg-main: #09090b;
+            --bg-surface: #18181b;
+            --bg-elevated: #27272a;
+            --border: #27272a;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --radius: 6px;
         }
 
-        * { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-main); overflow-x: hidden; scroll-behavior: smooth; }
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main);
+            overflow-x: hidden; 
+            scroll-behavior: smooth; 
+        }
 
         /* ===== NAVBAR ===== */
         .navbar-public {
-            background: rgba(5, 5, 5, 0.85) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--bg-main) !important;
             border-bottom: 1px solid var(--border);
-            transition: all 0.3s ease;
+            transition: background 0.2s linear;
         }
         .navbar-public.scrolled {
-            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        .navbar-brand img {
+            filter: grayscale(100%) brightness(200%);
+            height: 32px;
+        }
+
+        .nav-link {
+            font-size: 13px; 
+            letter-spacing: 1px;
+            color: var(--text-muted) !important;
+            transition: color 0.2s linear;
+        }
+        .nav-link:hover {
+            color: var(--text-main) !important;
         }
 
         /* ===== HERO ===== */
@@ -47,180 +65,143 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.92)),
-                        url('https://images.pexels.com/photos/261043/pexels-photo-261043.jpeg?auto=compress&cs=tinysrgb&w=1920&q=80') center/cover fixed;
+            background: var(--bg-main);
             position: relative;
-            overflow: hidden;
-        }
-
-        /* Animated ambient particles */
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%);
-            top: 10%; right: -5%;
-            border-radius: 50%;
-            animation: floatOrb 8s ease-in-out infinite;
-        }
-        .hero-section::after {
-            content: '';
-            position: absolute;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%);
-            bottom: 10%; left: -3%;
-            border-radius: 50%;
-            animation: floatOrb 10s ease-in-out infinite reverse;
-        }
-
-        @keyframes floatOrb {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(20px, -30px) scale(1.05); }
-            66% { transform: translate(-15px, 15px) scale(0.95); }
+            padding-top: 80px;
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            font-weight: 900;
-            color: #fff;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            color: var(--text-main);
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: -1px;
             line-height: 1.1;
             opacity: 0;
-            animation: heroFadeIn 1s ease forwards 0.3s;
+            animation: heroFadeIn 0.8s linear forwards 0.1s;
+            margin-bottom: 20px;
         }
 
         .hero-subtitle {
-            font-size: clamp(1rem, 3vw, 1.4rem);
-            color: var(--gold);
-            font-weight: 600;
-            margin-bottom: 30px;
-            letter-spacing: 1.5px;
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 40px;
             opacity: 0;
-            animation: heroFadeIn 1s ease forwards 0.6s;
+            animation: heroFadeIn 0.8s linear forwards 0.2s;
         }
 
         .hero-actions {
             opacity: 0;
-            animation: heroFadeIn 1s ease forwards 0.9s;
+            animation: heroFadeIn 0.8s linear forwards 0.3s;
         }
 
         @keyframes heroFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===== BUTTONS ===== */
         .btn-gold {
-            background: linear-gradient(145deg, var(--gold), #AA8222);
-            border: none;
+            background: var(--gold);
+            border: 1px solid var(--gold);
             color: #000;
-            font-weight: 800;
-            padding: 16px 40px;
+            font-weight: 600;
+            padding: 12px 32px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(212,175,55,0.25);
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            border-radius: var(--radius);
+            transition: all 0.2s linear;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-gold:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--gold-glow);
-            color: #000;
+            background: transparent;
+            color: var(--gold);
         }
 
         .btn-outline-gold {
-            border: 2px solid var(--gold);
-            color: var(--gold);
-            font-weight: 800;
-            padding: 16px 40px;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 12px 32px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background: transparent;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            border-radius: var(--radius);
+            transition: all 0.2s linear;
+            background: var(--bg-surface);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-outline-gold:hover {
-            background: var(--gold);
-            color: #000;
-            box-shadow: var(--gold-glow);
+            border-color: var(--gold);
+            color: var(--gold);
         }
 
         /* ===== SECTIONS ===== */
         .section-title {
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            font-weight: 900;
-            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: -0.5px;
         }
-        .section-title span { color: var(--gold); }
         .section-subtitle {
             text-align: center;
             color: var(--text-muted);
             font-size: 15px;
-            margin-bottom: 50px;
-            font-weight: 400;
+            margin-bottom: 40px;
         }
 
         /* ===== MENU CARDS ===== */
         .menu-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 28px 20px;
+            border-radius: var(--radius);
+            padding: 24px;
             text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: border-color 0.2s linear;
             position: relative;
-            overflow: hidden;
-        }
-
-        .menu-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 3px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .menu-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(212, 175, 55, 0.3);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            border-color: var(--gold);
         }
-        .menu-card:hover::before { opacity: 1; }
 
         .menu-icon {
-            font-size: 2.8rem;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             display: block;
+            color: var(--text-muted);
+            transition: color 0.2s linear;
+        }
+
+        .menu-card:hover .menu-icon {
+            color: var(--gold);
         }
 
         .menu-card h5 {
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 8px;
         }
 
         .menu-price {
-            color: #00d26a;
-            font-size: 1.3rem;
-            font-weight: 900;
-            margin-top: 8px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 700;
         }
 
-        /* Card reveal animation */
         .menu-card-animate {
             opacity: 0;
-            transform: translateY(20px);
-            animation: cardReveal 0.5s ease forwards;
+            transform: translateY(10px);
+            animation: cardReveal 0.4s linear forwards;
         }
 
         @keyframes cardReveal {
@@ -229,111 +210,97 @@
 
         /* ===== WHY US SECTION ===== */
         .feature-card {
-            text-align: center;
-            padding: 35px 25px;
-            border-radius: 16px;
-            background: var(--bg-card);
+            padding: 32px 24px;
+            border-radius: var(--radius);
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            transition: all 0.3s ease;
+            transition: border-color 0.2s linear;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
         }
         .feature-card:hover {
-            border-color: rgba(212,175,55,0.2);
-            transform: translateY(-5px);
+            border-color: var(--gold);
         }
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
+        .feature-icon-wrapper {
+            margin-bottom: 20px;
+            color: var(--gold);
         }
         .feature-title {
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 15px;
             margin-bottom: 8px;
         }
         .feature-text {
             color: var(--text-muted);
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.5;
+            margin-bottom: 0;
         }
 
         /* ===== CTA SECTION ===== */
         .cta-section {
-            background: linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(5,5,5,1) 50%, rgba(212,175,55,0.05) 100%);
-            border-top: 1px solid rgba(212,175,55,0.15);
-            border-bottom: 1px solid rgba(212,175,55,0.15);
-        }
-
-        .btn-whatsapp {
-            background: #25D366;
-            color: #fff;
-            font-weight: 800;
-            padding: 16px 35px;
-            border-radius: 50px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-        .btn-whatsapp:hover {
-            transform: translateY(-3px);
-            color: #fff;
-            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
 
         /* ===== FOOTER ===== */
         .footer-premium {
-            background: #000;
-            padding: 60px 0 30px;
+            background: var(--bg-main);
+            padding: 40px 0 20px;
             border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            filter: grayscale(100%) brightness(200%);
+            height: 24px;
+            margin-bottom: 20px;
         }
 
         .footer-links a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
+            font-size: 13px;
+            transition: color 0.2s linear;
         }
-        .footer-links a:hover { color: var(--gold); }
-
-        .footer-divider {
-            width: 60px;
-            height: 2px;
-            background: var(--gold);
-            margin: 25px auto;
-            border-radius: 2px;
-        }
+        .footer-links a:hover { color: var(--text-main); }
 
         /* ===== MODAL OVERRIDES ===== */
-        .modal-content { border-radius: 16px !important; }
-        .form-control:focus {
+        .modal-content { 
+            border-radius: var(--radius) !important;
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--border) !important;
+        }
+        .form-control, .form-select {
+            background: var(--bg-main) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-main) !important;
+            border-radius: var(--radius) !important;
+            font-size: 14px;
+        }
+        .form-control:focus, .form-select:focus {
             border-color: var(--gold) !important;
-            box-shadow: 0 0 0 3px rgba(212,175,55,0.1) !important;
+            box-shadow: none !important;
+        }
+        .form-label {
+            color: var(--text-muted) !important;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            animation: heroFadeIn 1s ease forwards 1.5s;
-        }
-        .scroll-indicator span {
-            display: block;
-            width: 24px; height: 24px;
-            border-right: 2px solid var(--gold);
-            border-bottom: 2px solid var(--gold);
-            transform: rotate(45deg);
-            animation: scrollBounce 2s ease infinite;
-        }
-        @keyframes scrollBounce {
-            0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.3; }
-            50% { transform: rotate(45deg) translate(5px, 5px); opacity: 1; }
+        /* Custom Radio */
+        .form-check-input:checked {
+            background-color: var(--gold);
+            border-color: var(--gold);
         }
     </style>
 </head>
@@ -343,19 +310,19 @@
     <nav class="navbar navbar-expand-lg navbar-dark navbar-public fixed-top py-3">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
-                <img src="/logo.png" alt="La Esquina" height="40">
+                <img src="/logo.png" alt="La Esquina">
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+                <i data-lucide="menu" style="color: var(--text-main);"></i>
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center gap-3">
-                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#carta" style="font-size: 13px; letter-spacing: 1px;">CARTA DIGITAL</a></li>
-                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#nosotros" style="font-size: 13px; letter-spacing: 1px;">NOSOTROS</a></li>
-                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#ubicacion" style="font-size: 13px; letter-spacing: 1px;">UBICACIÓN</a></li>
+                <ul class="navbar-nav align-items-center gap-4">
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#carta">CARTA DIGITAL</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#nosotros">NOSOTROS</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#ubicacion">UBICACIÓN</a></li>
                     <li class="nav-item">
-                        <a class="btn btn-warning fw-bold text-dark px-4 rounded-pill shadow-sm" href="/login.html" style="font-size: 13px; letter-spacing: 0.5px;">
-                            👑 PORTAL VIP
+                        <a class="btn-outline-gold px-3 py-2" href="/login.html" style="font-size: 11px; text-decoration: none;">
+                            <i data-lucide="lock" class="me-2" style="width: 14px; height: 14px;"></i> ACCESO EMPLEADOS
                         </a>
                     </li>
                 </ul>
@@ -365,47 +332,52 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <div class="container px-4" style="position: relative; z-index: 2;">
+        <div class="container px-4">
             <h1 class="hero-title">LA ESQUINA<br>DEL BILLAR</h1>
-            <p class="hero-subtitle">El mejor ambiente, tragos premium y mesas profesionales.</p>
+            <p class="hero-subtitle">Mobiliario profesional. Bebidas de autor. Ambiente exclusivo.</p>
             <div class="hero-actions d-flex flex-wrap justify-content-center gap-3">
-                <a href="#carta" class="btn btn-gold rounded-pill">Ver la Carta</a>
-                <a href="/vip.html" class="btn btn-outline-gold rounded-pill">Club VIP</a>
+                <a href="#carta" class="btn-gold" style="text-decoration: none;">Ver Carta Digital</a>
+                <a href="/vip.html" class="btn-outline-gold" style="text-decoration: none;">Portal VIP</a>
             </div>
             <div class="hero-actions mt-4">
-                <button class="btn btn-gold btn-lg rounded-pill shadow-lg px-5" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="font-size: 14px;">
-                    ✨ COTIZAR EVENTO VIP
+                <button class="btn-gold" data-bs-toggle="modal" data-bs-target="#modalEventoVIP">
+                    <i data-lucide="calendar" class="me-2" style="width: 16px; height: 16px;"></i> COTIZAR EVENTO
                 </button>
             </div>
         </div>
-        <div class="scroll-indicator"><span></span></div>
     </section>
 
     <!-- Sección: ¿Por qué elegirnos? -->
-    <section id="nosotros" class="py-5" style="background: var(--bg-main);">
+    <section id="nosotros" class="py-5">
         <div class="container py-5">
-            <h2 class="section-title">¿Por Qué <span>Elegirnos</span>?</h2>
-            <p class="section-subtitle">Más que un billar, una experiencia.</p>
+            <h2 class="section-title">Infraestructura</h2>
+            <p class="section-subtitle">Estándares de calidad para una experiencia superior.</p>
             <div class="row g-4">
                 <div class="col-12 col-md-4">
-                    <div class="feature-card h-100">
-                        <span class="feature-icon">🎱</span>
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="crosshair" style="width: 32px; height: 32px;"></i>
+                        </div>
                         <div class="feature-title">Mesas Profesionales</div>
-                        <p class="feature-text mb-0">Mesas de billar profesionales con paño premium y equipamiento de primera.</p>
+                        <p class="feature-text">Mesas de billar certificadas, paño premium y equipamiento de precisión.</p>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
-                    <div class="feature-card h-100">
-                        <span class="feature-icon">🍹</span>
-                        <div class="feature-title">Tragos & Piqueos</div>
-                        <p class="feature-text mb-0">Carta variada con cervezas artesanales, cócteles clásicos y los mejores piqueos.</p>
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="glass-water" style="width: 32px; height: 32px;"></i>
+                        </div>
+                        <div class="feature-title">Barra Premium</div>
+                        <p class="feature-text">Selección rigurosa de destilados, cervezas artesanales y coctelería clásica.</p>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
-                    <div class="feature-card h-100">
-                        <span class="feature-icon">🎉</span>
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="building" style="width: 32px; height: 32px;"></i>
+                        </div>
                         <div class="feature-title">Eventos Privados</div>
-                        <p class="feature-text mb-0">Cumpleaños, corporativos y reuniones. Armamos el plan perfecto para ti.</p>
+                        <p class="feature-text">Soluciones integrales para reservas corporativas y celebraciones exclusivas.</p>
                     </div>
                 </div>
             </div>
@@ -413,21 +385,21 @@
     </section>
 
     <!-- Sección: La Carta -->
-    <section id="carta" class="py-5" style="background: linear-gradient(180deg, #070707, var(--bg-main));">
+    <section id="carta" class="py-5" style="background: var(--bg-surface);">
         <div class="container py-5">
-            <h2 class="section-title">Nuestra <span>Carta</span></h2>
-            <p class="section-subtitle">Precios y disponibilidad en tiempo real desde nuestro sistema.</p>
+            <h2 class="section-title">Nuestra Carta</h2>
+            <p class="section-subtitle">Inventario y disponibilidad sincronizados en tiempo real.</p>
             
             <div class="row g-4 justify-content-center" id="menu-publico">
                 <div class="col-12 text-center" style="color: var(--text-muted);">
-                    <div class="spinner-border text-warning" role="status"></div>
-                    <p class="mt-2" style="font-size: 14px;">Cargando menú en vivo...</p>
+                    <div class="spinner-border text-secondary" role="status" style="width: 1.5rem; height: 1.5rem;"></div>
+                    <p class="mt-3" style="font-size: 13px;">Sincronizando sistema...</p>
                 </div>
             </div>
 
             <div class="text-center mt-5">
-                <a href="/menu.html" class="btn btn-outline-gold rounded-pill px-5" style="font-size: 13px;">
-                    📜 VER CARTA COMPLETA
+                <a href="/menu.html" class="btn-outline-gold" style="text-decoration: none;">
+                    <i data-lucide="file-text" class="me-2" style="width: 16px; height: 16px;"></i> VER CARTA COMPLETA
                 </a>
             </div>
         </div>
@@ -438,24 +410,34 @@
         <div class="container py-5">
             <div class="row align-items-center g-5">
                 <div class="col-12 col-md-6 text-center text-md-start">
-                    <h3 class="fw-bold text-white mb-3" style="font-size: 1.8rem;">¿Listo para una noche<br>inolvidable? 🎱</h3>
-                    <p style="color: var(--text-muted); font-size: 15px; line-height: 1.7;">
-                        Reserva tu mesa, organiza un torneo con amigos o celebra tu cumpleaños en el mejor ambiente de la zona.
+                    <h3 class="fw-bold mb-3" style="font-size: 1.5rem; color: var(--text-main);">Gestión de Reservas</h3>
+                    <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 400px;">
+                        Coordinación directa de reservas corporativas, torneos y celebraciones.
                     </p>
-                    <a href="https://wa.me/51TUNUMERO?text=Hola%20quiero%20reservar" target="_blank" class="btn-whatsapp mt-3">
-                        💬 RESERVAR POR WHATSAPP
+                    <a href="https://wa.me/51TUNUMERO?text=Hola%20quiero%20reservar" target="_blank" class="btn-outline-gold mt-3" style="text-decoration: none;">
+                        <i data-lucide="message-square" class="me-2" style="width: 16px; height: 16px;"></i> CONTACTAR ASESOR
                     </a>
                 </div>
                 <div class="col-12 col-md-6">
-                    <div class="feature-card" style="border-left: 3px solid var(--gold); text-align: left;">
-                        <h5 class="fw-bold text-white mb-3">✨ Eventos Privados</h5>
-                        <ul style="list-style: none; padding: 0; margin: 0;">
-                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🎱 Acceso exclusivo a mesas de billar</li>
-                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🍺 Barra libre personalizada</li>
-                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🎵 Música y decoración temática</li>
-                            <li style="color: #ccc; padding: 8px 0; font-size: 14px;">🏆 Torneos organizados para tu grupo</li>
+                    <div class="feature-card" style="border: 1px solid var(--border);">
+                        <h5 class="fw-bold text-white mb-4" style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i data-lucide="briefcase" class="me-2" style="width: 16px; height: 16px; color: var(--gold); display: inline-block; vertical-align: text-bottom;"></i> Beneficios Corporativos
+                        </h5>
+                        <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                            <li style="color: var(--text-muted); padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: center;">
+                                <i data-lucide="check" class="me-3" style="width: 14px; height: 14px; color: var(--gold);"></i> Acceso exclusivo a áreas asignadas
+                            </li>
+                            <li style="color: var(--text-muted); padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: center;">
+                                <i data-lucide="check" class="me-3" style="width: 14px; height: 14px; color: var(--gold);"></i> Planes de consumo personalizados
+                            </li>
+                            <li style="color: var(--text-muted); padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: center;">
+                                <i data-lucide="check" class="me-3" style="width: 14px; height: 14px; color: var(--gold);"></i> Asistencia y soporte dedicado
+                            </li>
+                            <li style="color: var(--text-muted); padding: 12px 0; font-size: 13px; display: flex; align-items: center;">
+                                <i data-lucide="check" class="me-3" style="width: 14px; height: 14px; color: var(--gold);"></i> Coordinación de torneos
+                            </li>
                         </ul>
-                        <button class="btn btn-gold w-100 rounded-pill mt-4" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="font-size: 13px;">
+                        <button class="btn-gold w-100 mt-4" data-bs-toggle="modal" data-bs-target="#modalEventoVIP">
                             SOLICITAR COTIZACIÓN
                         </button>
                     </div>
@@ -467,63 +449,65 @@
     <!-- MODAL: Formulario de Eventos -->
     <div class="modal fade" id="modalEventoVIP" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content bg-dark border-warning" style="border-width: 2px;">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-warning fw-bold" style="font-size: 16px; letter-spacing: 0.5px;">👑 Reserva tu Evento Privado</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold" style="font-size: 14px; color: var(--text-main); text-transform: uppercase;">
+                        <i data-lucide="file-signature" class="me-2" style="width: 16px; height: 16px; color: var(--gold); vertical-align: text-bottom;"></i> Formulario de Reserva
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 10px;"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="formReservaEventoModal">
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Nombre Completo</label>
-                                <input type="text" class="form-control bg-black text-white border-secondary" id="ev_nombre" required>
+                                <label class="form-label">Titular de Reserva</label>
+                                <input type="text" class="form-control" id="ev_nombre" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">WhatsApp</label>
-                                <input type="tel" class="form-control bg-black text-white border-secondary" id="ev_telefono" required>
+                                <label class="form-label">Teléfono / Celular</label>
+                                <input type="tel" class="form-control" id="ev_telefono" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Correo Electrónico</label>
-                                <input type="email" class="form-control bg-black text-white border-secondary" id="ev_email" placeholder="Para la confirmación" required>
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="ev_email" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Fecha Deseada</label>
-                                <input type="date" class="form-control bg-black text-white border-secondary" id="ev_fecha" required>
+                                <label class="form-label">Fecha del Evento</label>
+                                <input type="date" class="form-control" id="ev_fecha" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Hora</label>
-                                <input type="time" class="form-control bg-black text-white border-secondary" id="ev_hora" required>
+                                <label class="form-label">Hora de Inicio</label>
+                                <input type="time" class="form-control" id="ev_hora" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Motivo</label>
-                                <select class="form-select bg-black text-white border-secondary" id="ev_tipo" required>
-                                    <option value="">Selecciona...</option>
-                                    <option value="Cumpleaños">🎉 Cumpleaños</option>
-                                    <option value="Corporativo">💼 Evento Corporativo</option>
-                                    <option value="Reunión">🎱 Reunión de Amigos</option>
+                                <label class="form-label">Tipo de Evento</label>
+                                <select class="form-select" id="ev_tipo" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Cumpleaños">Cumpleaños</option>
+                                    <option value="Corporativo">Evento Corporativo</option>
+                                    <option value="Reunión">Reunión Social</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                             </div>
                         </div>
 
-                        <h6 class="text-warning fw-bold" style="font-size: 14px; letter-spacing: 0.5px;">Selecciona tu Plan</h6>
-                        <div class="form-check mb-2 p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02);">
+                        <label class="form-label mb-2">Selección de Plan</label>
+                        <div class="form-check mb-2 p-3 rounded" style="border: 1px solid var(--border); background: var(--bg-main);">
                             <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
-                            <label class="form-check-label ms-2 text-white" for="plan1" style="font-size: 14px;">Plan Express (3 Horas)</label>
+                            <label class="form-check-label ms-2" for="plan1" style="font-size: 13px; color: var(--text-main);">Plan Estándar (3 Horas)</label>
                         </div>
-                        <div class="form-check mb-4 p-3 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
+                        <div class="form-check mb-4 p-3 rounded" style="border: 1px solid var(--gold); background: rgba(184, 151, 62, 0.05);">
                             <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas)">
-                            <label class="form-check-label ms-2 text-warning fw-bold" for="plan2" style="font-size: 14px;">Plan Full (5 Horas) 👑</label>
+                            <label class="form-check-label ms-2 fw-semibold" for="plan2" style="font-size: 13px; color: var(--gold);">Plan Premium (5 Horas)</label>
                         </div>
 
-                        <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Requerimientos Adicionales</label>
-                        <textarea class="form-control bg-black text-white border-secondary mb-4" id="ev_requerimientos" rows="2" placeholder="Ej: Necesito torta, un torneo para 10 personas..."></textarea>
+                        <label class="form-label">Especificaciones Adicionales</label>
+                        <textarea class="form-control mb-4" id="ev_requerimientos" rows="2" placeholder="Detalle cualquier requerimiento específico..."></textarea>
 
-                        <button type="submit" class="btn btn-warning w-100 fw-bold py-3 rounded-pill" id="btnEnviarReservaModal" style="font-size: 14px; letter-spacing: 1px;">
-                            ENVIAR SOLICITUD DE COTIZACIÓN
+                        <button type="submit" class="btn-gold w-100" id="btnEnviarReservaModal">
+                            PROCESAR SOLICITUD
                         </button>
-                        <div id="reservaMensajeModal" class="text-center mt-3 fw-bold"></div>
+                        <div id="reservaMensajeModal" class="text-center mt-3" style="font-size: 13px;"></div>
                     </form>
                 </div>
             </div>
@@ -563,24 +547,24 @@
             if(data.success) {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalEventoVIP'));
                 modal.hide();
-                alert('¡Solicitud enviada! Revisa tu correo electrónico para la confirmación.');
+                alert('Solicitud procesada con éxito. Nos pondremos en contacto a la brevedad.');
                 document.getElementById('formReservaEventoModal').reset();
             } else {
-                msg.className = 'text-center mt-3 fw-bold text-danger';
-                msg.innerText = data.error || 'Error al enviar.';
+                msg.className = 'text-center mt-3 fw-semibold text-danger';
+                msg.innerText = data.error || 'Error al procesar la solicitud.';
             }
         } catch (err) {
-            msg.className = 'text-center mt-3 fw-bold text-danger';
-            msg.innerText = 'Error de conexión.';
+            msg.className = 'text-center mt-3 fw-semibold text-danger';
+            msg.innerText = 'Error de conexión con el servidor.';
         }
         btn.disabled = false;
-        btn.innerText = 'ENVIAR SOLICITUD DE COTIZACIÓN';
+        btn.innerText = 'PROCESAR SOLICITUD';
     });
 
     // Navbar scroll effect
     window.addEventListener('scroll', () => {
         const nav = document.querySelector('.navbar-public');
-        if (window.scrollY > 50) nav.classList.add('scrolled');
+        if (window.scrollY > 10) nav.classList.add('scrolled');
         else nav.classList.remove('scrolled');
     });
     </script>
@@ -588,29 +572,28 @@
     <!-- Footer -->
     <footer id="ubicacion" class="footer-premium">
         <div class="container text-center">
-            <img src="/logo.png" alt="La Esquina" height="55" class="mb-4" style="opacity: 0.8; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
-            <h5 class="text-white fw-bold mb-2" style="font-size: 16px; letter-spacing: 1px;">📍 Santa Anita, Lima - Perú</h5>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">Abierto de Lunes a Domingo</p>
-            
-            <div class="footer-divider"></div>
+            <img src="/logo.png" alt="La Esquina" class="footer-logo">
+            <h5 class="text-white fw-semibold mb-1" style="font-size: 13px; letter-spacing: 0.5px;">SEDE SANTA ANITA</h5>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 24px;">Lima, Perú — Horario Regular: Lunes a Domingo</p>
             
             <div class="footer-links d-flex justify-content-center gap-4 mb-4">
                 <a href="#carta">Carta Digital</a>
-                <a href="/menu.html">Menú QR</a>
-                <a href="/vip.html">Club VIP</a>
+                <a href="/menu.html">Portal de Pedidos</a>
+                <a href="/vip.html">Acceso Clientes VIP</a>
             </div>
             
             <div class="d-flex justify-content-center align-items-center gap-3">
-                <p class="mb-0 small" style="color: #444;">© 2026 La Esquina del Billar. Todos los derechos reservados.</p>
-                <span style="color: #333;">|</span>
-                <a href="/login.html" class="small" style="color: #333; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D4AF37'" onmouseout="this.style.color='#333'">
-                    Acceso Personal
+                <p class="mb-0" style="color: var(--border); font-size: 11px;">&copy; 2026 Sistema BIllar Enterprise. Reservados todos los derechos.</p>
+                <span style="color: var(--border);">|</span>
+                <a href="/login.html" style="color: var(--text-muted); font-size: 11px; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">
+                    Intranet
                 </a>
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <script>
         // Cargar menú en vivo (usando endpoint seguro)
@@ -623,34 +606,43 @@
                 contenedorMenu.innerHTML = '';
 
                 if (productos.length === 0) {
-                    contenedorMenu.innerHTML = '<p class="text-center" style="color: var(--text-muted); font-size: 15px;">El menú se está actualizando. Vuelve pronto.</p>';
+                    contenedorMenu.innerHTML = '<p class="text-center" style="color: var(--text-muted); font-size: 13px;">Inventario no disponible actualmente.</p>';
+                    lucide.createIcons();
                     return;
                 }
 
                 productos.slice(0, 8).forEach((prod, index) => {
-                    let icono = '🍺';
-                    if (prod.categoria && prod.categoria.toLowerCase().includes('piqueo')) icono = '🍟';
-                    if (prod.categoria && prod.categoria.toLowerCase().includes('trago')) icono = '🍹';
-                    if (prod.categoria && prod.categoria.toLowerCase().includes('cerveza')) icono = '🍺';
-                    if (prod.categoria && prod.categoria.toLowerCase().includes('cóctel')) icono = '🍸';
-                    if (prod.categoria && prod.categoria.toLowerCase().includes('comida')) icono = '🍔';
+                    let icono = 'beer';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('piqueo')) icono = 'pizza';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('trago')) icono = 'wine';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('cerveza')) icono = 'beer';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('cóctel')) icono = 'martini';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('comida')) icono = 'utensils';
 
                     contenedorMenu.innerHTML += `
                         <div class="col-12 col-sm-6 col-lg-3">
                             <div class="menu-card menu-card-animate h-100" style="animation-delay: ${index * 0.08}s">
-                                <span class="menu-icon">${icono}</span>
-                                <h5 class="text-white fw-bold">${prod.nombre}</h5>
+                                <div class="menu-icon mx-auto" style="width: 24px; height: 24px;">
+                                    <i data-lucide="${icono}"></i>
+                                </div>
+                                <h5>${prod.nombre}</h5>
                                 <div class="menu-price">S/ ${parseFloat(prod.precio_venta).toFixed(2)}</div>
                             </div>
                         </div>
                     `;
                 });
+                
+                // Inicializar iconos de Lucide cargados dinámicamente
+                lucide.createIcons();
             } catch (error) {
                 console.error("Error cargando carta digital:", error);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarMenuPublico);
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarMenuPublico();
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
