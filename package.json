@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test-pc": "electron .",
-    "build-pc": "electron-builder"
+    "build-pc": "electron-builder",
+    "dev": "concurrently \"node index.js\" \"node monitor.js\""
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
