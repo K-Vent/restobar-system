@@ -24,7 +24,7 @@ router.post('/cambiar',          verificarSesion,             cambiarMesa);
 router.post('/cerrar-personal/:id', verificarSesion,          cerrarCuentaPersonal);
 router.get('/:id/nombres', verificarSesion, obtenerNombresMesa);
 
-// 🔒 CORREGIDO: estas dos rutas estaban sin protección — cualquiera podía crear o borrar mesas
+//  CORREGIDO: estas dos rutas estaban sin protección — cualquiera podía crear o borrar mesas
 router.post('/crear',            verificarSesion, soloAdmin,  crearMesa);
 router.delete('/eliminar-ultima',verificarSesion, soloAdmin,  eliminarUltimaMesa);
 

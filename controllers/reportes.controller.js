@@ -49,7 +49,7 @@ const getDashboardStats = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("⚠️ Error en Motor Analytics:", error);
+        console.error(" Error en Motor Analytics:", error);
         res.status(500).json({ error: "Fallo en el procesamiento de BI" });
     }
 };
@@ -60,7 +60,7 @@ const getHistorialCierres = async (req, res) => {
         const historial = await pool.query('SELECT * FROM cierres ORDER BY fecha_cierre DESC LIMIT 50');
         res.json(historial.rows);
     } catch (error) {
-        console.error("⚠️ Error leyendo historial de cierres:", error);
+        console.error(" Error leyendo historial de cierres:", error);
         res.json([]); // Enviamos un array vacío para no romper la tabla visual
     }
 };
@@ -70,7 +70,7 @@ const eliminarCierre = async (req, res) => {
         const { id } = req.params;
         await pool.query('DELETE FROM cierre_caja WHERE id = $1', [id]);
         
-        // 🔒 Espía Auditoría: Registramos quién y cuándo anuló un cierre
+        //  Espía Auditoría: Registramos quién y cuándo anuló un cierre
         try {
             await pool.query(
                 "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'ANULACIÓN', 'Anuló el cierre de caja ID: ' || $2)", 
@@ -80,7 +80,7 @@ const eliminarCierre = async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error("⚠️ Error al eliminar cierre:", error);
+        console.error(" Error al eliminar cierre:", error);
         res.status(500).json({ error: "Error en servidor al anular" });
     }
 };

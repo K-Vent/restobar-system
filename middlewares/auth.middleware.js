@@ -26,7 +26,7 @@ const soloAdmin = (req, res, next) => {
     if (req.usuario && req.usuario.rol === 'admin') {
         next(); // Es jefe, puede pasar
     } else {
-        console.warn(`⚠️ Intento de acceso denegado: ${req.usuario.username} intentó entrar a ${req.originalUrl}`);
+        console.warn(` Intento de acceso denegado: ${req.usuario.username} intentó entrar a ${req.originalUrl}`);
         
         // Si es una petición de datos (API)
         if (req.originalUrl.startsWith('/api/')) {

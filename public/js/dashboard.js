@@ -123,7 +123,7 @@ function renderizarMesas(mesas) {
         const isOcupada = mesa.estado === 'OCUPADA';
         const claseTarjeta = isOcupada ? 'card-mesa card-mesa-ocupada' : 'card-mesa card-mesa-libre';
         const statusBadge = isOcupada ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-muted';
-        const icono = mesa.tipo === 'BILLAR' ? '🎱' : '🛒';
+        const icono = mesa.tipo === 'BILLAR' ? '' : '';
  
         grid.innerHTML += `
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
@@ -145,10 +145,10 @@ function renderizarMesas(mesas) {
                         </div>
                         <div class="mt-auto d-grid gap-2">
                             <div class="row g-2">
-                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" onclick="abrirOpciones(${mesa.id})">🍺 PEDIR</button></div>
-                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2 shadow-sm" onclick="abrirModalCobro(${mesa.id})">💰 COBRAR</button></div>
+                                <div class="col-6"><button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" onclick="abrirOpciones(${mesa.id})"> PEDIR</button></div>
+                                <div class="col-6"><button class="btn btn-light fw-bold text-dark w-100 py-2 shadow-sm" onclick="abrirModalCobro(${mesa.id})"> COBRAR</button></div>
                             </div>
-                            <button class="btn btn-dark border-secondary btn-sm text-light mt-1" onclick="abrirModalMover(${mesa.id})">🔄 MUDAR</button>
+                            <button class="btn btn-dark border-secondary btn-sm text-light mt-1" onclick="abrirModalMover(${mesa.id})"> MUDAR</button>
                         </div>
                     ` : `
                         <div class="text-center py-4 flex-grow-1 d-flex flex-column justify-content-center">
@@ -157,7 +157,7 @@ function renderizarMesas(mesas) {
                         </div>
                         <div class="mt-auto">
                             <button class="btn btn-iniciar-mesa w-100 fw-bold py-3 text-uppercase" onclick="abrirMesa(${mesa.id})">
-                                ▶ Iniciar Mesa
+                                 Iniciar Mesa
                             </button>
                         </div>
                     `}
@@ -241,7 +241,7 @@ async function abrirModalMover(idOrigen) {
         const select = document.getElementById('select-mesa-destino');
         select.innerHTML = '';
         libres.forEach(m => {
-            select.innerHTML += `<option value="${m.id}">${m.tipo === 'BILLAR' ? '🎱' : '🛒'} Mesa ${m.numero_mesa}</option>`;
+            select.innerHTML += `<option value="${m.id}">${m.tipo === 'BILLAR' ? '' : ''} Mesa ${m.numero_mesa}</option>`;
         });
  
         document.getElementById('modal-mover').style.display = 'flex';
@@ -263,7 +263,7 @@ async function ejecutarMoverMesa() {
  
         if (res.ok) {
             cerrarModal('modal-mover');
-            mostrarToast("🔄 Mudanza realizada con éxito");
+            mostrarToast(" Mudanza realizada con éxito");
             cargarMesas(); 
         } else {
             mostrarAlerta("Error en el servidor al intentar mover la mesa.");
@@ -356,7 +356,7 @@ async function agregarPedido(productoId) {
     const cantInput = document.getElementById(`cant-${productoId}`);
     const cantidadSeleccionada = parseInt(cantInput.value) || 1;
     
-    // 🔥 NUEVO: Capturamos el nombre de la persona desde el input del modal
+    //  NUEVO: Capturamos el nombre de la persona desde el input del modal
     const inputNombre = document.getElementById('nombrePersonaPedido');
     const nombrePersona = inputNombre ? inputNombre.value.trim() : '';
 
@@ -370,14 +370,14 @@ async function agregarPedido(productoId) {
                 mesa_id: mesaAccionId, 
                 producto_id: productoId, 
                 cantidad: cantidadSeleccionada,
-                cliente_nombre: nombrePersona // 🔥 NUEVO: Se envía al backend
+                cliente_nombre: nombrePersona //  NUEVO: Se envía al backend
             })
         });
         
         if (res.ok) {
-            mostrarToast(`✅ ${cantidadSeleccionada}x añadido(s)`);
+            mostrarToast(` ${cantidadSeleccionada}x añadido(s)`);
             
-            // 🔥 NUEVO: Limpiamos el nombre para el siguiente pedido
+            //  NUEVO: Limpiamos el nombre para el siguiente pedido
             if (inputNombre) inputNombre.value = '';
 
             await cargarProductosMenu(); 
@@ -393,11 +393,11 @@ async function agregarPedido(productoId) {
 
 async function eliminarPedido(idPedido, idMesa) {
     try {
-        const confirmado = await mostrarConfirmacion("⚠️ Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
+        const confirmado = await mostrarConfirmacion(" Retirar Producto", "¿Seguro que quieres quitar este producto de la cuenta? El stock regresará a tu inventario.");
         if (confirmado) {
             const res = await fetch(`/api/pedidos/eliminar/${idPedido}`, { method: 'DELETE' });
             if (res.ok) {
-                mostrarToast("🗑️ Producto retirado de la cuenta");
+                mostrarToast(" Producto retirado de la cuenta");
                 abrirModalCobro(idMesa);
             } else {
                 mostrarAlerta("Error en el servidor al intentar eliminar.", "error");
@@ -440,7 +440,7 @@ async function abrirModalCobro(id) {
                 listaHtml += `
                     <div class="d-flex justify-content-between align-items-center bg-dark p-2 mt-2 rounded border border-secondary">
                         <div class="text-white fw-bold small">
-                            👤 Cuenta: <span class="text-info text-uppercase">${persona}</span>
+                             Cuenta: <span class="text-info text-uppercase">${persona}</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="text-success fw-bold">S/ ${cuenta.total.toFixed(2)}</span>
@@ -473,10 +473,10 @@ async function abrirModalCobro(id) {
         const html = `
             <div class="bg-black p-3 rounded mb-3 border border-secondary shadow-sm">
                 <div class="d-flex justify-content-between mb-3 text-muted border-bottom border-secondary pb-2">
-                    <span class="fw-bold">⏳ Tiempo Jugado (${data.minutos} min):</span>
+                    <span class="fw-bold"> Tiempo Jugado (${data.minutos} min):</span>
                     <span class="text-warning fw-bold fs-5">S/ ${data.totalTiempo.toFixed(2)}</span>
                 </div>
-                <div class="text-muted small text-uppercase fw-bold mb-2">🍺 Detalle de Consumo:</div>
+                <div class="text-muted small text-uppercase fw-bold mb-2"> Detalle de Consumo:</div>
                 <div style="max-height: 250px; overflow-y: auto;" class="pe-1">
                     ${listaHtml}
                 </div>
@@ -486,7 +486,7 @@ async function abrirModalCobro(id) {
                 <span class="fs-1 text-warning d-block" style="text-shadow: 0 0 15px rgba(241,196,15,0.4);">S/ ${totalDeudaCobro.toFixed(2)}</span>
             </div>
             <button class="btn btn-warning w-100 fw-bold py-3 shadow-sm fs-6" onclick="abrirScanner()">
-                📸 ESCANEAR SOCIO VIP (+1 Sello)
+                 ESCANEAR SOCIO VIP (+1 Sello)
             </button>
         `;
         document.getElementById('cobro-contenido').innerHTML = html;
@@ -517,7 +517,7 @@ async function cobrarCuentaPersonal(nombrePersona, montoDeuda) {
         });
         
         if (res.ok) {
-            mostrarToast(`✅ Cuenta de ${nombrePersona} cobrada (${metodoFinal})`);
+            mostrarToast(` Cuenta de ${nombrePersona} cobrada (${metodoFinal})`);
             
             // Recargamos el modal de cobro para que desaparezcan los productos de esa persona
             // y se actualice el TOTAL MESA con lo que queda.
@@ -614,7 +614,7 @@ async function ejecutarCobroReal(metodo) {
         if (res.ok) {
             cerrarModal('modal-cobro');
             cerrarModal('modal-mixto');
-            mostrarToast(`💳 Cuenta cobrada con éxito`);
+            mostrarToast(` Cuenta cobrada con éxito`);
             cargarMesas();
             if (usuarioActual && usuarioActual.rol === 'admin') cargarCaja();
         } else {
@@ -643,7 +643,7 @@ async function ejecutarGasto() {
     cerrarModal('modal-gasto');
     document.getElementById('gasto-desc').value = '';
     document.getElementById('gasto-monto').value = '';
-    mostrarToast("💸 Gasto Registrado Correctamente");
+    mostrarToast(" Gasto Registrado Correctamente");
 }
 
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -697,8 +697,8 @@ async function escaneoExitoso(textoDecodificado) {
         const btnContainer = document.getElementById('btn-container-canje');
         
         if (data.premios > 0) {
-            recompensaDiv.innerHTML = `<span style="color: #D4AF37; font-weight: 900; font-size: 16px;">🎁 ¡Tiene ${data.premios} Hora(s) Gratis disponible(s)!</span>`;
-            btnContainer.innerHTML = `<button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; padding: 15px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)">✅ APLICAR PREMIO A ESTA MESA</button>`;
+            recompensaDiv.innerHTML = `<span style="color: #D4AF37; font-weight: 900; font-size: 16px;"> ¡Tiene ${data.premios} Hora(s) Gratis disponible(s)!</span>`;
+            btnContainer.innerHTML = `<button class="btn-mesa" style="background: #D4AF37; color: #000; font-weight: 900; width: 100%; padding: 15px;" onclick="ejecutarCanjeAgora(${data.id}, mesaAccionId)"> APLICAR PREMIO A ESTA MESA</button>`;
         } else {
             recompensaDiv.innerHTML = `<span style="color: #888; font-size: 14px;">No tiene recompensas disponibles aún.</span><br><span style="color: #25D366; font-weight: bold; font-size: 12px;">+1 Sello añadido por su visita.</span>`;
             btnContainer.innerHTML = '';
@@ -796,7 +796,7 @@ async function agregarMesaDB(tipo) {
             body: JSON.stringify({ tipo })
         });
         if (res.ok) {
-            mostrarToast("✅ Mesa añadida a la infraestructura");
+            mostrarToast(" Mesa añadida a la infraestructura");
             cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
@@ -809,7 +809,7 @@ async function agregarMesaDB(tipo) {
 
 async function eliminarUltimaMesaDB() {
     const confirmado = await mostrarConfirmacion(
-        "⚠️ ALERTA DE INFRAESTRUCTURA", 
+        " ALERTA DE INFRAESTRUCTURA", 
         "¿Estás seguro de eliminar la ÚLTIMA mesa registrada? Asegúrate de que esté vacía."
     );
     if (!confirmado) return;
@@ -817,7 +817,7 @@ async function eliminarUltimaMesaDB() {
     try {
         const res = await fetch('/api/mesas/eliminar-ultima', { method: 'DELETE' });
         if (res.ok) {
-            mostrarToast("🗑️ Mesa retirada exitosamente");
+            mostrarToast(" Mesa retirada exitosamente");
             cargarMesas();
             document.getElementById('modal-gestion-mesas').style.display = 'none';
         } else {
@@ -881,8 +881,8 @@ async function cargarEventos() {
  
             return `
                 <tr>
-                    <td><strong>${fechaFormateada}</strong><br><span class="small text-muted">⏰ ${ev.hora_inicio}</span></td>
-                    <td>${ev.cliente_nombre}<br><a href="https://wa.me/51${ev.cliente_telefono}" target="_blank" class="text-success small text-decoration-none">💬 ${ev.cliente_telefono}</a></td>
+                    <td><strong>${fechaFormateada}</strong><br><span class="small text-muted"> ${ev.hora_inicio}</span></td>
+                    <td>${ev.cliente_nombre}<br><a href="https://wa.me/51${ev.cliente_telefono}" target="_blank" class="text-success small text-decoration-none"> ${ev.cliente_telefono}</a></td>
                     <td>${ev.tipo_evento}<br><span class="badge bg-secondary">${ev.cantidad_personas}</span></td>
                     <td class="text-warning small">${ev.tipo_plan}</td>
                     <td class="small" style="max-width: 200px;">${ev.extras_seleccionados}</td>

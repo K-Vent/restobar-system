@@ -58,6 +58,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -69,7 +70,7 @@
             <span class="badge bg-outline-secondary small mb-1" style="color: #666; border: 1px solid #333;">MODO KDS - BARRA</span>
             <div id="reloj">00:00:00</div>
         </div>
-        <button class="btn btn-sm btn-outline-warning fw-bold" onclick="probarSonido()">🔔 PROBAR SONIDO</button>
+        <button class="btn btn-sm btn-outline-warning fw-bold" onclick="probarSonido()"> PROBAR SONIDO</button>
     </header>
 
     <div class="container-fluid px-4">
@@ -132,7 +133,7 @@
                 if (pedidosRaw.length === 0) {
                     contenedor.innerHTML = `
                         <div class="empty-state w-100">
-                            <div class="empty-icon">🍷</div>
+                            <div class="empty-icon"></div>
                             <h2 class="fw-bold">BARRA DESPEJADA</h2>
                             <p>No hay pedidos pendientes por ahora.</p>
                         </div>`;
@@ -152,7 +153,7 @@
                                     ${item.nombre}
                                     <span class="producto-categoria" style="color: ${colorCat}">${cat}</span>
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="marcarEntregado(${item.id})">✔️</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="marcarEntregado(${item.id})"></button>
                             </div>`;
                     }).join('');
 
@@ -161,13 +162,13 @@
                             <div class="comanda-card shadow">
                                 <div class="comanda-header">
                                     <div class="mesa-numero">Mesa ${comanda.mesa}</div>
-                                    <div class="tiempo-pedido">⏱️ ${comanda.horaMinima}</div>
+                                    <div class="tiempo-pedido"> ${comanda.horaMinima}</div>
                                 </div>
                                 <div class="comanda-body">
                                     ${itemsHtml}
                                 </div>
                                 <button class="btn-despachar" onclick="despacharMesaCompleta([${comanda.items.map(i => i.id).join(',')}])">
-                                    🛎️ DESPACHAR TODO
+                                     DESPACHAR TODO
                                 </button>
                             </div>
                         </div>`;
@@ -200,6 +201,11 @@
 
         document.addEventListener('DOMContentLoaded', cargarKDS);
         setInterval(cargarKDS, 15000); // Fallback de seguridad cada 15s
+    </script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
     </script>
 </body>
 </html>
