@@ -1,632 +1,462 @@
 /* ============================================================
-   LA ESQUINA DEL BILLAR — PREMIUM DESIGN SYSTEM v2.0
-   Dark Mode · Glassmorphism · Micro-Animations
+   LA ESQUINA - CORE CSS (Optimizado para Bootstrap 5 Darkly)
    ============================================================ */
 
-/* 1. GOOGLE FONTS */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-/* 2. DESIGN TOKENS (Variables Globales) */
-:root {
-    --bg-main: #050505;
-    --bg-card: rgba(20, 20, 22, 0.8);
-    --bg-elevated: #0a0a0c;
-    --bg-surface: #111113;
-    --gold: #D4AF37;
-    --gold-hover: #e5c158;
-    --gold-dim: rgba(212, 175, 55, 0.15);
-    --gold-glow: 0 0 25px rgba(212, 175, 55, 0.3);
-    --success: #00d26a;
-    --danger: #ff4757;
-    --info: #00b4d8;
-    --text-main: #ffffff;
-    --text-muted: #8a8f98;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-gold: rgba(212, 175, 55, 0.3);
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.3);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
-    --shadow-lg: 0 20px 50px rgba(0,0,0,0.7);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 3. BASE RESET & TYPOGRAPHY */
-*, *::before, *::after { box-sizing: border-box; }
-
+/* 1. ESTRUCTURA Y PANTALLA COMPLETA */
 body, html {
     margin: 0; padding: 0;
     width: 100%; min-height: 100vh;
     overflow-x: hidden;
-    background-color: var(--bg-main);
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: var(--text-main);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    background-color: #1a1a1d; /* Fondo oscuro premium */
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-/* ============================================================
-   4. SIDEBAR — DYNAMIC NAVIGATION
-   ============================================================ */
+/* 2. SIDEBAR (Navegación Lateral Fija) */
 .sidebar {
-    width: 300px;
-    height: 100vh;
+    width: 250px;
+    min-height: 100vh;
+    background: #0a0a0c;
+    border-right: 1px solid #222;
     position: fixed;
     top: 0;
     left: 0;
-    transform: translateX(-285px);
-    z-index: 3000;
-    background: var(--bg-elevated);
-    border-right: 3px solid var(--gold);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex;
-    flex-direction: column;
-    padding: 2rem 1rem;
-    overflow-y: auto;
-    box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+    z-index: 1000;
 }
 
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-track { background: transparent; }
-.sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-.sidebar::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-
-/* Hover activation — only on devices with mouse */
-@media (hover: hover) and (pointer: fine) {
-    .sidebar:hover {
-        transform: translateX(0);
-        box-shadow: 20px 0 60px rgba(0,0,0,0.9);
-    }
-    .sidebar::after {
-        content: '';
-        position: absolute;
-        top: 0; right: -40px;
-        width: 40px; height: 100%;
-        background: transparent;
-    }
-    .sidebar:hover ~ .main-content {
-        filter: blur(2px) brightness(0.6);
-    }
-}
-
-/* Mobile toggle */
-.sidebar.abierto-movil {
-    transform: translateX(0) !important;
-    box-shadow: 20px 0 100px rgba(0,0,0,0.9);
-}
-
-.overlay-mobile {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6);
-    z-index: 2999;
-    backdrop-filter: blur(3px);
-}
-.overlay-mobile.activo { display: block; }
-
-/* Sidebar Nav Items */
-.nav-item-vip {
-    display: flex;
-    align-items: center;
-    padding: 14px 16px;
-    margin-bottom: 6px;
-    color: #d0d0d0;
-    text-decoration: none;
-    border-radius: var(--radius-md);
-    border: 1px solid transparent;
-    background: transparent;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.3px;
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-item-vip::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0;
-    width: 3px; height: 100%;
-    background: var(--gold);
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
-    border-radius: 0 2px 2px 0;
-}
-
-.nav-item-vip:hover {
-    background: var(--gold-dim);
-    border-color: var(--border-gold);
-    color: var(--gold);
-    transform: translateX(6px);
-}
-
-.nav-item-vip:hover::before {
-    transform: scaleY(1);
-}
-
-.nav-item-vip.active {
-    background: linear-gradient(135deg, var(--gold), #c5a033);
-    color: #000;
-    border-color: var(--gold);
-    font-weight: 800;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-}
-
-.nav-item-vip.active::before { display: none; }
-
-/* Sidebar Logout */
-.btn-logout-sidebar {
-    margin-top: auto;
-    padding: 14px;
-    background: rgba(255, 71, 87, 0.08);
-    color: var(--danger);
-    border: 1px solid rgba(255, 71, 87, 0.2);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 14px;
-    text-align: center;
-    transition: var(--transition);
-}
-
-.btn-logout-sidebar:hover {
-    background: var(--danger);
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
-}
-
-/* ============================================================
-   5. MAIN CONTENT AREA
-   ============================================================ */
 .main-content {
-    margin-left: 15px;
-    width: calc(100% - 15px);
+    margin-left: 250px;
+    width: calc(100% - 250px);
     min-height: 100vh;
     padding: 30px;
-    transition: filter 0.4s ease;
-    background-color: var(--bg-main);
+    transition: all 0.3s ease;
+}
+
+/* 3. RESPONSIVE (Móviles y Tablets) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%; height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+    .main-content {
+        margin-left: 0; width: 100%;
+        padding: 15px;
+    }
 }
 
 /* ============================================================
-   6. MODALS (Ventanas Emergentes)
+   4. COMPONENTES NATIVOS DEL SISTEMA (Requeridos por el JS)
    ============================================================ */
+
+/* MODALES (Ventanas emergentes) */
 .modal-overlay {
     display: none;
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85);
     z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(5px); /* Efecto vidrio moderno */
 }
 
 .modal-box {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    background: #1a1a1d;
+    border: 1px solid #444;
+    border-radius: 12px;
     padding: 0;
     width: 90%; max-width: 500px;
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
     overflow: hidden;
-    animation: modalSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-title {
-    background: var(--bg-elevated);
-    padding: 16px 24px;
-    font-size: 1.1rem;
-    font-weight: 800;
+    background: #0a0a0c;
+    padding: 15px 20px;
+    font-size: 1.25rem;
+    font-weight: bold;
     color: #fff;
-    border-bottom: 1px solid var(--border);
-    letter-spacing: 0.5px;
+    border-bottom: 1px solid #333;
 }
 
-.modal-body { padding: 24px; }
+.modal-body { padding: 20px; }
 
 .modal-input {
     width: 100%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: #111;
+    border: 1px solid #333;
     color: #fff;
-    padding: 14px 16px;
-    border-radius: var(--radius-sm);
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    transition: var(--transition);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: 0.2s;
 }
-
-.modal-input:focus {
-    border-color: var(--gold);
-    background: rgba(0,0,0,0.6);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-}
-
-.modal-input::placeholder { color: #555; }
+.modal-input:focus { border-color: #D4AF37; outline: none; }
 
 .modal-btns {
     display: flex; gap: 10px;
-    padding: 16px 24px;
-    background: var(--bg-elevated);
-    border-top: 1px solid var(--border);
+    padding: 15px 20px;
+    background: #0a0a0c;
+    border-top: 1px solid #333;
 }
 
 .btn-modal {
     flex: 1;
-    padding: 13px;
+    padding: 12px;
     border: none;
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    border-radius: 8px;
+    font-weight: bold;
     cursor: pointer;
-    transition: var(--transition);
+    transition: 0.2s;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
+.btn-cancel { background: #333; color: #fff; }
+.btn-cancel:hover { background: #444; }
+.btn-confirm { background: #D4AF37; color: #000; }
+.btn-confirm:hover { background: #e5c158; }
 
-.btn-cancel {
-    background: rgba(255,255,255,0.06);
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-}
-.btn-cancel:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-}
-
-.btn-confirm {
-    background: linear-gradient(135deg, var(--gold), #c5a033);
-    color: #000;
-}
-.btn-confirm:hover {
-    background: linear-gradient(135deg, var(--gold-hover), var(--gold));
-    box-shadow: var(--gold-glow);
-}
-
-/* ============================================================
-   7. TOAST NOTIFICATIONS
-   ============================================================ */
+/* NOTIFICACIONES (Toasts) */
 #toast {
     visibility: hidden;
-    min-width: 280px;
-    background: linear-gradient(135deg, var(--success), #00b85e);
+    min-width: 250px;
+    background-color: #2ecc71; /* Verde éxito */
     color: #000;
     text-align: center;
-    border-radius: 50px;
-    padding: 16px 28px;
+    border-radius: 8px;
+    padding: 16px;
     position: fixed;
     z-index: 10000;
     left: 50%;
-    bottom: 40px;
-    font-weight: 700;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    transform: translateX(-50%) translateY(20px);
-    box-shadow: 0 8px 30px rgba(0, 210, 106, 0.3);
-    opacity: 0;
-    letter-spacing: 0.3px;
+    bottom: 30px;
+    font-weight: bold;
+    transform: translateX(-50%);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
-
 #toast.show {
     visibility: visible;
-    animation: toastIn 0.4s ease forwards, toastOut 0.4s ease 2.5s forwards;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 
-@keyframes toastIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-}
-@keyframes toastOut {
-    from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-    to { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.95); }
-}
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
 /* ============================================================
-   8. MESA CARDS
+   5. AJUSTES VISUALES EXTRAS
    ============================================================ */
-.card-mesa {
-    border-radius: var(--radius-lg);
-    transition: var(--transition);
-    overflow: hidden;
-    position: relative;
-}
 
-/* Mesa Libre */
-.card-mesa-libre {
-    background: linear-gradient(145deg, #0e0e10, #080809) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: var(--shadow-sm) !important;
-}
-
-.card-mesa-libre:hover {
-    border-color: rgba(255,255,255,0.15) !important;
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md) !important;
-}
-
-/* Mesa Ocupada */
-.card-mesa-ocupada {
-    background: linear-gradient(145deg, #1a170b, #0a0905) !important;
-    border: 1px solid var(--border-gold) !important;
-    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.08) !important;
-    position: relative;
-}
-
-.card-mesa-ocupada::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 3px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    animation: mesaGoldShine 3s ease-in-out infinite;
-}
-
-@keyframes mesaGoldShine {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-}
-
-/* Botón Iniciar Mesa */
-.btn-iniciar-mesa {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--text-muted);
-    font-size: 14px;
-    transition: var(--transition);
-    border-radius: var(--radius-md);
-}
-
-.btn-iniciar-mesa:hover {
-    background: linear-gradient(135deg, var(--gold), #c5a033);
-    color: #000;
-    border-color: var(--gold);
-    box-shadow: var(--gold-glow);
-    transform: translateY(-2px);
-}
-
-/* Timer Display */
+/* Fuente digital para los cronómetros de las mesas */
 .info-tiempo {
-    font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
-    letter-spacing: 3px;
-    font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 2px;
 }
 
-/* ============================================================
-   9. SCROLLBAR
-   ============================================================ */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2e; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+/* Scrollbar oscuro y elegante para toda la app */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
 
-/* ============================================================
-   10. QUANTITY CONTROLS
-   ============================================================ */
+/* ==========================================
+   CONTROLES DE CANTIDAD PERSONALIZADOS
+   ========================================== */
+
+/* Quitar flechas por defecto de Chrome/Safari/Edge */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
+/* Quitar flechas en Firefox */
 input[type=number] {
-    appearance: textfield;
-    -moz-appearance: textfield;
+    appearance: textfield; /* Versión estándar */
+    -moz-appearance: textfield; /* Prefijo específico para compatibilidad con Firefox */
 }
 
 .input-group-cantidad {
     display: flex;
     align-items: center;
-    max-width: 130px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: var(--radius-sm);
+    max-width: 140px;
+    background: #000;
+    border: 1px solid #444;
+    border-radius: 8px;
     overflow: hidden;
 }
 
 .btn-qty {
-    background: rgba(255,255,255,0.05);
+    background: #222;
     color: #fff;
     border: none;
     padding: 8px 12px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
-    transition: var(--transition);
+    transition: 0.2s;
 }
 
-.btn-qty:hover { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
-.btn-qty:active { background: rgba(212, 175, 55, 0.25); }
+.btn-qty:hover { background: #333; color: var(--bs-warning); }
+.btn-qty:active { background: #444; }
 
 .input-qty-num {
-    width: 50px;
-    background: transparent !important;
-    border: none !important;
+    width: 60px; /* Un poco más ancho para números como 15 o 100 */
+    background: #111 !important; /* Un poco más oscuro para que sepa que es editable */
+    border: 1px solid #333 !important;
     color: #fff !important;
     text-align: center;
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-radius: 4px;
     padding: 5px 0;
 }
 
 .input-qty-num:focus {
+    border-color: #D4AF37 !important; /* Brillo dorado al hacer clic */
     outline: none;
 }
 
-/* ============================================================
-   11. CARDS & HOVER EFFECTS
-   ============================================================ */
 .card {
-    transition: var(--transition);
-    border-radius: var(--radius-md) !important;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-5px); /* Se eleva un poco al pasar el mouse */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
 }
 
-/* Filter Buttons */
+/* Estilo para los filtros activos */
 .btn-group .btn.active {
-    background-color: var(--gold) !important;
-    border-color: var(--gold) !important;
-    color: #000 !important;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    background-color: var(--bs-warning);
+    color: #000;
 }
 
 /* ============================================================
-   12. BOOTSTRAP OVERRIDES — GOLD THEME
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ANTI-TIC
    ============================================================ */
-.text-warning { color: var(--gold) !important; }
-.bg-warning { background-color: var(--gold) !important; }
-.border-warning { border-color: var(--gold) !important; }
-
-.btn-warning {
-    background-color: var(--gold) !important;
-    border-color: var(--gold) !important;
-    color: #000 !important;
-    font-weight: 700;
-    transition: var(--transition);
-}
-
-.btn-warning:hover {
-    background-color: var(--gold-hover) !important;
-    border-color: var(--gold-hover) !important;
-    color: #000 !important;
-    box-shadow: var(--gold-glow) !important;
-    transform: translateY(-1px);
-}
-
 /* ============================================================
-   13. TABLE STYLES
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ULTRA ESTABLE
    ============================================================ */
-.table-dark {
-    --bs-table-bg: transparent;
-}
-
-.table-dark tbody tr {
-    transition: var(--transition);
-    border-bottom: 1px solid var(--border);
-}
-
-.table-dark tbody tr:hover {
-    background-color: var(--gold-dim) !important;
-}
-
-.table-dark td {
-    padding: 1rem 1.5rem;
-    color: #bbb;
-    border: none;
-    font-size: 14px;
-}
-
-.table-dark td strong { color: #fff; }
-
-/* ============================================================
-   14. MOBILE LOGOUT BUTTON
-   ============================================================ */
-.btn-logout-mobile {
-    display: none;
+.sidebar {
+    width: 320px;
+    height: 100vh;
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 71, 87, 0.3);
-    background: rgba(255, 71, 87, 0.1);
-    color: var(--danger);
-    font-size: 20px;
-    z-index: 999;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: var(--transition);
+    top: 0;
+    left: 0; /* ⬅️ MAGIA: Ahora SIEMPRE está pegado a la izquierda al 100% (cero huecos) */
+    transform: translateX(-305px); /* ⬅️ Lo escondemos usando la Tarjeta Gráfica (GPU) */
+    z-index: 3000;
+    background: #050505;
+    border-right: 4px solid #D4AF37; 
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    overflow-y: auto; 
 }
 
-.btn-logout-mobile:hover {
-    background: var(--danger);
+/* Ocultar la barra de scroll del menú para que se vea limpio */
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+
+/* ============================================================
+   SIDEBAR DINÁMICO (ESTILO FRANQUICIA) - ADAPTACIÓN TÁCTIL
+   ============================================================ */
+
+/* 1. EL HOVER MÁGICO SOLO FUNCIONARÁ EN PC (Donde hay ratón real) */
+@media (hover: hover) and (pointer: fine) {
+    .sidebar:hover {
+        transform: translateX(0);
+        box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+    }
+    .sidebar::after {
+        content: ''; position: absolute; top: 0; right: -40px; width: 40px; height: 100%;
+        background: transparent;
+    }
+}
+
+/* 2. CLASE PARA ABRIR EL MENÚ EN CELULARES */
+.sidebar.abierto-movil {
+    transform: translateX(0) !important;
+    box-shadow: 20px 0 100px rgba(0,0,0,0.9);
+}
+
+/* 3. CAPA OSCURA DE SEGURIDAD (Para cerrar tocando afuera en el celular) */
+.overlay-mobile {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); 
+    z-index: 2999; /* Justo debajo del menú (que es 3000) */
+    backdrop-filter: blur(3px);
+}
+.overlay-mobile.activo {
+    display: block;
+}
+
+/* Ocultar la barra de scroll del menú para que se vea limpio */
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+
+.sidebar:hover {
+    left: 0;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
+}
+
+.main-content {
+    /* Mantenemos el margen para la "pestaña" del menú */
+    margin-left: 15px; 
+    width: calc(100% - 15px);
+    transition: filter 0.4s;
+    min-height: 100vh;
+}
+
+.sidebar:hover ~ .main-content {
+    filter: blur(2px) brightness(0.6);
+}
+
+/* DISEÑO DE LINKS (COMO LAS TARJETAS DE LAS MESAS) */
+.nav-item-vip {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 8px;
+    color: #eee;
+    text-decoration: none;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background: #111;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.nav-item-vip:hover {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: #D4AF37;
+    color: #D4AF37;
+    transform: translateX(10px);
+}
+
+.nav-item-vip.active {
+    background: #D4AF37;
+    color: #000;
+    border-color: #D4AF37;
+}
+
+/* BOTÓN DE SALIDA (LOGOUT) */
+.btn-logout-sidebar {
+    margin-top: auto; /* Lo empuja al final del menú */
+    padding: 15px;
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.btn-logout-sidebar:hover {
+    background: #ff4757;
     color: #fff;
 }
 
 /* ============================================================
-   15. ANIMATIONS (Keyframes Globales)
+   PALETA PREMIUM: NEGRO PROFUNDO Y DORADO
    ============================================================ */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+
+/* 1. Fondo general Negro Puro en lugar de gris */
+body, html, .main-content {
+    background-color: #050505 !important;
 }
 
-@keyframes popIn {
-    0% { opacity: 0; transform: scale(0.85); }
-    70% { transform: scale(1.02); }
-    100% { opacity: 1; transform: scale(1); }
+/* 2. Tarjeta Base */
+.card-mesa {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
-@keyframes pulseGlow {
-    0%, 100% { box-shadow: 0 0 0px rgba(212, 175, 55, 0); }
-    50% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+/* 3. Diseño Mesa Libre: Negro carbón con bordes muy tenues */
+.card-mesa-libre {
+    background: linear-gradient(145deg, #111111, #0a0a0a) !important;
+    border: 1px solid #222 !important;
+    box-shadow: none !important;
+}
+.card-mesa-libre:hover {
+    border-color: #444 !important;
+    transform: translateY(-3px);
 }
 
-@keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
+/* 4. Diseño Mesa Ocupada: Fondo ultra oscuro con un toque dorado en el borde */
+.card-mesa-ocupada {
+    background: linear-gradient(145deg, #1a170b, #050505) !important;
+    border: 1px solid #D4AF37 !important;
+    box-shadow: 0 10px 30px rgba(212,175,55,0.1) !important;
+}
+
+/* 5. Botón de Iniciar Mesa (Elegante hasta que pasas el mouse) */
+.btn-iniciar-mesa {
+    background: #000;
+    border: 1px solid #333;
+    color: #888;
+    transition: all 0.3s ease;
+}
+.btn-iniciar-mesa:hover {
+    background: #D4AF37;
+    color: #000;
+    border-color: #D4AF37;
+    box-shadow: 0 0 15px rgba(212,175,55,0.4);
 }
 
 /* ============================================================
-   16. RESPONSIVE
+   FORZAR EL DORADO "LA ESQUINA" SOBRE EL NARANJA BOOTSTRAP
    ============================================================ */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 280px;
-        transform: translateX(-280px);
-    }
 
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 15px;
-    }
+/* Textos y fondos */
+.text-warning { color: #D4AF37 !important; }
+.bg-warning { background-color: #D4AF37 !important; }
+.border-warning { border-color: #D4AF37 !important; }
 
-    .btn-logout-mobile {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .sidebar:hover ~ .main-content {
-        filter: none;
-    }
+/* Botones principales (PEDIR, MENÚ celular, etc.) */
+.btn-warning {
+    background-color: #D4AF37 !important;
+    border-color: #D4AF37 !important;
+    color: #000 !important; /* Letras negras para máximo contraste */
+    transition: all 0.3s ease;
 }
 
-@media (max-width: 480px) {
-    .main-content { padding: 12px; }
-    .modal-box { width: 95%; }
+/* Efecto al pasar el mouse por los botones dorados */
+.btn-warning:hover {
+    background-color: #c5a033 !important; /* Un dorado ligeramente más oscuro */
+    border-color: #c5a033 !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(212,175,55,0.5) !important;
 }
+
 
 /* ============================================================
-   17. UTILITY CLASSES
+   ESTILOS DE TABLAS CORPORATIVAS (Inventario, Clientes, etc.)
    ============================================================ */
-.glass {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
+.table-dark {
+    --bs-table-bg: transparent; /* Quita el gris por defecto de bootstrap */
 }
-
-.glow-gold {
-    box-shadow: var(--gold-glow);
+.table-dark tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #222;
 }
-
-.text-gold { color: var(--gold); }
+.table-dark tbody tr:hover {
+    background-color: rgba(212,175,55,0.05) !important; /* Brillo dorado muy suave al pasar el mouse */
+}
+.table-dark td {
+    padding: 1rem 1.5rem;
+    color: #ccc; /* Texto ligeramente gris para no cansar la vista */
+    border: none;
+}
+.table-dark td strong {
+    color: #fff; /* Nombres de productos en blanco puro */
+}

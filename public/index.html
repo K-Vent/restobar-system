@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Esquina del Billar | Restobar & Club</title>
-    <meta name="description" content="La Esquina del Billar - El mejor ambiente, tragos premium y mesas profesionales en Santa Anita, Lima. Reserva tu evento privado.">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Bootstrap Dark -->
+    <!-- Motor Base Oscuro -->
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="/logo.png">
     
@@ -60,7 +55,7 @@
 
         /* ===== HERO ===== */
         .hero-section {
-            min-height: 100vh;
+            min-height: 85vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -302,6 +297,8 @@
             background-color: var(--gold);
             border-color: var(--gold);
         }
+        .btn-whatsapp:hover { transform: translateY(-3px); color: #fff; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); }
+        .list-vip li { margin-bottom: 12px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -381,6 +378,9 @@
                     </div>
                 </div>
             </div>
+            <button class="btn btn-warning btn-lg mt-3 fw-bold shadow-lg" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="border: 2px solid #D4AF37; box-shadow: 0 0 15px rgba(212,175,55,0.4) !important;">
+    COTIZAR EVENTO VIP
+</button>
         </div>
     </section>
 
@@ -446,7 +446,8 @@
         </div>
     </section>
 
-    <!-- MODAL: Formulario de Eventos -->
+   
+    <!-- MODAL: Formulario de Eventos Privados -->
     <div class="modal fade" id="modalEventoVIP" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -513,8 +514,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Script de Eventos -->
+   <!-- Script de conexión -->
     <script>
         document.getElementById('formReservaEventoModal').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -527,10 +527,10 @@
         const payload = {
             nombre: document.getElementById('ev_nombre').value,
             telefono: document.getElementById('ev_telefono').value,
-            email: document.getElementById('ev_email').value,
+            email: document.getElementById('ev_email').value, // NUEVO CAMPO
             fecha: document.getElementById('ev_fecha').value,
             hora: document.getElementById('ev_hora').value,
-            personas: "Por definir",
+            personas: "Por definir", // Simplificado para el modal
             tipo_evento: document.getElementById('ev_tipo').value,
             plan: document.querySelector('input[name="planAlquiler"]:checked').value,
             requerimientos: document.getElementById('ev_requerimientos').value
@@ -545,6 +545,7 @@
             const data = await res.json();
             
             if(data.success) {
+                // ÉXITO: Cerramos el modal y mostramos un alert de la página
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalEventoVIP'));
                 modal.hide();
                 alert('Solicitud procesada con éxito. Nos pondremos en contacto a la brevedad.');
@@ -569,7 +570,7 @@
     });
     </script>
     
-    <!-- Footer -->
+    <!-- Sección: Footer -->
     <footer id="ubicacion" class="footer-premium">
         <div class="container text-center">
             <img src="/logo.png" alt="La Esquina" class="footer-logo">
@@ -596,10 +597,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <script>
-        // Cargar menú en vivo (usando endpoint seguro)
+        // Lógica para cargar el menú en vivo desde tu inventario
         async function cargarMenuPublico() {
             try {
-                const res = await fetch('/api/menu/publico');
+                // Aquí usamos tu API existente para traer los productos
+                const res = await fetch('/api/menu-publico');
                 const productos = await res.json();
                 
                 const contenedorMenu = document.getElementById('menu-publico');

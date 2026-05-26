@@ -20,5 +20,5 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Gemini / IDE
-.gemini/
+EMAIL_USER=laesquinadelbillar@gmail.com
+EMAIL_PASS=apmqitomzamtxfrg
