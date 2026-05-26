@@ -717,27 +717,43 @@ app.get('/api/analytics/dashboard', verificarSesion, soloAdmin, async (req, res,
     }
 });
 
-// 📡 TELEMETRÍA PARA PROYECT-TI
-// 📡 TELEMETRÍA PARA PROYECT-TI
-const axios = require('axios');
 
-const TOKEN_MONITOREO = "3e6f1b7d-00c2-4cdd-9fa3-20bb7aeaf930"; // El token que registrarás y copiarás del ERP
-const BACKEND_URL = "https://proyect-ti-api.onrender.com/api/telemetria/heartbeat"; // URL de Render
+// 📡 TELEMETRÍA PARA PROYECT-TI 
+const https = require('https');
 
-console.log("📡 Reportando telemetría de Billar al ERP Central...");
+const TOKEN_MONITOREO = "3e6f1b7d-00c2-4cdd-9fa3-20bb7aeaf930"; // El token copiado de tu ERP
+const HEARTBEAT_URL = "https://proyect-ti-api.onrender.com/api/telemetria/heartbeat";
 
-setInterval(async () => {
+console.log("📡 Reportando telemetría de Billar al ERP Central (HTTPS Nativo)...");
+
+setInterval(() => {
   const inicio = Date.now();
-  try {
-    const estado = "OPERACIONAL"; 
-    const latencia = Date.now() - inicio;
+  const datos = JSON.stringify({
+    token_monitoreo: TOKEN_MONITOREO,
+    latencia: 15, // Latencia simulada en ms o tiempo de respuesta de tus consultas
+    estado: "OPERACIONAL"
+  });
 
-    await axios.post(BACKEND_URL, {
-      token_monitoreo: TOKEN_MONITOREO,
-      latencia: latencia,
-      estado: estado
-    });
-  } catch (error) {
+  const opciones = {
+    hostname: 'proyect-ti-api.onrender.com',
+    port: 443,
+    path: '/api/telemetria/heartbeat',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(datos)
+    }
+  };
+
+  const peticion = https.request(opciones, (respuesta) => {
+    // Latido recibido con éxito
+    respuesta.on('data', () => {}); 
+  });
+
+  peticion.on('error', (error) => {
     console.log("[Telemetría] Falla al conectar con el ERP Central.");
-  }
-}, 15000); // Latido cada 15 segundos // Reportar cada 15 segundos en producción
+  });
+
+  peticion.write(datos);
+  peticion.end();
+}, 15000); // Latido cada 15 segundos // Latido cada 15 segundos // Reportar cada 15 segundos en producción
