@@ -13,14 +13,14 @@ const obtenerClientes = async (req, res, next) => {
 
 const registrarCliente = async (req, res, next) => {
     try {
-        console.log("📥 RECIBIENDO DATOS DEL SOCIO:", req.body); 
+        console.log(" RECIBIENDO DATOS DEL SOCIO:", req.body); 
 
         const { nombre, telefono, pin } = req.body; 
         
         if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
         
         if (!pin || pin.trim() === "") {
-            return res.status(400).json({ error: "⚠️ ALERTA: El PIN no está llegando al servidor desde la página web." });
+            return res.status(400).json({ error: " ALERTA: El PIN no está llegando al servidor desde la página web." });
         }
 
         if (telefono) {
@@ -54,7 +54,7 @@ const agregarSello = async (req, res, next) => {
         
         let nuevoNivel = 'Bronce';
         if (totalSellos >= 10) nuevoNivel = 'Plata';
-        if (totalSellos >= 20) nuevoNivel = 'Oro 👑';
+        if (totalSellos >= 20) nuevoNivel = 'Oro';
 
         await pool.query('UPDATE clientes SET nivel = $1 WHERE id = $2', [nuevoNivel, id]);
 
@@ -161,7 +161,7 @@ const eliminarCliente = async (req, res, next) => {
         res.status(200).json({ message: 'Socio VIP eliminado correctamente' });
         
     } catch (error) {
-        console.error("🔥 ERROR CRÍTICO AL BORRAR CLIENTE:", error.message);
+        console.error(" ERROR CRÍTICO AL BORRAR CLIENTE:", error.message);
         
         // Candado de seguridad: Si el cliente tiene canjes, no se borra para no dañar la contabilidad
         if (error.code === '23503') {

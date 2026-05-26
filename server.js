@@ -26,8 +26,9 @@ const app = express();
 const server = http.createServer(app); 
 const io = new Server(server); 
 app.set('socketio', io);
-// Llave maestra criptográfica
-const SECRET_KEY = process.env.JWT_SECRET || 'llave_maestra_billar_2026';
+// Llave maestra criptográfica (NUNCA hardcodear — debe estar en .env)
+const SECRET_KEY = process.env.JWT_SECRET;
+if (!SECRET_KEY) console.warn(' ADVERTENCIA: JWT_SECRET no definido en .env');
 
 // ==========================================
 // 1. ESQUEMAS DE VALIDACIÓN DE DATOS (ZOD)
@@ -44,7 +45,7 @@ const pedidoSchema = z.object({
     mesa_id: z.coerce.number().int().positive(), 
     producto_id: z.coerce.number().int().positive(), 
     cantidad: z.coerce.number().int().positive(),
-    cliente_nombre: z.string().optional() // 🔥 NUEVO: Permitimos recibir el nombre
+    cliente_nombre: z.string().optional() //  NUEVO: Permitimos recibir el nombre
 });
 const cambiarMesaSchema = z.object({ idOrigen: z.coerce.number().int().positive(), idDestino: z.coerce.number().int().positive() });
 const nuevoProductoSchema = z.object({ nombre: z.string().min(1), precio: z.coerce.number().positive(), stock: z.coerce.number().int().nonnegative().default(0), categoria: z.string().default('General') });
@@ -57,7 +58,7 @@ const usuarioSchema = z.object({
 // ==========================================
 // 2. CONFIGURACIÓN DEL SERVIDOR
 // ==========================================
-io.on('connection', (socket) => { console.log('📱 Dispositivo conectado:', socket.id); });
+io.on('connection', (socket) => { console.log(' Dispositivo conectado:', socket.id); });
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false })); 
@@ -67,7 +68,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser()); // Activa la lectura de cookies de alta velocidad
-// 👇 CONEXIÓN DE MÓDULOS MVC 👇
+//  CONEXIÓN DE MÓDULOS MVC 
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
 app.use('/api/productos', require('./routes/inventario.routes'));
 app.use('/api/mesas', require('./routes/mesas.routes'));
@@ -76,7 +77,7 @@ const auditoriaRoutes = require('./routes/auditoria.routes');
 const reportesRoutes = require('./routes/reportes.routes');
 app.use('/api', reportesRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
-const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "⛔ Demasiados intentos." } });
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: " Demasiados intentos." } });
 
 
 
@@ -125,7 +126,7 @@ async function getPrecioBillar() {
         try { await pool.query("ALTER TABLE ventas ADD COLUMN pago_digital DECIMAL(10,2) DEFAULT 0"); } catch (e) {}
         try { await pool.query("DROP TABLE IF EXISTS session CASCADE"); } catch(e){} // Eliminamos la tabla obsoleta
         try { await pool.query("ALTER TABLE pedidos_mesa ADD COLUMN cliente_nombre VARCHAR(100) DEFAULT 'General'"); } catch (e) {}
-        // 👇 AÑADIR ESTA LÍNEA PARA CREAR LA TABLA DE CLIENTES 👇
+        //  AÑADIR ESTA LÍNEA PARA CREAR LA TABLA DE CLIENTES 
         try { 
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS clientes (
@@ -255,7 +256,7 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
     try { 
         const val = pedidoSchema.parse(req.body); 
         
-        // 🔥 LÓGICA DE CUENTAS: Capturamos el nombre de la persona. Si no envían nada, es 'General'
+        //  LÓGICA DE CUENTAS: Capturamos el nombre de la persona. Si no envían nada, es 'General'
         const cliente = req.body.cliente_nombre && req.body.cliente_nombre.trim() !== '' 
             ? req.body.cliente_nombre.trim().toUpperCase() 
             : 'General';
@@ -282,7 +283,7 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
         );
 
         // ==========================================
-        // 🚀 SUPPLY CHAIN: ALERTA CRÍTICA DE STOCK
+        //  SUPPLY CHAIN: ALERTA CRÍTICA DE STOCK
         // ==========================================
         const limiteCritico = 5;
         const stockAnterior = prodData.stock + val.cantidad;
@@ -380,7 +381,7 @@ app.post('/api/eventos', async (req, res) => {
         // 2. ENVIAR CORREO MEDIANTE NUESTRA MICRO-API DE GOOGLE
         const payloadCorreo = {
             to: email,
-            subject: '👑 Solicitud de Evento Recibida - La Esquina',
+            subject: ' Solicitud de Evento Recibida - La Esquina',
             htmlBody: `
                 <div style="font-family: Arial, sans-serif; background-color: #111; color: #fff; padding: 30px; border-radius: 10px;">
                     <h2 style="color: #D4AF37;">¡Hola, ${nombre}!</h2>
@@ -407,8 +408,8 @@ app.post('/api/eventos', async (req, res) => {
             redirect: 'follow' // Vital para las APIs de Google
         })
         .then(response => response.text())
-        .then(text => console.log("🤖 Respuesta de Google API:", text))
-        .catch(err => console.error("❌ Error enviando correo API:", err));
+        .then(text => console.log(" Respuesta de Google API:", text))
+        .catch(err => console.error(" Error enviando correo API:", err));
         
         res.json({ success: true, mensaje: 'Solicitud enviada exitosamente' });
     } catch (error) {
@@ -468,14 +469,14 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
         const val = gastoSchema.parse(req.body); 
         await pool.query('INSERT INTO gastos (descripcion, monto) VALUES ($1, $2)', [val.descripcion, val.monto]); 
         
-        // 🔥 ESPÍA BLINDADO (GASTOS) 🔥
+        //  ESPÍA BLINDADO (GASTOS) 
         try {
             await pool.query(
                 "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'NUEVO GASTO', 'Retiró S/ ' || $2 || ' de la caja. Motivo: ' || $3)", 
                 [req.usuario.id, val.monto.toFixed(2), val.descripcion]
             );
         } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
-        // 🔥 FIN DEL ESPÍA 🔥
+        //  FIN DEL ESPÍA 
 
         res.json({ success: true }); 
         io.emit('actualizar_caja'); 
@@ -490,7 +491,7 @@ app.post('/api/gastos/nuevo', verificarSesion, async (req, res, next) => {
 
 app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
     try { 
-        // 🛡️ SUB-CONSULTA PURA: Evitamos que Node.js desajuste las zonas horarias
+        //  SUB-CONSULTA PURA: Evitamos que Node.js desajuste las zonas horarias
         const filtroCierre = "(SELECT COALESCE(MAX(fecha_cierre), '2000-01-01 00:00:00') FROM cierres)"; 
         
         const queries = [ 
@@ -515,7 +516,7 @@ app.get('/api/caja/actual', verificarSesion, async (req, res, next) => {
 
 app.post('/api/caja/cerrar', verificarSesion, soloAdmin, async (req, res, next) => { 
     try { 
-        // 🛡️ La misma sub-consulta nativa para el cierre definitivo
+        //  La misma sub-consulta nativa para el cierre definitivo
         const filtroCierre = "(SELECT COALESCE(MAX(fecha_cierre), '2000-01-01 00:00:00') FROM cierres)"; 
         
         const v = await pool.query(`SELECT COALESCE(SUM(total_final), 0) as total, COUNT(*) as cantidad FROM ventas WHERE fecha > ${filtroCierre}`); 
@@ -644,7 +645,7 @@ app.get('/api/reportes/historial', verificarSesion, soloAdmin, async (req, res, 
 // 11. GESTOR CENTRAL DE ERRORES
 // ==========================================
 app.use((err, req, res, next) => {
-    console.error("🔥 Error del Servidor:", err.message || err);
+    console.error(" Error del Servidor:", err.message || err);
     if (err instanceof z.ZodError) { 
         return res.status(400).json({ error: "Datos inválidos.", detalles: err.errors.map(e => `${e.path.join('.')}: ${e.message}`) }); 
     }
@@ -655,7 +656,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🎱 Servidor "La Esquina" ejecutándose en el puerto ${PORT}`));
+server.listen(PORT, () => console.log(` Servidor "La Esquina" ejecutándose en el puerto ${PORT}`));
 
 // ==========================================
 // 13. MÓDULO DE BUSINESS INTELLIGENCE (BI)
@@ -718,13 +719,13 @@ app.get('/api/analytics/dashboard', verificarSesion, soloAdmin, async (req, res,
 });
 
 
-// 📡 TELEMETRÍA PARA PROYECT-TI 
+//  TELEMETRÍA PARA PROYECT-TI 
 const https = require('https');
 
 const TOKEN_MONITOREO = "3e6f1b7d-00c2-4cdd-9fa3-20bb7aeaf930"; // El token copiado de tu ERP
 const HEARTBEAT_URL = "https://proyect-ti-api.onrender.com/api/telemetria/heartbeat";
 
-console.log("📡 Reportando telemetría de Billar al ERP Central (HTTPS Nativo)...");
+console.log(" Reportando telemetría de Billar al ERP Central (HTTPS Nativo)...");
 
 setInterval(() => {
   const inicio = Date.now();

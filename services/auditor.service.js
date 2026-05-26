@@ -16,7 +16,7 @@ const registrarAuditoria = async (req, accion, detalles) => {
         );
     } catch (error) {
         // Falla en silencio para no arruinar la venta o el cierre
-        console.error(`⚠️ [Auditoría Falló] Acción: ${accion} - Error:`, error.message);
+        console.error(` [Auditoría Falló] Acción: ${accion} - Error:`, error.message);
     }
 };
 

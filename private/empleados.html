@@ -19,28 +19,39 @@
         .badge-mozo { background-color: rgba(13, 202, 240, 0.2); color: #0dcaf0; border: 1px solid #0dcaf0; }
         .badge-cocina { background-color: rgba(25, 135, 84, 0.2); color: #198754; border: 1px solid #198754; }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="text-light">
     
-    <div id="toast">✅ Acción realizada</div>
+    <div id="toast"> Acción realizada</div>
     <div id="overlay-sidebar" class="overlay-mobile" onclick="cerrarMenuMovil()"></div>
 
     <!-- SIDEBAR CORPORATIVO -->
+    <!-- Corporate Sidebar -->
+    <!-- Corporate Sidebar -->
     <nav class="sidebar">
-        <div class="text-center mb-4">
-            <img src="/logo.png" style="max-width: 150px;" alt="La Esquina">
+        <div class="text-center mb-5 mt-2">
+            <img src="/logo.png" class="brand-logo" style="max-width: 120px;" alt="La Esquina">
         </div>
-        <div class="d-flex flex-column flex-grow-1 mt-3">
-            <a href="/dashboard.html" class="nav-item-vip">🎱 Control de Mesas</a>
-            <a href="/cocina.html" class="nav-item-vip" target="_blank">👨‍🍳 Pantalla Cocina</a>
-            <a href="/inventario.html" class="nav-item-vip">📦 Inventario</a>
-            <a href="/clientes.html" class="nav-item-vip">👑 Club La Esquina</a>
-            <a href="/reportes.html" class="nav-item-vip">📈 Analytics (BI)</a>
-            <a href="/cierre_caja.html" class="nav-item-vip">🔒 Cerrar Caja</a>
-            <a href="/auditoria.html" class="nav-item-vip text-danger opacity-75">🕵️‍♂️ Auditoría</a>
-            <a href="/empleados.html" class="nav-item-vip active text-info" style="border-left-color: #0dcaf0;">👥 Empleados</a>
+        
+        <button class="btn btn-warning fw-bold mb-4 py-2 w-100 d-flex justify-content-center align-items-center gap-2" style="font-size: 13px;" onclick="document.getElementById('modal-gasto') ? document.getElementById('modal-gasto').style.display='flex' : alert('Gasto no disponible aquí')">
+            <i data-lucide="receipt"></i> REGISTRAR GASTO
+        </button>
+        
+        <div class="d-flex flex-column flex-grow-1">
+            <a href="/dashboard.html" class="nav-item-vip"><i data-lucide="layout-grid"></i> Control de Mesas</a>
+            <a href="/cocina.html" class="nav-item-vip" target="_blank"><i data-lucide="chef-hat"></i> Pantalla Cocina</a>
+            <a href="/inventario.html" class="nav-item-vip"><i data-lucide="package"></i> Inventario</a>
+            <a href="/clientes.html" class="nav-item-vip"><i data-lucide="users"></i> Clientes VIP</a>
+            <a href="/reportes.html" class="nav-item-vip"><i data-lucide="bar-chart-3"></i> Reportes (BI)</a>
+            <a href="/cierre_caja.html" class="nav-item-vip"><i data-lucide="lock"></i> Cerrar Caja</a>
+            <a href="/auditoria.html" class="nav-item-vip" style="color: #ef4444;"><i data-lucide="shield-alert"></i> Auditoría</a>
+            <a href="/empleados.html" class="nav-item-vip active"><i data-lucide="briefcase"></i> Empleados</a>
         </div>
-        <a href="/logout" class="btn-logout-sidebar mt-4">🚪 CERRAR SESIÓN</a>
+        
+        <a href="/logout" class="btn-logout-sidebar mt-4">
+            <i data-lucide="log-out"></i> CERRAR SESIÓN
+        </a>
     </nav>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -49,20 +60,20 @@
         <!-- BARRA SUPERIOR -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 border-bottom pb-3" style="border-color: rgba(13, 202, 240, 0.3) !important;">
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-info d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()">☰ MENÚ</button>
+                <button class="btn btn-info d-md-none shadow-sm fw-bold px-3 py-2 text-dark" onclick="abrirMenuMovil()"> MENÚ</button>
                 <div>
-                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">👥 Gestión del Personal</h4>
+                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: 1px; display:flex; align-items:center; gap:8px;"><i data-lucide="briefcase" style="color: var(--gold);"></i> Gestin del Personal</h4>
                     <small class="text-muted">Controla los accesos, cuentas y roles del sistema.</small>
                 </div>
             </div>
             <button class="btn btn-outline-light fw-bold shadow-sm px-4 opacity-75" onclick="cargarEmpleados()">
-                🔄 ACTUALIZAR LISTA
+                 ACTUALIZAR LISTA
             </button>
         </div>
 
         <!-- FORMULARIO NUEVO EMPLEADO -->
         <div class="card-premium p-4 mb-5 border-info" style="border-width: 2px;">
-            <h6 class="text-info fw-bold mb-3 text-uppercase">➕ Registrar Nuevo Usuario</h6>
+            <h6 class="text-info fw-bold mb-3 text-uppercase"> Registrar Nuevo Usuario</h6>
             <div class="row g-3 align-items-end">
                 <div class="col-12 col-md-3">
                     <label class="text-muted small fw-bold mb-1">USUARIO (LOGIN)</label>
@@ -112,7 +123,7 @@
     <!-- MODAL CONFIRMACIÓN -->
     <div id="modal-confirm" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
         <div class="modal-box" style="background:#111; padding:30px; border-radius:12px; border:2px solid #555; text-align:center; max-width:400px; width:90%;">
-            <h4 class="text-danger fw-bold mb-3">⚠️ Revocar Acceso</h4>
+            <h4 class="text-danger fw-bold mb-3"> Revocar Acceso</h4>
             <p class="text-light mb-4 fs-5" id="modal-texto">¿Estás seguro de eliminar a este empleado?</p>
             <div class="d-flex gap-2 justify-content-center">
                 <button class="btn btn-outline-light w-50" onclick="cerrarModal()">Cancelar</button>
@@ -133,7 +144,7 @@
 
 async function cargarEmpleados() {
     try {
-        const res = await fetch('/api/usuarios');       // ✅ igual que antes — sin cambio
+        const res = await fetch('/api/usuarios');       //  igual que antes — sin cambio
         const data = await res.json();
         
         const tbody = document.getElementById('tabla-empleados');
@@ -154,13 +165,13 @@ async function cargarEmpleados() {
             tbody.innerHTML += `
                 <tr>
                     <td class="text-muted px-4 fw-bold">#${emp.id}</td>
-                    <td class="fw-bold text-white px-4 fs-5">👤 ${emp.username}</td>
+                    <td class="fw-bold text-white px-4 fs-5"> ${emp.username}</td>
                     <td class="text-center px-4">
                         <span class="badge px-3 py-2 fs-6 ${badgeClass}">${rolTexto}</span>
                     </td>
                     <td class="text-center px-4">
                         <button class="btn btn-outline-danger btn-sm fw-bold px-3 shadow-sm border-0" onclick="pedirEliminar(${emp.id}, '${emp.username}')" title="Eliminar Acceso">
-                            🗑️ Revocar
+                             Revocar
                         </button>
                     </td>
                 </tr>
@@ -182,7 +193,7 @@ async function crearEmpleado() {
     }
 
     try {
-        const res = await fetch('/api/usuarios', {        // ✅ CORREGIDO: era '/api/usuarios' con POST
+        const res = await fetch('/api/usuarios', {        //  CORREGIDO: era '/api/usuarios' con POST
             method: 'POST',                               //    pero la ruta del backend era /api/usuarios/nuevo
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password, rol })
@@ -191,7 +202,7 @@ async function crearEmpleado() {
         const data = await res.json();
 
         if (res.ok || data.success) {
-            mostrarToast("✅ Empleado registrado con éxito");
+            mostrarToast(" Empleado registrado con éxito");
             document.getElementById('emp-usuario').value = '';
             document.getElementById('emp-pass').value = '';
             cargarEmpleados();
@@ -209,9 +220,9 @@ function pedirEliminar(id, nombre) {
     btnOk.onclick = async () => {
         cerrarModal();
         try {
-            const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' }); // ✅ CORREGIDO: era /api/usuarios/${id}
+            const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' }); //  CORREGIDO: era /api/usuarios/${id}
             if(res.ok) {                                                           //    pero la ruta del backend era /eliminar/:id
-                mostrarToast("🗑️ Acceso revocado");
+                mostrarToast(" Acceso revocado");
                 cargarEmpleados();
             } else {
                 const data = await res.json();
@@ -229,6 +240,11 @@ function mostrarToast(msg) {
 
 // Iniciar
 cargarEmpleados();
+    </script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
     </script>
 </body>
 </html>

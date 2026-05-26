@@ -103,14 +103,14 @@ const detalleMesa = async (req, res, next) => {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]); 
             minReal = Math.ceil(resT.rows[0].min || 0); 
             
-            // 🔥 Usamos nuestro Motor de Precios Centralizado
+            //  Usamos nuestro Motor de Precios Centralizado
             totalT = calcularCostoBillar(minReal, precioHora);
         }
         
         // Obtenemos los productos incluyendo cliente_nombre
         const resProds = await pool.query(`SELECT pm.id, pm.producto_id, p.nombre, pm.cantidad, p.precio_venta, pm.cliente_nombre FROM pedidos_mesa pm JOIN productos p ON pm.producto_id = p.id WHERE pm.mesa_id = $1 AND pm.pagado = FALSE ORDER BY pm.id ASC`, [id]);
         
-        // 🔥 SOLUCIÓN: Declaramos la variable totalC aquí para que inicie en 0
+        //  SOLUCIÓN: Declaramos la variable totalC aquí para que inicie en 0
         let totalC = 0; 
         
         const listaProductos = resProds.rows.map(p => { 
@@ -134,7 +134,7 @@ const cerrarMesa = async (req, res, next) => {
             const resT = await pool.query("SELECT EXTRACT(EPOCH FROM (NOW() - hora_inicio))/60 AS min FROM mesas WHERE id = $1", [id]); 
             const minReal = Math.ceil(resT.rows[0].min || 0); 
             
-            // 🔥 Usamos nuestro Motor de Precios Centralizado
+            //  Usamos nuestro Motor de Precios Centralizado
             totalT = calcularCostoBillar(minReal, precioHora);
         }
         
@@ -149,14 +149,14 @@ const cerrarMesa = async (req, res, next) => {
         await pool.query('UPDATE pedidos_mesa SET pagado = TRUE WHERE mesa_id = $1', [id]); 
         await pool.query('UPDATE mesas SET estado = $1, hora_inicio = NULL, tiempo_limite = 0 WHERE id = $2', ['LIBRE', id]); 
         
-        // 🔥 ESPÍA BLINDADO (COBRO MESA) 🔥
+        //  ESPÍA BLINDADO (COBRO MESA) 
         try {
             await pool.query(
                 "INSERT INTO auditoria (usuario_id, accion, detalles) VALUES ($1, 'COBRO MESA', 'Cobró la Mesa ' || $2 || ' por un total de S/ ' || $3)", 
                 [req.usuario.id, mesa.numero_mesa, totalF.toFixed(2)]
             );
         } catch (eEspia) { console.error("Aviso Espía:", eEspia.message); }
-        // 🔥 FIN DEL ESPÍA 🔥
+        //  FIN DEL ESPÍA 
 
         res.json({ success: true }); 
         
