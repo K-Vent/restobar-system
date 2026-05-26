@@ -716,3 +716,28 @@ app.get('/api/analytics/dashboard', verificarSesion, soloAdmin, async (req, res,
         res.status(500).json({ error: "Error procesando analíticas", sql_error: e.message }); 
     }
 });
+
+// 📡 TELEMETRÍA PARA PROYECT-TI
+// 📡 TELEMETRÍA PARA PROYECT-TI
+const axios = require('axios');
+
+const TOKEN_MONITOREO = "3e6f1b7d-00c2-4cdd-9fa3-20bb7aeaf930"; // El token que registrarás y copiarás del ERP
+const BACKEND_URL = "https://proyect-ti-api.onrender.com/api/telemetria/heartbeat"; // URL de Render
+
+console.log("📡 Reportando telemetría de Billar al ERP Central...");
+
+setInterval(async () => {
+  const inicio = Date.now();
+  try {
+    const estado = "OPERACIONAL"; 
+    const latencia = Date.now() - inicio;
+
+    await axios.post(BACKEND_URL, {
+      token_monitoreo: TOKEN_MONITOREO,
+      latencia: latencia,
+      estado: estado
+    });
+  } catch (error) {
+    console.log("[Telemetría] Falla al conectar con el ERP Central.");
+  }
+}, 15000); // Latido cada 15 segundos // Reportar cada 15 segundos en producción
