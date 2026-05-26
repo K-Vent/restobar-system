@@ -29,14 +29,7 @@ const cambiarMesaSchema = z.object({
 let configCache = { precio_billar: 10, ultimaActualizacion: 0 };
 
 async function getPrecioBillar() {
-    const AHORA = Date.now();
-    if (AHORA - configCache.ultimaActualizacion > 60000) { 
-        try { 
-            const conf = await pool.query("SELECT valor FROM config WHERE clave = 'precio_billar'"); 
-            configCache.precio_billar = parseFloat(conf.rows[0]?.valor || 10); 
-            configCache.ultimaActualizacion = AHORA; 
-        } catch (e) { console.error("Error obteniendo precio billar:", e.message); } 
-    }
+    // ... tu código actual del caché ...
     return configCache.precio_billar;
 }
 
