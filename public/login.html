@@ -5,37 +5,166 @@
     <title>La Esquina - Acceso</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0c">
+    <meta name="theme-color" content="#050505">
     <link rel="icon" href="/logo.png" type="image/png">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         /* =========================================
            LOGIN CSS - PREMIUM DARK MODE
            ========================================= */
         :root {
-            --bg-main: #0a0a0c;
-            --bg-card: rgba(28, 28, 30, 0.8);
-            --gold: #f1c40f;
-            --gold-hover: #d4ac0d;
-            --gold-glow: 0 0 25px rgba(241, 196, 15, 0.3);
+            --bg-main: #050505;
+            --bg-card: rgba(20, 20, 22, 0.8);
+            --bg-elevated: #0a0a0c;
+            --gold: #D4AF37;
+            --gold-hover: #e5c158;
+            --gold-glow: 0 0 25px rgba(212,175,55,0.3);
             --text-main: #ffffff;
-            --text-muted: #a4b0be;
-            --border: rgba(255, 255, 255, 0.1);
-            --success: #2ed573;
+            --text-muted: #8a8f98;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-gold: rgba(212,175,55,0.3);
+            --success: #00d26a;
             --danger: #ff4757;
+            --info: #00b4d8;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: radial-gradient(circle at center, #151515 0%, var(--bg-main) 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-main);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: var(--text-main);
             overflow: hidden;
+            position: relative;
+        }
+
+        /* =========================================
+           BACKGROUND LAYERS
+           ========================================= */
+
+        /* Radial ambient light */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 50% 50%, rgba(212,175,55,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 80% 60% at 20% 80%, rgba(212,175,55,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 80% 20%, rgba(212,175,55,0.02) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Subtle grid pattern overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
+        }
+
+        /* Noise texture overlay */
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 128px 128px;
+        }
+
+        /* =========================================
+           FLOATING ORBS — CSS-only animations
+           ========================================= */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            will-change: transform;
+        }
+
+        .orb-1 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.02) 40%, transparent 70%);
+            top: -80px;
+            right: -60px;
+            animation: float1 8s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, rgba(212,175,55,0.015) 40%, transparent 70%);
+            bottom: -40px;
+            left: -60px;
+            animation: float2 10s ease-in-out infinite;
+        }
+
+        .orb-3 {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(212,175,55,0.07) 0%, rgba(212,175,55,0.02) 40%, transparent 70%);
+            top: 50%;
+            left: 10%;
+            animation: float3 12s ease-in-out infinite;
+        }
+
+        .orb-4 {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, rgba(212,175,55,0.03) 40%, transparent 70%);
+            top: 20%;
+            right: 15%;
+            animation: float4 9s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20px, 30px) scale(1.05); }
+            66% { transform: translate(-15px, 15px) scale(0.97); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(25px, -20px) scale(1.03); }
+            50% { transform: translate(-10px, -35px) scale(1.06); }
+            75% { transform: translate(15px, -10px) scale(0.98); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            40% { transform: translate(-30px, -25px) scale(1.08); }
+            70% { transform: translate(20px, 10px) scale(0.95); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            30% { transform: translate(-15px, 20px) scale(1.1); }
+            60% { transform: translate(25px, -15px) scale(0.92); }
         }
 
         /* Efecto de Billar en el fondo (Opcional pero elegante) */
@@ -43,34 +172,67 @@
             position: absolute;
             width: 300px;
             height: 300px;
-            background: radial-gradient(circle, rgba(241,196,15,0.1) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, rgba(0,0,0,0) 70%);
             top: -100px;
             right: -100px;
             border-radius: 50%;
             z-index: 0;
         }
 
+        /* =========================================
+           LOGIN CONTAINER — Glassmorphism + fadeIn
+           ========================================= */
         .login-container {
             background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
             border: 1px solid var(--border);
-            padding: 50px 40px;
-            border-radius: 24px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding: 50px 40px 40px;
+            border-radius: 28px;
             width: 100%;
-            max-width: 380px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            max-width: 400px;
+            box-shadow:
+                0 40px 80px rgba(0,0,0,0.7),
+                0 15px 35px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.07),
+                0 0 80px rgba(212,175,55,0.03);
             position: relative;
             z-index: 1;
-            transform: translateY(20px);
+            transform: translateY(30px) scale(0.96);
             opacity: 0;
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: containerReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
         }
 
+        /* Gold accent line at top of card */
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 0 0 4px 4px;
+            opacity: 0.7;
+        }
+
+        @keyframes containerReveal {
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Keep original slideUp name for compatibility */
         @keyframes slideUp {
             to { transform: translateY(0); opacity: 1; }
         }
 
+        /* =========================================
+           LOGO
+           ========================================= */
         .logo-box {
             text-align: center;
             margin-bottom: 40px;
@@ -78,108 +240,242 @@
 
         .logo-box img {
             width: 180px;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-            transition: transform 0.3s ease;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
         }
 
         .logo-box img:hover {
             transform: scale(1.05);
-            filter: drop-shadow(var(--gold-glow));
+            filter: drop-shadow(0 0 25px rgba(212,175,55,0.35));
+            animation: logoPulse 1.5s ease-in-out infinite;
         }
 
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(212,175,55,0.35)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(212,175,55,0.5)); }
+        }
+
+        /* =========================================
+           INPUTS
+           ========================================= */
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             position: relative;
         }
 
         .input-label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
             margin-bottom: 8px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-left: 5px;
+            letter-spacing: 1.8px;
+            margin-left: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .input-group:focus-within .input-label {
+            color: var(--gold);
         }
 
         .input-field {
             width: 100%;
             padding: 16px 20px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid var(--border);
+            background: rgba(0,0,0,0.35);
+            border: 1.5px solid var(--border);
             color: white;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
             box-sizing: border-box;
             outline: none;
-            transition: all 0.3s ease;
+            transition:
+                border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.35s ease,
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.2s ease;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255,255,255,0.2);
+            font-weight: 300;
         }
 
         .input-field:focus {
             border-color: var(--gold);
             background: rgba(0,0,0,0.5);
-            box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.1);
+            box-shadow:
+                0 0 0 4px rgba(212,175,55,0.08),
+                0 0 20px rgba(212,175,55,0.06);
+            transform: translateY(-1px);
         }
 
+        /* =========================================
+           BUTTON — with shimmer effect
+           ========================================= */
         .btn-login {
             width: 100%;
             padding: 18px;
-            background: var(--gold);
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 50%, var(--gold) 100%);
             color: #000;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 900;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(241, 196, 15, 0.2);
+            letter-spacing: 3px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow:
+                0 8px 24px rgba(212,175,55,0.2),
+                0 2px 8px rgba(212,175,55,0.15);
             margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shimmer / Shine sweep */
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent 0%,
+                rgba(255,255,255,0) 30%,
+                rgba(255,255,255,0.4) 50%,
+                rgba(255,255,255,0) 70%,
+                transparent 100%
+            );
+            animation: shimmer 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            60% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .btn-login:hover {
-            background: var(--gold-hover);
+            background: linear-gradient(135deg, var(--gold-hover) 0%, var(--gold) 50%, var(--gold-hover) 100%);
             transform: translateY(-2px);
-            box-shadow: var(--gold-glow);
+            box-shadow: var(--gold-glow), 0 12px 30px rgba(212,175,55,0.25);
+            letter-spacing: 4px;
         }
 
         .btn-login:active {
             transform: translateY(1px);
+            box-shadow: 0 4px 12px rgba(212,175,55,0.15);
         }
 
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =========================================
+           ERROR MESSAGE — Slide in from below
+           ========================================= */
         .error-msg {
             color: var(--danger);
             text-align: center;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 600;
             margin-top: 20px;
             min-height: 20px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transform: translateY(10px);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.3px;
         }
 
         .show-error {
             opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Spinner de carga para el botón */
+        /* =========================================
+           SPINNER
+           ========================================= */
         .spinner {
             display: none;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(0,0,0,0.3);
+            border: 3px solid rgba(0,0,0,0.2);
             border-radius: 50%;
             border-top-color: #000;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s ease-in-out infinite;
             margin: 0 auto;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* =========================================
+           FOOTER
+           ========================================= */
+        .login-footer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 1s forwards;
+        }
+
+        .login-footer p {
+            margin: 0;
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* =========================================
+           RESPONSIVE
+           ========================================= */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 0 20px;
+                padding: 40px 28px 32px;
+                border-radius: 24px;
+            }
+
+            .logo-box img {
+                width: 150px;
+            }
+
+            .orb-1 { width: 200px; height: 200px; }
+            .orb-2 { width: 150px; height: 150px; }
+            .orb-3 { width: 100px; height: 100px; }
+            .orb-4 { display: none; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Noise texture overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Floating decorative orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
 
     <div class="fondo-deco"></div>
 
@@ -207,6 +503,11 @@
             <div id="errorMsg" class="error-msg">Credenciales incorrectas</div>
         </form>
     </div>
+
+    <!-- Footer -->
+    <footer class="login-footer">
+        <p>&copy; 2026 La Esquina del Billar</p>
+    </footer>
 
     <script>
         // ==========================================

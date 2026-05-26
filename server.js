@@ -26,8 +26,9 @@ const app = express();
 const server = http.createServer(app); 
 const io = new Server(server); 
 app.set('socketio', io);
-// Llave maestra criptográfica
-const SECRET_KEY = process.env.JWT_SECRET || 'llave_maestra_billar_2026';
+// Llave maestra criptográfica (NUNCA hardcodear — debe estar en .env)
+const SECRET_KEY = process.env.JWT_SECRET;
+if (!SECRET_KEY) console.warn('⚠️ ADVERTENCIA: JWT_SECRET no definido en .env');
 
 // ==========================================
 // 1. ESQUEMAS DE VALIDACIÓN DE DATOS (ZOD)
@@ -315,7 +316,7 @@ app.post('/api/pedidos/agregar', verificarSesion, async (req, res, next) => {
                     </div>
                 `
             };
-            const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
+            const URL_GOOGLE_SCRIPT = process.env.GOOGLE_SCRIPT_URL;
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -393,8 +394,7 @@ app.post('/api/eventos', async (req, res) => {
             `
         };
 
-        // Reemplaza ESTA URL por la que copiaste de Google Apps Script
-        const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbxyh45X2OYZoOaZUbFscZoOlal2SoQ7edk7LzHV03wIpzkFn_8m4m-K6Cg2usXKrRpw/exec';
+        const URL_GOOGLE_SCRIPT = process.env.GOOGLE_SCRIPT_URL;
 
         // Enviamos la petición por HTTP (Render NUNCA bloquea esto)
        fetch(URL_GOOGLE_SCRIPT, {
@@ -422,7 +422,7 @@ app.post('/api/eventos', async (req, res) => {
 // ==========================================
 
 // 1. Obtener todos los eventos para el Dashboard
-app.get('/api/eventos/lista', async (req, res) => {
+app.get('/api/eventos/lista', verificarSesion, async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM eventos_privados ORDER BY fecha_evento ASC");
         res.json(result.rows);
@@ -433,7 +433,7 @@ app.get('/api/eventos/lista', async (req, res) => {
 });
 
 // 2. Aprobar o Rechazar un evento
-app.put('/api/eventos/:id/estado', async (req, res) => {
+app.put('/api/eventos/:id/estado', verificarSesion, soloAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body; // Recibirá 'Aprobado' o 'Rechazado'
@@ -451,8 +451,8 @@ app.put('/api/eventos/:id/estado', async (req, res) => {
 // ==========================================
 app.get('/api/menu-publico', async (req, res) => {
     try {
-        // Selecciona todos los productos para la web
-        const result = await pool.query("SELECT * FROM productos");
+        // Solo datos públicos: nombre, precio y categoría (sin stock, IDs ni costos internos)
+        const result = await pool.query('SELECT nombre, precio_venta, categoria FROM productos WHERE stock > 0 ORDER BY categoria, nombre ASC');
         res.json(result.rows);
     } catch (error) {
         console.error("Error al cargar la carta pública:", error);
@@ -721,8 +721,8 @@ app.get('/api/analytics/dashboard', verificarSesion, soloAdmin, async (req, res,
 // 📡 TELEMETRÍA PARA PROYECT-TI 
 const https = require('https');
 
-const TOKEN_MONITOREO = "3e6f1b7d-00c2-4cdd-9fa3-20bb7aeaf930"; // El token copiado de tu ERP
-const HEARTBEAT_URL = "https://proyect-ti-api.onrender.com/api/telemetria/heartbeat";
+const TOKEN_MONITOREO = process.env.TELEMETRIA_TOKEN;
+const HEARTBEAT_URL = process.env.TELEMETRIA_URL;
 
 console.log("📡 Reportando telemetría de Billar al ERP Central (HTTPS Nativo)...");
 

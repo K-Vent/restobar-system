@@ -919,13 +919,3 @@ async function cambiarEstadoEvento(id, nuevoEstado) {
         alert('Error de conexión con el servidor');
     }
 }
-
-// Cargar los eventos automáticamente al abrir el dashboard
-document.addEventListener('DOMContentLoaded', () => {
-    // Si ya tienes un DOMContentLoaded en este archivo, 
-    // solo agrega la llamada a cargarEventos() adentro.
-    cargarEventos(); 
-});
-
-        // Ejecutamos la revisión de seguridad apenas carga la página
-        document.addEventListener('DOMContentLoaded', aplicarPermisosUI);

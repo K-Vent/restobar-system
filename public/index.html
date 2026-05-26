@@ -4,58 +4,337 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Esquina del Billar | Restobar & Club</title>
-    <!-- Motor Base Oscuro -->
+    <meta name="description" content="La Esquina del Billar - El mejor ambiente, tragos premium y mesas profesionales en Santa Anita, Lima. Reserva tu evento privado.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap Dark -->
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/darkly/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="/logo.png">
     
     <style>
-        /* Estilos Premium para la Web Pública */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #050505; }
-        
-        /* Navbar Transparente */
-        .navbar-public { background: rgba(5, 5, 5, 0.9) !important; backdrop-filter: blur(10px); border-bottom: 1px solid #333; }
-        
-        /* Hero Section (Impacto Visual) */
-        /* Hero Section (Impacto Visual) */
+        :root {
+            --gold: #D4AF37;
+            --gold-hover: #e5c158;
+            --gold-dim: rgba(212, 175, 55, 0.1);
+            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.35);
+            --bg-main: #050505;
+            --bg-card: rgba(15, 15, 17, 0.85);
+            --border: rgba(255,255,255,0.06);
+            --text-muted: #8a8f98;
+        }
+
+        * { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-main); overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* ===== NAVBAR ===== */
+        .navbar-public {
+            background: rgba(5, 5, 5, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .navbar-public.scrolled {
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        /* ===== HERO ===== */
         .hero-section {
-            min-height: 85vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            /* Nuevo fondo de Billar Premium */
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://images.pexels.com/photos/261043/pexels-photo-261043.jpeg?auto=compress&cs=tinysrgb&w=1920&q=80') center/cover;
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.92)),
+                        url('https://images.pexels.com/photos/261043/pexels-photo-261043.jpeg?auto=compress&cs=tinysrgb&w=1920&q=80') center/cover fixed;
             position: relative;
+            overflow: hidden;
         }
-        .hero-title { font-size: 4rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-        .hero-subtitle { font-size: 1.5rem; color: #D4AF37; font-weight: 600; margin-bottom: 30px; letter-spacing: 1px;}
-        
-        /* Botones Premium */
-        .btn-gold { background: linear-gradient(145deg, #D4AF37, #AA8222); border: none; color: #000; font-weight: 800; padding: 15px 40px; text-transform: uppercase; transition: transform 0.2s, box-shadow 0.2s; }
-        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(212,175,55,0.4); color: #000; }
-        .btn-outline-gold { border: 2px solid #D4AF37; color: #D4AF37; font-weight: 800; padding: 15px 40px; text-transform: uppercase; transition: all 0.2s; }
-        .btn-outline-gold:hover { background: #D4AF37; color: #000; }
 
-        /* Sección Carta Digital */
-        .section-title { font-size: 2.5rem; font-weight: 900; color: #fff; text-align: center; margin-bottom: 50px; text-transform: uppercase;}
-        .section-title span { color: #D4AF37; }
-        
-        .menu-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center; transition: transform 0.3s;}
-        .menu-card:hover { transform: translateY(-5px); border-color: #D4AF37; }
-        .menu-price { color: #25D366; font-size: 1.5rem; font-weight: 900; margin-top: 10px; }
-
-        /* Footer */
-        .footer-premium { background: #000; padding: 40px 0; border-top: 1px solid #333; text-align: center; color: #888; }
-        /* Sección Cumpleaños y Reservas */
-        .promo-section { background: linear-gradient(45deg, #111, #1a1a1a); border-top: 1px solid #333; border-bottom: 1px solid #333; }
-        .promo-box { border-left: 4px solid #D4AF37; padding-left: 20px; }
-        .btn-whatsapp { 
-            background: #25D366; color: #fff; font-weight: 800; padding: 15px 30px; 
-            border-radius: 50px; text-decoration: none; display: inline-flex; 
-            align-items: center; gap: 10px; transition: all 0.3s; 
+        /* Animated ambient particles */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%);
+            top: 10%; right: -5%;
+            border-radius: 50%;
+            animation: floatOrb 8s ease-in-out infinite;
         }
-        .btn-whatsapp:hover { transform: translateY(-3px); color: #fff; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); }
-        .list-vip li { margin-bottom: 12px; font-size: 1.1rem; }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%);
+            bottom: 10%; left: -3%;
+            border-radius: 50%;
+            animation: floatOrb 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20px, -30px) scale(1.05); }
+            66% { transform: translate(-15px, 15px) scale(0.95); }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            line-height: 1.1;
+            opacity: 0;
+            animation: heroFadeIn 1s ease forwards 0.3s;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 30px;
+            letter-spacing: 1.5px;
+            opacity: 0;
+            animation: heroFadeIn 1s ease forwards 0.6s;
+        }
+
+        .hero-actions {
+            opacity: 0;
+            animation: heroFadeIn 1s ease forwards 0.9s;
+        }
+
+        @keyframes heroFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-gold {
+            background: linear-gradient(145deg, var(--gold), #AA8222);
+            border: none;
+            color: #000;
+            font-weight: 800;
+            padding: 16px 40px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(212,175,55,0.25);
+        }
+        .btn-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--gold-glow);
+            color: #000;
+        }
+
+        .btn-outline-gold {
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-weight: 800;
+            padding: 16px 40px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        .btn-outline-gold:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: var(--gold-glow);
+        }
+
+        /* ===== SECTIONS ===== */
+        .section-title {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .section-title span { color: var(--gold); }
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        /* ===== MENU CARDS ===== */
+        .menu-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        .menu-card:hover::before { opacity: 1; }
+
+        .menu-icon {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .menu-card h5 {
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .menu-price {
+            color: #00d26a;
+            font-size: 1.3rem;
+            font-weight: 900;
+            margin-top: 8px;
+        }
+
+        /* Card reveal animation */
+        .menu-card-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardReveal 0.5s ease forwards;
+        }
+
+        @keyframes cardReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== WHY US SECTION ===== */
+        .feature-card {
+            text-align: center;
+            padding: 35px 25px;
+            border-radius: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            border-color: rgba(212,175,55,0.2);
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .feature-title {
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .feature-text {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ===== CTA SECTION ===== */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(5,5,5,1) 50%, rgba(212,175,55,0.05) 100%);
+            border-top: 1px solid rgba(212,175,55,0.15);
+            border-bottom: 1px solid rgba(212,175,55,0.15);
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: #fff;
+            font-weight: 800;
+            padding: 16px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .btn-whatsapp:hover {
+            transform: translateY(-3px);
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-premium {
+            background: #000;
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--gold); }
+
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--gold);
+            margin: 25px auto;
+            border-radius: 2px;
+        }
+
+        /* ===== MODAL OVERRIDES ===== */
+        .modal-content { border-radius: 16px !important; }
+        .form-control:focus {
+            border-color: var(--gold) !important;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.1) !important;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: heroFadeIn 1s ease forwards 1.5s;
+        }
+        .scroll-indicator span {
+            display: block;
+            width: 24px; height: 24px;
+            border-right: 2px solid var(--gold);
+            border-bottom: 2px solid var(--gold);
+            transform: rotate(45deg);
+            animation: scrollBounce 2s ease infinite;
+        }
+        @keyframes scrollBounce {
+            0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.3; }
+            50% { transform: rotate(45deg) translate(5px, 5px); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -66,15 +345,16 @@
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
                 <img src="/logo.png" alt="La Esquina" height="40">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center gap-3">
-                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#carta">CARTA DIGITAL</a></li>
-                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#ubicacion">UBICACIÓN</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#carta" style="font-size: 13px; letter-spacing: 1px;">CARTA DIGITAL</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#nosotros" style="font-size: 13px; letter-spacing: 1px;">NOSOTROS</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-bold" href="#ubicacion" style="font-size: 13px; letter-spacing: 1px;">UBICACIÓN</a></li>
                     <li class="nav-item">
-                        <a class="btn btn-warning fw-bold text-dark px-4 rounded-pill shadow-sm" href="/login.html">
+                        <a class="btn btn-warning fw-bold text-dark px-4 rounded-pill shadow-sm" href="/login.html" style="font-size: 13px; letter-spacing: 0.5px;">
                             👑 PORTAL VIP
                         </a>
                     </li>
@@ -85,68 +365,138 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <div class="container px-4">
+        <div class="container px-4" style="position: relative; z-index: 2;">
             <h1 class="hero-title">LA ESQUINA<br>DEL BILLAR</h1>
             <p class="hero-subtitle">El mejor ambiente, tragos premium y mesas profesionales.</p>
-            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+            <div class="hero-actions d-flex flex-wrap justify-content-center gap-3">
                 <a href="#carta" class="btn btn-gold rounded-pill">Ver la Carta</a>
-                <a href="/login.html" class="btn btn-outline-gold rounded-pill">Únete al Club</a>
+                <a href="/vip.html" class="btn btn-outline-gold rounded-pill">Club VIP</a>
             </div>
-            <button class="btn btn-warning btn-lg mt-3 fw-bold shadow-lg" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="border: 2px solid #D4AF37; box-shadow: 0 0 15px rgba(212,175,55,0.4) !important;">
-    COTIZAR EVENTO VIP
-</button>
+            <div class="hero-actions mt-4">
+                <button class="btn btn-gold btn-lg rounded-pill shadow-lg px-5" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="font-size: 14px;">
+                    ✨ COTIZAR EVENTO VIP
+                </button>
+            </div>
         </div>
+        <div class="scroll-indicator"><span></span></div>
     </section>
 
-    <!-- Sección: La Carta (Conectada al Backend) -->
-    <section id="carta" class="py-5" style="background-color: #0a0a0a;">
+    <!-- Sección: ¿Por qué elegirnos? -->
+    <section id="nosotros" class="py-5" style="background: var(--bg-main);">
         <div class="container py-5">
-            <h2 class="section-title">Nuestra <span>Carta</span></h2>
-            
-            <div class="row g-4 justify-content-center" id="menu-publico">
-                <!-- Mientras carga, mostramos un mensaje -->
-                <div class="col-12 text-center text-muted">
-                    <div class="spinner-border text-warning" role="status"></div>
-                    <p class="mt-2">Cargando menú en vivo...</p>
+            <h2 class="section-title">¿Por Qué <span>Elegirnos</span>?</h2>
+            <p class="section-subtitle">Más que un billar, una experiencia.</p>
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <div class="feature-card h-100">
+                        <span class="feature-icon">🎱</span>
+                        <div class="feature-title">Mesas Profesionales</div>
+                        <p class="feature-text mb-0">Mesas de billar profesionales con paño premium y equipamiento de primera.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="feature-card h-100">
+                        <span class="feature-icon">🍹</span>
+                        <div class="feature-title">Tragos & Piqueos</div>
+                        <p class="feature-text mb-0">Carta variada con cervezas artesanales, cócteles clásicos y los mejores piqueos.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="feature-card h-100">
+                        <span class="feature-icon">🎉</span>
+                        <div class="feature-title">Eventos Privados</div>
+                        <p class="feature-text mb-0">Cumpleaños, corporativos y reuniones. Armamos el plan perfecto para ti.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-   
-    <!-- MODAL: Formulario de Eventos Privados -->
+    <!-- Sección: La Carta -->
+    <section id="carta" class="py-5" style="background: linear-gradient(180deg, #070707, var(--bg-main));">
+        <div class="container py-5">
+            <h2 class="section-title">Nuestra <span>Carta</span></h2>
+            <p class="section-subtitle">Precios y disponibilidad en tiempo real desde nuestro sistema.</p>
+            
+            <div class="row g-4 justify-content-center" id="menu-publico">
+                <div class="col-12 text-center" style="color: var(--text-muted);">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <p class="mt-2" style="font-size: 14px;">Cargando menú en vivo...</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="/menu.html" class="btn btn-outline-gold rounded-pill px-5" style="font-size: 13px;">
+                    📜 VER CARTA COMPLETA
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección: CTA WhatsApp + Eventos -->
+    <section class="cta-section py-5">
+        <div class="container py-5">
+            <div class="row align-items-center g-5">
+                <div class="col-12 col-md-6 text-center text-md-start">
+                    <h3 class="fw-bold text-white mb-3" style="font-size: 1.8rem;">¿Listo para una noche<br>inolvidable? 🎱</h3>
+                    <p style="color: var(--text-muted); font-size: 15px; line-height: 1.7;">
+                        Reserva tu mesa, organiza un torneo con amigos o celebra tu cumpleaños en el mejor ambiente de la zona.
+                    </p>
+                    <a href="https://wa.me/51TUNUMERO?text=Hola%20quiero%20reservar" target="_blank" class="btn-whatsapp mt-3">
+                        💬 RESERVAR POR WHATSAPP
+                    </a>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="feature-card" style="border-left: 3px solid var(--gold); text-align: left;">
+                        <h5 class="fw-bold text-white mb-3">✨ Eventos Privados</h5>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🎱 Acceso exclusivo a mesas de billar</li>
+                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🍺 Barra libre personalizada</li>
+                            <li style="color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;">🎵 Música y decoración temática</li>
+                            <li style="color: #ccc; padding: 8px 0; font-size: 14px;">🏆 Torneos organizados para tu grupo</li>
+                        </ul>
+                        <button class="btn btn-gold w-100 rounded-pill mt-4" data-bs-toggle="modal" data-bs-target="#modalEventoVIP" style="font-size: 13px;">
+                            SOLICITAR COTIZACIÓN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL: Formulario de Eventos -->
     <div class="modal fade" id="modalEventoVIP" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content bg-dark border-warning" style="border-width: 2px;">
                 <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-warning fw-bold">👑 Reserva tu Evento Privado</h5>
+                    <h5 class="modal-title text-warning fw-bold" style="font-size: 16px; letter-spacing: 0.5px;">👑 Reserva tu Evento Privado</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="formReservaEventoModal">
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">Nombre Completo</label>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Nombre Completo</label>
                                 <input type="text" class="form-control bg-black text-white border-secondary" id="ev_nombre" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">WhatsApp</label>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">WhatsApp</label>
                                 <input type="tel" class="form-control bg-black text-white border-secondary" id="ev_telefono" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">Correo Electrónico</label>
-                                <input type="email" class="form-control bg-black text-white border-secondary" id="ev_email" placeholder="Para enviarte la confirmación" required>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Correo Electrónico</label>
+                                <input type="email" class="form-control bg-black text-white border-secondary" id="ev_email" placeholder="Para la confirmación" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">Fecha Deseada</label>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Fecha Deseada</label>
                                 <input type="date" class="form-control bg-black text-white border-secondary" id="ev_fecha" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">Hora</label>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Hora</label>
                                 <input type="time" class="form-control bg-black text-white border-secondary" id="ev_hora" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-muted small text-uppercase">Motivo</label>
+                                <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Motivo</label>
                                 <select class="form-select bg-black text-white border-secondary" id="ev_tipo" required>
                                     <option value="">Selecciona...</option>
                                     <option value="Cumpleaños">🎉 Cumpleaños</option>
@@ -157,20 +507,20 @@
                             </div>
                         </div>
 
-                        <h6 class="text-warning fw-bold">Selecciona tu Plan</h6>
-                        <div class="form-check mb-2 p-2 border border-secondary rounded">
+                        <h6 class="text-warning fw-bold" style="font-size: 14px; letter-spacing: 0.5px;">Selecciona tu Plan</h6>
+                        <div class="form-check mb-2 p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02);">
                             <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan1" value="Plan Express (3 Horas)" required>
-                            <label class="form-check-label ms-2 text-white" for="plan1">Plan Express (3 Horas)</label>
+                            <label class="form-check-label ms-2 text-white" for="plan1" style="font-size: 14px;">Plan Express (3 Horas)</label>
                         </div>
-                        <div class="form-check mb-4 p-2 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
+                        <div class="form-check mb-4 p-3 border border-warning rounded" style="background: rgba(212, 175, 55, 0.05);">
                             <input class="form-check-input ms-1 mt-1" type="radio" name="planAlquiler" id="plan2" value="Plan Full (5 Horas)">
-                            <label class="form-check-label ms-2 text-warning fw-bold" for="plan2">Plan Full (5 Horas) 👑</label>
+                            <label class="form-check-label ms-2 text-warning fw-bold" for="plan2" style="font-size: 14px;">Plan Full (5 Horas) 👑</label>
                         </div>
 
-                        <label class="form-label text-muted small text-uppercase">Requerimientos Adicionales</label>
+                        <label class="form-label text-muted small text-uppercase" style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">Requerimientos Adicionales</label>
                         <textarea class="form-control bg-black text-white border-secondary mb-4" id="ev_requerimientos" rows="2" placeholder="Ej: Necesito torta, un torneo para 10 personas..."></textarea>
 
-                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2" id="btnEnviarReservaModal">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-3 rounded-pill" id="btnEnviarReservaModal" style="font-size: 14px; letter-spacing: 1px;">
                             ENVIAR SOLICITUD DE COTIZACIÓN
                         </button>
                         <div id="reservaMensajeModal" class="text-center mt-3 fw-bold"></div>
@@ -179,7 +529,8 @@
             </div>
         </div>
     </div>
-   <!-- Script de conexión -->
+
+    <!-- Script de Eventos -->
     <script>
         document.getElementById('formReservaEventoModal').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -192,10 +543,10 @@
         const payload = {
             nombre: document.getElementById('ev_nombre').value,
             telefono: document.getElementById('ev_telefono').value,
-            email: document.getElementById('ev_email').value, // NUEVO CAMPO
+            email: document.getElementById('ev_email').value,
             fecha: document.getElementById('ev_fecha').value,
             hora: document.getElementById('ev_hora').value,
-            personas: "Por definir", // Simplificado para el modal
+            personas: "Por definir",
             tipo_evento: document.getElementById('ev_tipo').value,
             plan: document.querySelector('input[name="planAlquiler"]:checked').value,
             requerimientos: document.getElementById('ev_requerimientos').value
@@ -210,7 +561,6 @@
             const data = await res.json();
             
             if(data.success) {
-                // ÉXITO: Cerramos el modal y mostramos un alert de la página
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalEventoVIP'));
                 modal.hide();
                 alert('¡Solicitud enviada! Revisa tu correo electrónico para la confirmación.');
@@ -226,20 +576,34 @@
         btn.disabled = false;
         btn.innerText = 'ENVIAR SOLICITUD DE COTIZACIÓN';
     });
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('.navbar-public');
+        if (window.scrollY > 50) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+    });
     </script>
     
-    <!-- Sección: Footer -->
+    <!-- Footer -->
     <footer id="ubicacion" class="footer-premium">
-        <div class="container">
-            <img src="/logo.png" alt="La Esquina" height="60" class="mb-4 opacity-75">
-            <h5 class="text-white fw-bold">📍 Santa Anita, Lima - Perú</h5>
-            <p class="mb-1">Abierto de Lunes a Domingo</p>
+        <div class="container text-center">
+            <img src="/logo.png" alt="La Esquina" height="55" class="mb-4" style="opacity: 0.8; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
+            <h5 class="text-white fw-bold mb-2" style="font-size: 16px; letter-spacing: 1px;">📍 Santa Anita, Lima - Perú</h5>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">Abierto de Lunes a Domingo</p>
             
-            <!-- Zona Inferior con el botón discreto para el Staff -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4">
-                <p class="mb-0 small text-muted">&copy; 2026 La Esquina del Billar. Todos los derechos reservados.</p>
-                <span class="text-muted">|</span>
-                <a href="/login.html" class="small" style="color: #444; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D4AF37'" onmouseout="this.style.color='#444'">
+            <div class="footer-divider"></div>
+            
+            <div class="footer-links d-flex justify-content-center gap-4 mb-4">
+                <a href="#carta">Carta Digital</a>
+                <a href="/menu.html">Menú QR</a>
+                <a href="/vip.html">Club VIP</a>
+            </div>
+            
+            <div class="d-flex justify-content-center align-items-center gap-3">
+                <p class="mb-0 small" style="color: #444;">© 2026 La Esquina del Billar. Todos los derechos reservados.</p>
+                <span style="color: #333;">|</span>
+                <a href="/login.html" class="small" style="color: #333; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D4AF37'" onmouseout="this.style.color='#333'">
                     Acceso Personal
                 </a>
             </div>
@@ -249,34 +613,32 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Lógica para cargar el menú en vivo desde tu inventario
+        // Cargar menú en vivo (usando endpoint seguro)
         async function cargarMenuPublico() {
             try {
-                // Aquí usamos tu API existente para traer los productos
-                const res = await fetch('/api/menu-publico');
+                const res = await fetch('/api/menu/publico');
                 const productos = await res.json();
                 
                 const contenedorMenu = document.getElementById('menu-publico');
                 contenedorMenu.innerHTML = '';
 
-                // Filtramos solo los que tienen stock y no son ingredientes ocultos
-                const disponibles = productos.filter(p => p.stock > 0);
-
-                if (disponibles.length === 0) {
-                    contenedorMenu.innerHTML = '<p class="text-center text-muted">El menú se está actualizando. Vuelve pronto.</p>';
+                if (productos.length === 0) {
+                    contenedorMenu.innerHTML = '<p class="text-center" style="color: var(--text-muted); font-size: 15px;">El menú se está actualizando. Vuelve pronto.</p>';
                     return;
                 }
 
-                // Pintamos solo los primeros 8 productos para no saturar la portada
-                disponibles.slice(0, 8).forEach(prod => {
+                productos.slice(0, 8).forEach((prod, index) => {
                     let icono = '🍺';
                     if (prod.categoria && prod.categoria.toLowerCase().includes('piqueo')) icono = '🍟';
                     if (prod.categoria && prod.categoria.toLowerCase().includes('trago')) icono = '🍹';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('cerveza')) icono = '🍺';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('cóctel')) icono = '🍸';
+                    if (prod.categoria && prod.categoria.toLowerCase().includes('comida')) icono = '🍔';
 
                     contenedorMenu.innerHTML += `
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="menu-card h-100">
-                                <div style="font-size: 3rem; margin-bottom: 10px;">${icono}</div>
+                            <div class="menu-card menu-card-animate h-100" style="animation-delay: ${index * 0.08}s">
+                                <span class="menu-icon">${icono}</span>
                                 <h5 class="text-white fw-bold">${prod.nombre}</h5>
                                 <div class="menu-price">S/ ${parseFloat(prod.precio_venta).toFixed(2)}</div>
                             </div>

@@ -4,57 +4,780 @@
     <meta charset="UTF-8">
     <title>VIP | La Esquina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: #0a0a0c; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        /* ═══════════════════════════════════════════════
+           CSS CUSTOM PROPERTIES
+        ═══════════════════════════════════════════════ */
+        :root {
+            --bg-main: #050505;
+            --bg-card: rgba(20, 20, 22, 0.8);
+            --bg-elevated: #0a0a0c;
+            --gold: #D4AF37;
+            --gold-hover: #e5c158;
+            --gold-glow: 0 0 25px rgba(212,175,55,0.3);
+            --gold-soft: rgba(212, 175, 55, 0.15);
+            --success: #00d26a;
+            --danger: #ff4757;
+            --info: #00b4d8;
+            --text-main: #ffffff;
+            --text-muted: #8a8f98;
+            --border: rgba(255,255,255,0.08);
+            --border-gold: rgba(212,175,55,0.3);
+        }
+
+        /* ═══════════════════════════════════════════════
+           RESET & BASE
+        ═══════════════════════════════════════════════ */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
         
-        /* Contenedor Principal */
-        .wallet-card {
-            background: linear-gradient(145deg, #1a1a1d 0%, #0a0a0c 100%);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 20px;
-            width: 100%;
-            max-width: 380px;
-            padding: 40px 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
-            text-align: center;
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
             position: relative;
+        }
+
+        /* ═══════════════════════════════════════════════
+           FLOATING BACKGROUND PARTICLES
+        ═══════════════════════════════════════════════ */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
             overflow: hidden;
         }
 
-        .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); }
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.12;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
 
-        .logo-text { color: #D4AF37; font-size: 26px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-        .sub-text { color: #888; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
+        .bg-orb:nth-child(1) {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, var(--gold), transparent 70%);
+            top: -80px; left: -80px;
+            animation-delay: 0s;
+        }
+        .bg-orb:nth-child(2) {
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, #D4AF37, transparent 70%);
+            bottom: -60px; right: -60px;
+            animation-delay: -7s;
+            animation-duration: 25s;
+        }
+        .bg-orb:nth-child(3) {
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, #e5c158, transparent 70%);
+            top: 50%; left: 60%;
+            animation-delay: -14s;
+            animation-duration: 30s;
+        }
 
-        /* Estilos del Login */
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
-        .input-vip { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; transition: 0.3s; }
-        .input-vip:focus { border-color: #D4AF37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .btn-vip { background: #D4AF37; color: #000; font-weight: 900; font-size: 16px; padding: 15px; border: none; border-radius: 10px; width: 100%; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
-        .btn-vip:hover { background: #e5c158; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -40px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(15px, 30px) scale(1.05); }
+        }
 
-        /* Estilos de la Tarjeta Interna */
-        .client-info { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid #222; }
-        .client-name { font-size: 22px; font-weight: 800; color: white; margin-bottom: 5px; }
-        .client-level { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .lvl-bronce { background: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5); }
-        .lvl-plata { background: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid rgba(192, 192, 192, 0.5); }
-        .lvl-oro { background: rgba(212, 175, 55, 0.2); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.5); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        /* Floating golden dust particles */
+        .bg-particle {
+            position: absolute;
+            width: 3px; height: 3px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleRise linear infinite;
+        }
 
-        .qr-container { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px; }
-        .qr-container img { display: block; width: 160px; height: 160px; }
+        @keyframes particleRise {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.2; }
+            100% { opacity: 0; transform: translateY(-20px) scale(1); }
+        }
 
-        .stamps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
-        .stamp-slot { aspect-ratio: 1; border-radius: 50%; border: 2px dashed #333; display: flex; justify-content: center; align-items: center; font-size: 20px; color: transparent; }
-        .stamp-filled { background: rgba(212, 175, 55, 0.1); border: 2px solid #D4AF37; color: #D4AF37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); }
+        /* ═══════════════════════════════════════════════
+           WALLET CARD — Holographic Shine
+        ═══════════════════════════════════════════════ */
+        .wallet-card {
+            background: linear-gradient(145deg, #1a1a1d 0%, #0d0d10 50%, #0a0a0c 100%);
+            border: 1px solid var(--border-gold);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            padding: 0 30px 40px 30px;
+            box-shadow:
+                0 25px 60px rgba(0,0,0,0.9),
+                0 0 80px rgba(212,175,55,0.05),
+                inset 0 0 0 1px rgba(255,255,255,0.04);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            animation: cardFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
 
-        .msg-error { color: #ff4757; font-size: 13px; margin-top: 15px; font-weight: bold; display: none; }
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Holographic / Iridescent Shine Overlay */
+        .wallet-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                115deg,
+                transparent 20%,
+                rgba(212, 175, 55, 0.03) 30%,
+                rgba(255, 255, 255, 0.06) 38%,
+                rgba(212, 175, 55, 0.04) 42%,
+                transparent 50%,
+                rgba(168, 130, 255, 0.02) 58%,
+                rgba(100, 200, 255, 0.03) 62%,
+                transparent 70%
+            );
+            animation: holoShine 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes holoShine {
+            0%, 100% { transform: translateX(-30%) translateY(-30%) rotate(0deg); }
+            50% { transform: translateX(30%) translateY(30%) rotate(5deg); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           TOP GOLD LINE — Animated Gradient
+        ═══════════════════════════════════════════════ */
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--gold) 20%,
+                #f5e6a3 40%,
+                var(--gold) 60%,
+                transparent 80%
+            );
+            background-size: 200% 100%;
+            animation: goldLineMove 3s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes goldLineMove {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ═══════════════════════════════════════════════
+           HEADER
+        ═══════════════════════════════════════════════ */
+        .header {
+            position: relative;
+            z-index: 1;
+            padding-top: 40px;
+        }
+
+        .logo-text {
+            color: var(--gold);
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            text-shadow: 0 0 30px rgba(212,175,55,0.25);
+        }
+
+        .sub-text {
+            color: var(--text-muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════
+           LOGIN SECTION — Smooth Transitions
+        ═══════════════════════════════════════════════ */
+        #login-section {
+            position: relative;
+            z-index: 1;
+            animation: sectionFadeSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        #login-section.hiding {
+            animation: sectionFadeSlideOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        #card-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        #card-section.showing {
+            animation: sectionFadeSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes sectionFadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes sectionFadeSlideOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-15px); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           INPUT STYLES — Premium PIN Feel
+        ═══════════════════════════════════════════════ */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-vip {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 16px 18px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .input-vip:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 0 1px rgba(212,175,55,0.1);
+            background: rgba(212, 175, 55, 0.04);
+        }
+
+        .input-vip::placeholder {
+            color: rgba(255,255,255,0.2);
+            font-weight: 400;
+        }
+
+        /* Premium PIN field */
+        input[type="password"].input-vip {
+            letter-spacing: 12px;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           BUTTON
+        ═══════════════════════════════════════════════ */
+        .btn-vip {
+            background: linear-gradient(135deg, var(--gold) 0%, #c9a227 100%);
+            color: #000;
+            font-weight: 800;
+            font-size: 15px;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-vip::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-vip:hover {
+            background: linear-gradient(135deg, var(--gold-hover) 0%, var(--gold) 100%);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4), 0 8px 25px rgba(0,0,0,0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-vip:hover::before {
+            left: 100%;
+        }
+
+        .btn-vip:active {
+            transform: translateY(0px) scale(0.98);
+        }
+
+        /* ═══════════════════════════════════════════════
+           CLIENT INFO CARD
+        ═══════════════════════════════════════════════ */
+        .client-info {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .client-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .client-level {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+        }
+
+        /* Level badges with glow effects */
+        .lvl-bronce {
+            background: rgba(205, 127, 50, 0.15);
+            color: #cd7f32;
+            border: 1px solid rgba(205, 127, 50, 0.4);
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.15), inset 0 0 15px rgba(205, 127, 50, 0.05);
+            text-shadow: 0 0 10px rgba(205, 127, 50, 0.3);
+        }
+
+        .lvl-plata {
+            background: rgba(192, 192, 220, 0.12);
+            color: #d0d0e0;
+            border: 1px solid rgba(192, 192, 220, 0.4);
+            box-shadow: 0 0 25px rgba(192, 192, 220, 0.12), inset 0 0 15px rgba(192, 192, 220, 0.05);
+            text-shadow: 0 0 12px rgba(192, 192, 220, 0.3);
+        }
+
+        .lvl-oro {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.25), 0 0 60px rgba(212, 175, 55, 0.08), inset 0 0 20px rgba(212, 175, 55, 0.05);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            animation: goldPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes goldPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.25), 0 0 60px rgba(212, 175, 55, 0.08); }
+            50% { box-shadow: 0 0 35px rgba(212, 175, 55, 0.35), 0 0 70px rgba(212, 175, 55, 0.12); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           QR CONTAINER — Rotating Border
+        ═══════════════════════════════════════════════ */
+        .qr-container {
+            background: white;
+            padding: 15px;
+            border-radius: 18px;
+            display: inline-block;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .qr-container::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: -3px;
+            right: -3px; bottom: -3px;
+            border-radius: 20px;
+            background: conic-gradient(
+                from var(--qr-angle, 0deg),
+                var(--gold),
+                transparent 25%,
+                transparent 50%,
+                var(--gold) 75%,
+                transparent 100%
+            );
+            z-index: -1;
+            animation: qrBorderRotate 4s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes qrBorderRotate {
+            to { --qr-angle: 360deg; }
+        }
+
+        /* Fallback for browsers without @property */
+        @supports not (background: conic-gradient(from 0deg, red, blue)) {
+            .qr-container::before {
+                background: linear-gradient(var(--gold), transparent);
+                animation: qrBorderFallback 3s linear infinite;
+            }
+        }
+
+        @property --qr-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        .qr-container img {
+            display: block;
+            width: 160px;
+            height: 160px;
+            border-radius: 4px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           STAMPS GRID — Pop-In Animation
+        ═══════════════════════════════════════════════ */
+        .stamps-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stamp-slot {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 2px dashed rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: transparent;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .stamp-filled {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(212, 175, 55, 0.05);
+            animation: stampPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .stamp-filled:nth-child(1) { animation-delay: 0.05s; }
+        .stamp-filled:nth-child(2) { animation-delay: 0.1s; }
+        .stamp-filled:nth-child(3) { animation-delay: 0.15s; }
+        .stamp-filled:nth-child(4) { animation-delay: 0.2s; }
+        .stamp-filled:nth-child(5) { animation-delay: 0.25s; }
+        .stamp-filled:nth-child(6) { animation-delay: 0.3s; }
+        .stamp-filled:nth-child(7) { animation-delay: 0.35s; }
+        .stamp-filled:nth-child(8) { animation-delay: 0.4s; }
+        .stamp-filled:nth-child(9) { animation-delay: 0.45s; }
+        .stamp-filled:nth-child(10) { animation-delay: 0.5s; }
+
+        @keyframes stampPopIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ═══════════════════════════════════════════════
+           PROGRESS BAR
+        ═══════════════════════════════════════════════ */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            margin-top: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c9a227, var(--gold), #f5e6a3);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            animation: progressShimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShimmer {
+            0%, 100% { background-position: 0% 0; }
+            50% { background-position: 100% 0; }
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           REWARDS SECTION
+        ═══════════════════════════════════════════════ */
+        .rewards-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .rewards-label {
+            font-size: 11px;
+            color: var(--gold);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        .rewards-title {
+            font-size: 16px;
+            color: white;
+            font-weight: 800;
+        }
+
+        .rewards-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .btn-benefits {
+            margin-bottom: 20px;
+            font-size: 14px;
+            padding: 14px;
+            border: 1px solid var(--border-gold);
+            background: rgba(212, 175, 55, 0.06) !important;
+            color: var(--gold) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 14px;
+            transition: all 0.35s ease;
+        }
+
+        .btn-benefits:hover {
+            background: rgba(212, 175, 55, 0.12) !important;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+        }
+
+        /* ═══════════════════════════════════════════════
+           BENEFITS MODAL — Glassmorphism
+        ═══════════════════════════════════════════════ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: modalFadeIn 0.3s ease forwards;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(25, 25, 30, 0.95), rgba(15, 15, 18, 0.98));
+            border: 1px solid var(--border-gold);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 370px;
+            text-align: left;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 80px rgba(212,175,55,0.06);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            animation: modalSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-title {
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .benefit-item {
+            background: rgba(212, 175, 55, 0.04);
+            border-left: 3px solid var(--gold);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .benefit-item:hover {
+            background: rgba(212, 175, 55, 0.08);
+            transform: translateX(4px);
+        }
+
+        .benefit-level {
+            color: var(--gold);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .benefit-desc {
+            color: #fff;
+            font-size: 14px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════
+           ERROR MESSAGE
+        ═══════════════════════════════════════════════ */
+        .msg-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 15px;
+            font-weight: 600;
+            display: none;
+            padding: 12px;
+            background: rgba(255, 71, 87, 0.08);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        /* ═══════════════════════════════════════════════
+           PROGRESS TITLE
+        ═══════════════════════════════════════════════ */
+        .progress-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           LOGOUT LINK
+        ═══════════════════════════════════════════════ */
+        .logout-link {
+            color: rgba(255,255,255,0.25);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        .logout-link:hover {
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ═══════════════════════════════════════════════
+           CONFETTI / SPARKLE CANVAS
+        ═══════════════════════════════════════════════ */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        /* ═══════════════════════════════════════════════
+           PREMIOS HIGHLIGHT
+        ═══════════════════════════════════════════════ */
+        .premios-count {
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .premios-count.has-premios {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            animation: premiosPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes premiosPulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+            50% { text-shadow: 0 0 35px rgba(212, 175, 55, 0.8); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════════════ */
+        @media (max-width: 420px) {
+            .wallet-card { padding: 0 20px 30px 20px; border-radius: 20px; }
+            .logo-text { font-size: 24px; }
+            .stamps-grid { gap: 8px; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Floating Background Decorations -->
+    <div class="bg-particles">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+
+    <!-- Confetti Canvas (for sparkle effect) -->
+    <canvas id="confetti-canvas"></canvas>
 
     <div class="wallet-card">
         <div class="header">
@@ -69,7 +792,7 @@
             </div>
             <div class="input-group">
                 <label>PIN de Seguridad</label>
-                <input type="password" id="in-pin" class="input-vip" placeholder="4 dígitos" maxlength="4">
+                <input type="password" id="in-pin" class="input-vip" placeholder="• • • •" maxlength="4">
             </div>
             <button class="btn-vip" onclick="iniciarSesionVIP()">Acceder a mi Tarjeta</button>
             <div class="msg-error" id="msg-error">Datos incorrectos. Intenta nuevamente.</div>
@@ -85,32 +808,130 @@
                 <img id="qr-image" src="" alt="Código QR VIP">
             </div>
 
-            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid #D4AF37; padding: 10px; border-radius: 10px; margin-bottom: 20px;">
-                <div style="font-size: 11px; color: #D4AF37; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Tu Recompensa Actual</div>
-                <button class="btn-vip" style="margin-bottom: 20px; font-size: 14px; padding: 12px; border: 1px solid #D4AF37; background: transparent; color: #D4AF37;" onclick="mostrarBeneficiosCliente()">💎 Ver Mis Beneficios Exclusivos</button>
+            <div class="rewards-box">
+                <div class="rewards-label">Tu Recompensa Actual</div>
+                <button class="btn-vip btn-benefits" style="margin-bottom: 20px; font-size: 14px; padding: 12px; border: 1px solid #D4AF37; background: transparent; color: #D4AF37;" onclick="mostrarBeneficiosCliente()">💎 Ver Mis Beneficios Exclusivos</button>
 
-            <div id="modal-ben-cliente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 20px;">
-                <div style="background: #111; border: 1px solid #D4AF37; border-radius: 20px; padding: 25px; width: 100%; max-width: 350px; text-align: left;">
-                    <h3 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Tus Beneficios</h3>
+            <div id="modal-ben-cliente" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <h3 class="modal-title">Tus Beneficios</h3>
                     <div id="lista-ben-cliente" style="margin-bottom: 25px;">
                         </div>
                     <button class="btn-vip" onclick="document.getElementById('modal-ben-cliente').style.display='none'">Cerrar</button>
                 </div>
             </div>
-                <div style="font-size: 16px; color: white; font-weight: 900;">🎱 1 Hora de Billar Gratis</div>
-                <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Premios disponibles: <span id="lbl-premios" style="color: #D4AF37; font-weight: bold; font-size: 16px;">0</span></div>
+                <div class="rewards-title">🎱 1 Hora de Billar Gratis</div>
+                <div class="rewards-sub">Premios disponibles: <span id="lbl-premios" class="premios-count">0</span></div>
             </div>
 
-            <div style="font-size: 13px; color: #888; font-weight: bold; text-transform: uppercase; margin-top: 10px;">Progreso de Visitas</div>
+            <div class="progress-title">Progreso de Visitas</div>
             <div class="stamps-grid" id="stamps-container"></div>
             
+            <!-- Progress Bar -->
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-label" id="progress-label">0 / 10 visitas</div>
+
             <div style="margin-top: 20px; font-size: 12px;">
-                <a href="#" onclick="cerrarSesionVIP()" style="color: #666; text-decoration: none;">Cerrar sesión</a>
+                <a href="#" onclick="cerrarSesionVIP()" class="logout-link">Cerrar sesión</a>
             </div>
         </div>
     </div>
 
     <script>
+        // ═══════════════════════════════════════════════
+        //  BACKGROUND PARTICLES GENERATOR
+        // ═══════════════════════════════════════════════
+        (function createParticles() {
+            const container = document.querySelector('.bg-particles');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'bg-particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (8 + Math.random() * 15) + 's';
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.width = (2 + Math.random() * 3) + 'px';
+                p.style.height = p.style.width;
+                container.appendChild(p);
+            }
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  CONFETTI / SPARKLE SYSTEM
+        // ═══════════════════════════════════════════════
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const confCtx = confettiCanvas.getContext('2d');
+        let confettiPieces = [];
+        let confettiRunning = false;
+
+        function resizeConfettiCanvas() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeConfettiCanvas);
+        resizeConfettiCanvas();
+
+        function launchConfetti() {
+            confettiPieces = [];
+            const colors = ['#D4AF37', '#f5e6a3', '#e5c158', '#fff8dc', '#c9a227', '#ffffff'];
+            for (let i = 0; i < 120; i++) {
+                confettiPieces.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: -20 - Math.random() * 200,
+                    w: 4 + Math.random() * 6,
+                    h: 4 + Math.random() * 6,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: 2 + Math.random() * 4,
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 8,
+                    opacity: 0.8 + Math.random() * 0.2,
+                    type: Math.random() > 0.4 ? 'rect' : 'circle'
+                });
+            }
+            if (!confettiRunning) {
+                confettiRunning = true;
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let alive = 0;
+            confettiPieces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.rotation += p.rotSpeed;
+                p.opacity -= 0.003;
+                if (p.opacity <= 0 || p.y > confettiCanvas.height + 20) return;
+                alive++;
+                confCtx.save();
+                confCtx.globalAlpha = p.opacity;
+                confCtx.translate(p.x, p.y);
+                confCtx.rotate((p.rotation * Math.PI) / 180);
+                confCtx.fillStyle = p.color;
+                if (p.type === 'rect') {
+                    confCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                } else {
+                    confCtx.beginPath();
+                    confCtx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+                    confCtx.fill();
+                }
+                confCtx.restore();
+            });
+            if (alive > 0) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiRunning = false;
+                confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        //  ORIGINAL VIP LOGIC — 100% PRESERVED
+        // ═══════════════════════════════════════════════
         async function mostrarBeneficiosCliente() {
             // Obtenemos el nivel del cliente desde la etiqueta que ya está en pantalla
             const textoNivel = document.getElementById('lbl-nivel').innerText.toLowerCase();
@@ -186,10 +1007,16 @@
                 // Guardamos la sesión en el celular del cliente
                 localStorage.setItem('vip_esquina', JSON.stringify({ telefono, pin }));
 
-                // Cambiamos la interfaz
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('header-sub').innerText = "Tarjeta Digital Activa";
-                document.getElementById('card-section').style.display = 'block';
+                // Cambiamos la interfaz (with smooth transition)
+                const loginSection = document.getElementById('login-section');
+                loginSection.classList.add('hiding');
+                setTimeout(() => {
+                    loginSection.style.display = 'none';
+                    document.getElementById('header-sub').innerText = "Tarjeta Digital Activa";
+                    const cardSection = document.getElementById('card-section');
+                    cardSection.style.display = 'block';
+                    cardSection.classList.add('showing');
+                }, 400);
 
                 // Llenamos la tarjeta
                 document.getElementById('lbl-nombre').innerText = data.nombre;
@@ -214,6 +1041,23 @@
                 for (let i = 1; i <= 10; i++) {
                     if (i <= sellosVisuales) container.innerHTML += `<div class="stamp-slot stamp-filled">🎱</div>`;
                     else container.innerHTML += `<div class="stamp-slot"></div>`;
+                }
+
+                // ══ VISUAL ENHANCEMENTS (post-login) ══
+                // Update progress bar
+                const progressPct = (sellosVisuales / 10) * 100;
+                setTimeout(() => {
+                    document.getElementById('progress-fill').style.width = progressPct + '%';
+                    document.getElementById('progress-label').innerText = sellosVisuales + ' / 10 visitas';
+                }, 500);
+
+                // Premios highlight & confetti
+                const premiosEl = document.getElementById('lbl-premios');
+                if (premiosGanados > 0) {
+                    premiosEl.classList.add('has-premios');
+                    setTimeout(() => launchConfetti(), 800);
+                } else {
+                    premiosEl.classList.remove('has-premios');
                 }
 
             } catch (error) {
